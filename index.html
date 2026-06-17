@@ -3,7 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SELFIX</title>
+<title>SELFIX · Зеркало нового поколения</title>
+<meta name="description" content="За 2 минуты собери живого ИИ-двойника на ядре Big Five — и узнай, кто ты на самом деле. Найди своих.">
+<meta name="theme-color" content="#05060a">
+<link rel="apple-touch-icon" href="https://masteroch.github.io/selfix/icon-180.png">
+<link rel="icon" type="image/png" href="https://masteroch.github.io/selfix/icon-180.png">
+<!-- Open Graph / link preview -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SELFIX">
+<meta property="og:title" content="SELFIX · Зеркало нового поколения">
+<meta property="og:description" content="За 2 минуты собери живого ИИ-двойника на ядре Big Five — и узнай, кто ты на самом деле. Найди своих.">
+<meta property="og:url" content="https://masteroch.github.io/selfix/">
+<meta property="og:image" content="https://masteroch.github.io/selfix/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SELFIX · Зеркало нового поколения">
+<meta name="twitter:description" content="За 2 минуты собери живого ИИ-двойника на ядре Big Five — узнай, кто ты, и найди своих.">
+<meta name="twitter:image" content="https://masteroch.github.io/selfix/og-cover.png">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   /* === Design tokens borrowed from CityHUB 2 (AppHub canon palette) ===
@@ -329,12 +346,19 @@
   .duel-reveal .dr.hit{color:#52e6a4}.duel-reveal .dr.miss{color:#ff6b7d}
   .duel-reveal .ds{font-size:13px;color:#c6c0e4;margin-top:4px}
 
-  .compat-hero{position:relative;border-radius:24px;padding:30px 22px;margin-bottom:18px;text-align:center;overflow:hidden;background:radial-gradient(circle at 50% 0,rgba(255,93,108,.16),transparent 56%),linear-gradient(165deg,#1c1838,#13102a);border:1px solid #38335a}
+  .compat-hero{position:relative;border-radius:24px;padding:30px 22px 26px;margin-bottom:18px;text-align:center;overflow:hidden;background:radial-gradient(circle at 50% 0,rgba(255,93,108,.16),transparent 56%),linear-gradient(165deg,#1c1838,#13102a);border:1px solid #38335a;--accent:#7fe9ff}
+  /* win / tie / lose accenting — single source of truth via --accent */
+  .compat-hero.win{--accent:#52e6a4;background:radial-gradient(circle at 50% -10%,rgba(82,230,164,.22),transparent 58%),linear-gradient(165deg,#16243a,#101a2a);border-color:rgba(82,230,164,.45)}
+  .compat-hero.tie{--accent:#ffce6b;background:radial-gradient(circle at 50% -10%,rgba(255,206,107,.20),transparent 58%),linear-gradient(165deg,#241f2e,#161226);border-color:rgba(255,206,107,.4)}
+  .compat-hero.lose{--accent:#ff7d92;background:radial-gradient(circle at 50% -10%,rgba(255,93,108,.18),transparent 58%),linear-gradient(165deg,#2a1822,#170f1c);border-color:rgba(255,93,108,.38)}
+  .duel-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);padding:6px 14px;border-radius:30px;margin-bottom:14px}
+  .duel-badge svg{width:15px;height:15px}
   .compat-hero .lbl{font-size:11px;letter-spacing:.24em;color:#a39ccb;text-transform:uppercase}
-  .bigpct{font-size:74px;font-weight:800;line-height:.95;margin:8px 0;letter-spacing:-.04em}
-  .compat-hero .verdict{font-size:18px;font-weight:700;color:#fff}
-  .rating-delta{font-size:15px;font-weight:800;margin-top:10px}
-  .rating-delta.up{color:#52e6a4}.rating-delta.down{color:#ff6b7d}
+  .bigpct{font-size:76px;font-weight:900;line-height:.95;margin:6px 0 4px;letter-spacing:-.04em;color:var(--accent);text-shadow:0 4px 34px color-mix(in srgb,var(--accent) 45%,transparent)}
+  .compat-hero .verdict{font-size:17px;font-weight:700;color:#fff;margin-top:2px}
+  .rating-delta{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;margin-top:14px;padding:6px 14px;border-radius:30px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+  .rating-delta svg{width:14px;height:14px}
+  .rating-delta.up{color:#52e6a4}.rating-delta.down{color:#ff7d92}
 
   /* attempts indicator */
   .attempts{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#c6c0e4}
@@ -742,12 +766,9 @@
         </div>
       </div>
       <div class="action-stack">
-        <button class="btn gold" id="resGiftBtn" onclick="openGift()">🎁 Подарить тест другу</button>
-        <button class="btn go" id="resShareBtn" onclick="openShare()">↗ Поделиться своим типом</button>
-        <button class="btn cold" id="resDuelBtn" onclick="startDuelFlow()">⚔️ Вызвать друга на дуэль</button>
-        <button class="btn ghost" id="resMenuBtn" onclick="go('home')">В меню</button>
+        <button class="btn go" id="resShareBtn" onclick="openShareHub()">Поделиться</button>
       </div>
-      <div id="resFeedback"></div>
+      <div id="resFeedback" style="margin-top:16px"></div>
     </div>
 
     <!-- DUEL -->
@@ -765,10 +786,9 @@
       <div class="compat-hero" id="duelCompatHero"></div>
       <div class="card-soft" id="duelNote"></div>
       <div class="action-stack">
-        <button class="btn go" id="dresInviteBtn" onclick="inviteCompare()">⚔️ Вызвать ещё друга</button>
-        <button class="btn cold" id="duelAgainBtn" onclick="startDuelFlow()">⚔️ Ещё дуэль</button>
-        <button class="btn ghost" id="dresShareBtn" onclick="openShare()">↗ Похвастаться результатом</button>
-        <button class="btn ghost" id="dresMenuBtn" onclick="go('home')">В меню</button>
+        <button class="btn go" id="duelAgainBtn" onclick="startDuelFlow()">Ещё дуэль</button>
+        <button class="btn cold" id="dresInviteBtn" onclick="inviteCompare()">Вызвать друга</button>
+        <button class="btn ghost" id="dresShareBtn" onclick="openShare()">Похвастаться результатом</button>
       </div>
     </div>
 
@@ -1390,6 +1410,7 @@ function submitOnboard(){
   if(!S.gender)return modal(enO?'Pick your gender':'Укажи пол',enO?'It’s needed for the wording to be precise.':'Это нужно для точности формулировок.');
   if(!day||!month||day<1||day>31||month<1||month>12)return modal(enO?'Check the date':'Проверь дату',enO?'Enter your day and month of birth as numbers (e.g. 15 and 07).':'Введи день и месяц рождения числами (например 15 и 07).');
   S.name=name;S.day=day;S.month=month;S.year=year||0;S.onboarded=true;save();
+  track('onboard_done',{gender:S.gender});
   go('home');
   // welcome gift: first test free, framed as a present
   setTimeout(function(){
@@ -1402,7 +1423,7 @@ function submitOnboard(){
 
 /* ===== quiz ===== */
 var Q=null;
-function startQuiz(){Q={i:0,ans:[]};go('quiz');renderScene();}
+function startQuiz(){Q={i:0,ans:[]};track('test_start',{kind:'core'});go('quiz');renderScene();}
 function exitQuiz(){
   var L=I18N[S.lang||'ru'];var en=(S.lang==='en');
   var started=(Q&&Q.i>0)||(typeof MT!=='undefined'&&MT&&MT.i>0);
@@ -1490,6 +1511,10 @@ function methodologyInfo(){
   if(isEN()){modal('How SELFIX works','<b>The scientific core.</b> Your profile is built on the <b>Big Five (OCEAN)</b> model — five personality traits psychologists have tested for decades. The questions come from the open IPIP bank.<br><br>The <b>spiral type</b> is a vivid name (Flame, Anchor and so on) derived from your Big Five profile to make it clearer and more fun.<br><br><b>The seasoning layers.</b> Numerology and the “energy type” are added for entertainment and self-reflection — they’re not science, and we say so honestly.<br><br>SELFIX is an educational-entertainment product. It’s not a clinical diagnosis and doesn’t replace a consultation with a specialist.');return;}
   modal('Как работает SELFIX','<b>Научное ядро.</b> Твой профиль строится на модели <b>Big Five (OCEAN)</b> — пять черт личности, которые десятилетиями проверяются психологами. Вопросы взяты из открытого банка IPIP.<br><br><b>Спиральный тип</b> — образное имя (Пламя, Опора и т.д.), которое выводится из твоего профиля Big Five, чтобы было нагляднее и интереснее.<br><br><b>Слои-приправа.</b> Нумерология и «тип энергии» добавлены для развлечения и саморефлексии — это не наука, и мы честно об этом говорим.<br><br>SELFIX — просветительско-развлекательный продукт. Это не клиническая диагностика и не заменяет консультацию специалиста.');
 }
+function privacyInfo(){
+  if(isEN()){modal('Privacy & your data','<b>Your answers stay on your device.</b> Your name, birth date and test answers are saved locally (in this browser/Telegram) — we don’t upload them to a server.<br><br><b>Anonymous usage stats.</b> We may collect anonymous events (e.g. “test started/finished”) to improve the product — without your name or answers.<br><br><b>Feedback.</b> If you tap “Send feedback”, only the text you wrote and your type are sent — nothing else.<br><br><b>Sharing.</b> A gift/challenge link encodes only your type so a friend sees your result. You choose when to share.<br><br>Made by ROCH · roch-audit.com');return;}
+  modal('Приватность и твои данные','<b>Твои ответы остаются на устройстве.</b> Имя, дата рождения и ответы тестов хранятся локально (в этом браузере/Telegram) — мы не загружаем их на сервер.<br><br><b>Анонимная статистика.</b> Мы можем собирать обезличенные события (например, «тест начат/завершён»), чтобы улучшать продукт — без твоего имени и без ответов.<br><br><b>Обратная связь.</b> Если нажмёшь «Отправить отзыв», уходит только написанный тобой текст и твой тип — больше ничего.<br><br><b>Шеринг.</b> Ссылка-подарок/вызов кодирует только твой тип, чтобы друг увидел результат. Делишься только когда сам захочешь.<br><br>Сделано ROCH · roch-audit.com');
+}
 function rareSubtype(r){var top=r.sorted,sc=r.sc;
   if(sc[top[0]]>0){var spread=(sc[top[0]]-sc[top[2]])/sc[top[0]];
     if(spread<=0.12){if(isEN())return {name:SUBTYPE_EN.name,glyph:'⬡',color:'#c9a7ff',desc:SUBTYPE_EN.desc};return {name:'Хамелеон',glyph:'⬡',color:'#c9a7ff',desc:'Редкий сплав: в тебе почти поровну живут три силы. Разные люди видят разных тебя — и все правы. Таких меньше 7%.'};}}
@@ -1501,7 +1526,7 @@ function finishQuiz(){
   var iv=setInterval(function(){k++;if(k<texts.length)ae.textContent=texts[k];},650);
   setTimeout(function(){clearInterval(iv);var r=scoreAnswers(Q.ans);
     S.history=S.history||[];S.history.push({primary:r.primary,pct:r.pct,t:Date.now()});if(S.history.length>20)S.history.shift();
-    S.result=r;save();playReveal(r);
+    S.result=r;save();track('test_finish',{kind:'core',type:r.primary});playReveal(r);
   },1950);
 }
 function playReveal(r){var t=TYPES[r.primary];var rv=document.getElementById('reveal');
@@ -1566,7 +1591,7 @@ function renderResult(){
   var fh=document.getElementById('resFeedback');
   if(fh){var fb='';fb+=returnGiftPrompt();
     if(!S._fbSent)fb+='<div class="card-soft" style="border-left:3px solid #7C3AFF"><div class="ch" style="color:#c9b3ff">💬 '+(en?'One question':'Один вопрос')+'</div><div class="cb">'+(en?'What did you feel when you read your result?':'Что ты почувствовал, когда прочитал свой результат?')+'</div><textarea id="fbText" rows="2" maxlength="300" placeholder="'+(en?'a line is enough…':'хватит одной строки…')+'" style="width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14px;resize:none;outline:none"></textarea><button class="btn ghost" style="margin-top:10px" onclick="sendFeedback()">'+(en?'Send feedback':'Отправить отзыв')+'</button></div>';
-    fb+='<div class="disclaimer" onclick="methodologyInfo()">'+(en?'SELFIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.':'SELFIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.')+' <span style="color:#7fe9ff">'+(en?'how it works':'как это работает')+'</span></div>';
+    fb+='<div class="disclaimer">'+(en?'SELFIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.':'SELFIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.')+' <span style="color:#7fe9ff;cursor:pointer" onclick="methodologyInfo()">'+(en?'how it works':'как это работает')+'</span> · <span style="color:#7fe9ff;cursor:pointer" onclick="privacyInfo()">'+(en?'privacy':'приватность')+'</span></div>';
     fh.innerHTML=fb;}
   // staggered entrance for the cards below the hero (restart cleanly on every render)
   setTimeout(function(){
@@ -1674,6 +1699,7 @@ function friendPickFor(q){
 function finishDuel(){
   clearTimeout(D._to);
   S._duelEver=true;S._duelCount=(S._duelCount||0)+1;
+  track('duel_finish',{n:S._duelCount});
   S.duelsToday++;S.lastDuelDay=dayNum();dailyState().duelDay=dayNum();
   var pct=Math.round(D.hits/D.qs.length*100);
   var win=pct>=60,tie=pct>=40&&pct<60;
@@ -1687,19 +1713,38 @@ function finishDuel(){
   var en=isEN();
   var hero=document.getElementById('duelCompatHero');
   var verd=en?(pct>=80?'You read your friend like an open book':pct>=60?'You sense your friend well':pct>=40?'You’re wired differently':'Your friend is a mystery to you'):(pct>=80?'Ты читаешь друга насквозь':pct>=60?'Хорошо чувствуешь друга':pct>=40?'Вы по-разному устроены':'Друг для тебя загадка');
-  hero.innerHTML='<div class="lbl">'+(en?'You read your friend':'Ты угадал друга на')+'</div><div class="bigpct grad" id="dpct">0%</div><div class="verdict">'+verd+'</div><div class="rating-delta '+(delta>=0?'up':'down')+'">'+(delta>=0?'+':'')+delta+' '+(en?'rating · now ':'рейтинга · теперь ')+S.rating+' 🏆</div>';
+  var state=win?'win':(tie?'tie':'lose');
+  var accent=win?'#52e6a4':(tie?'#ffce6b':'#ff7d92');
+  var stLabel=win?(en?'Victory':'Победа'):(tie?(en?'Draw':'Ничья'):(en?'Next time':'В другой раз'));
+  var stIcon=win?'trophy':'swords';
+  hero.className='compat-hero '+state;
+  hero.innerHTML='<div class="duel-badge">'+uic(stIcon,accent,15)+stLabel+'</div>'
+    +'<div class="lbl">'+(en?'You read your friend':'Ты угадал друга на')+'</div>'
+    +'<div class="bigpct" id="dpct">0%</div>'
+    +'<div class="verdict">'+verd+'</div>'
+    +'<div class="rating-delta '+(delta>=0?'up':'down')+'">'+uic('trophy','#ffce6b',14)+(delta>=0?'+':'')+delta+' '+(en?'rating · now ':'рейтинга · теперь ')+S.rating+'</div>';
   animatePct('dpct',pct);
   var leftTxt=freeDuelsLeft()>0?(en?('Free duels left today: '+freeDuelsLeft()):('Осталось бесплатных дуэлей сегодня: '+freeDuelsLeft())):(en?'No free duels left today':'Бесплатные дуэли на сегодня кончились');
   var comboLine=(D.maxCombo>=2)?(' '+(en?('🔥 Best combo x'+D.maxCombo+'.'):('🔥 Лучшая серия x'+D.maxCombo+'.'))):'';
   document.getElementById('duelNote').innerHTML='<div class="ch">'+uic('swords','#7fe9ff',14)+' '+(en?'Duel':'Дуэль')+'</div><div class="cb">'+(en?('You got '+D.hits+' of '+D.qs.length+'. '):('Ты угадал '+D.hits+' из '+D.qs.length+'. '))+leftTxt+'.'+comboLine+'</div>';
   var ab=document.getElementById('duelAgainBtn');
-  if(freeDuelsLeft()<=0){ab.textContent=en?'Buy +5 duels →':'Купить +5 дуэлей →';ab.onclick=function(){go('store');};}
-  else{ab.textContent=(en?'One more duel (':'Ещё дуэль (')+freeDuelsLeft()+') →';ab.onclick=startDuelFlow;}
+  if(freeDuelsLeft()<=0){ab.textContent=en?'Buy +5 duels':'Купить +5 дуэлей';ab.onclick=function(){go('store');};}
+  else{ab.textContent=(en?'One more duel · ':'Ещё дуэль · ')+freeDuelsLeft();ab.onclick=startDuelFlow;}
 }
 function animatePct(id,target){var el=document.getElementById(id);if(!el)return;var cur=0;clearInterval(animatePct._t);animatePct._t=setInterval(function(){cur+=Math.max(1,Math.round((target-cur)/6));if(cur>=target){cur=target;clearInterval(animatePct._t);}el.textContent=cur+'%';},30);}
 
 /* ===== share ===== */
-function openShare(){var en=isEN();var t=TYPES[S.result.primary];var T=Tt(S.result.primary);var code=deepLink('t_'+S.result.primary+'_'+Math.floor(Math.random()*9000+1000));
+/* one entry point → clean chooser modal (avoids the "broken traffic light" of 3 stacked CTAs) */
+function openShareHub(){var en=isEN();var L=I18N[S.lang||'ru'];
+  var opts='<div class="action-stack" style="margin-top:6px;padding-top:0;border-top:none">'
+    +'<button class="btn gold" onclick="closeModal();openGift()">'+L.res_gift+'</button>'
+    +'<button class="btn go" onclick="closeModal();openShare()">'+L.res_share+'</button>'
+    +'<button class="btn cold" onclick="closeModal();startDuelFlow()">'+L.res_duel+'</button>'
+    +'<button class="btn ghost" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button>'
+    +'</div>';
+  modal(en?'Share':'Поделиться', en?'Pick how you’d like to share:':'Выбери, как поделиться:', null, opts);
+}
+function openShare(){var en=isEN();track('share_open',{type:S.result.primary});var t=TYPES[S.result.primary];var T=Tt(S.result.primary);var code=deepLink('t_'+S.result.primary+'_'+Math.floor(Math.random()*9000+1000));
   var card='<div class="share-card" style="background:radial-gradient(circle at 50% 0,'+t.color+'2e,transparent 60%),linear-gradient(165deg,#1c1838,#100d20)"><div class="sg" style="background:'+t.color+'22;color:'+t.color+'">'+typeGlyph(S.result.primary,52)+'</div><div class="sn" style="color:'+t.color+'">'+T.name+'</div><div class="stag" style="color:'+t.color+'">'+T.tag+'</div><div class="sq">'+Qt(S.result.primary)+'</div><div class="sq" style="margin-top:8px">'+(en?'This is who I really am. And you? Take it — let’s compare.':'Вот кто я на самом деле. А ты? Пройди — сравнимся.')+'</div><div class="sbrand">'+(en?'SELFIX · FIX YOURSELF':'SELFIX · ПОЧИНИ СЕБЯ')+'</div></div>';
   modal(en?'Challenge a friend':'Бросить вызов',en?'A friend takes the test and duels you. Save the image to stories or send the link.':'Друг пройдёт тест и сразится с тобой в дуэли. Сохрани картинку в сторис или кинь ссылку.',
     function(){if(navigator.clipboard)navigator.clipboard.writeText(code);S._shared=true;save();closeModal();pop(en?'Link copied 🔗':'Ссылка скопирована 🔗');},
@@ -2415,6 +2460,22 @@ function parseGift(sp){
 }
 /* one place to set the bot username after publishing */
 var BOT_USER='SelfixBot';
+/* ===== Config: set these when the backend is live (analytics + feedback). Empty = graceful no-op. ===== */
+var ANALYTICS_URL='';   // e.g. 'https://your-worker.example.com/track'  (POST {event, props, ...})
+var FEEDBACK_URL='';    // e.g. 'https://your-worker.example.com/feedback' (POST {text, type, ...})
+/* anonymous, stable-per-device id — no name, no answers */
+function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
+/* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
+function track(event,props){
+  try{
+    var payload={event:event,props:props||{},aid:anonId(),lang:(S&&S.lang)||'ru',tg:inTelegram(),t:Date.now(),v:'selfix-web'};
+    if(typeof console!=='undefined'&&console.debug)console.debug('[track]',event,payload.props);
+    if(!ANALYTICS_URL)return;
+    var body=JSON.stringify(payload);
+    if(navigator.sendBeacon){navigator.sendBeacon(ANALYTICS_URL,new Blob([body],{type:'application/json'}));}
+    else{fetch(ANALYTICS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){});}
+  }catch(e){}
+}
 function inTelegram(){try{return !!(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData);}catch(e){return false;}}
 /* deep-link that works in Telegram (t.me/bot) AND on a plain web host (for custdev) */
 function deepLink(startParam){return inTelegram()?('t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
@@ -2452,7 +2513,7 @@ function openGift(){
   var tgl=giftLink();
   modal('🎁 '+(en?'Gift the test to a friend':'Подарить тест другу'),
     en?'Your friend opens it as a personal gift from you — and discovers who they really are.':'Друг откроет это как личный подарок от тебя — и узнает, кто он на самом деле.',
-    function(){if(navigator.clipboard)navigator.clipboard.writeText(tgl);S.giftsSent=(S.giftsSent||0)+1;S._shared=true;save();closeModal();pop(en?'Gift link copied 🎁 — send it to a friend':'Ссылка-подарок скопирована 🎁 — отправь другу');},
+    function(){if(navigator.clipboard)navigator.clipboard.writeText(tgl);S.giftsSent=(S.giftsSent||0)+1;S._shared=true;save();track('gift_sent',{n:S.giftsSent});closeModal();pop(en?'Gift link copied 🎁 — send it to a friend':'Ссылка-подарок скопирована 🎁 — отправь другу');},
     giftPreviewCardHTML()+'<div class="share-link">'+tgl+'</div>');
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=en?'Copy gift link 🎁':'Скопировать подарок 🎁';var n=document.getElementById('mNo');if(n)n.textContent=en?'Close':'Закрыть';},0);
 }
@@ -2463,9 +2524,21 @@ function returnGiftPrompt(){
 }
 function sendFeedback(){
   var en=isEN();var ta=document.getElementById('fbText');var txt=ta?ta.value.trim():'';
-  var payload='SELFIX feedback'+(S.result?(' ['+Tt(S.result.primary).name+']'):'')+': '+(txt||'(emotion shared)');
-  try{if(navigator.clipboard)navigator.clipboard.writeText(payload);}catch(e){}
-  try{var url='https://t.me/share/url?url='+encodeURIComponent('SELFIX')+'&text='+encodeURIComponent(payload);var tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.openTelegramLink)tg.openTelegramLink(url);}catch(e){}
+  var type=S.result?S.result.primary:'';var typeName=S.result?Tt(S.result.primary).name:'';
+  track('feedback_sent',{type:type,len:txt.length});
+  // 1) deliver to backend if configured (preferred — reaches you directly)
+  var delivered=false;
+  if(FEEDBACK_URL){try{
+    var body=JSON.stringify({text:txt||'(emotion shared)',type:type,typeName:typeName,aid:anonId(),lang:S.lang||'ru',tg:inTelegram(),t:Date.now()});
+    if(navigator.sendBeacon){delivered=navigator.sendBeacon(FEEDBACK_URL,new Blob([body],{type:'application/json'}));}
+    if(!delivered){fetch(FEEDBACK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){});delivered=true;}
+  }catch(e){}}
+  // 2) fallback: copy + open Telegram share so the user can send it manually
+  if(!delivered){
+    var payload='SELFIX feedback'+(typeName?(' ['+typeName+']'):'')+': '+(txt||'(emotion shared)');
+    try{if(navigator.clipboard)navigator.clipboard.writeText(payload);}catch(e){}
+    try{var url='https://t.me/'+BOT_USER+'?text='+encodeURIComponent(payload);var tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.openTelegramLink)tg.openTelegramLink(url);else window.open(url,'_blank');}catch(e){}
+  }
   S._fbSent=true;save();var host=document.getElementById('resFeedback');if(host)host.innerHTML='<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'Thank you 🙏 Your words mean a lot.':'Спасибо 🙏 Твои слова очень важны.')+'</div></div>';
   pop(en?'Thank you 🙏':'Спасибо 🙏');hap('success');
 }
@@ -2746,12 +2819,13 @@ function passportSummary(){
   var bi=bigInsights();
   if(bi.length)html+=fold('🧬 '+(en?'What your profile says':'Что говорит твой профиль')+' ('+bi.length+')','<ul class="adv-list">'+bi.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',true,true);
   var hasTests=S.tests&&(S.tests.love||S.tests.work||S.tests.fears||S.tests.shadow);
-  if(hasTests){var ins=homeInsights();if(ins.length)html+=fold('🔗 '+(en?'How your facets connect':'Связки граней')+' ('+ins.length+')','<ul class="adv-list">'+ins.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',false,true);}
+  if(hasTests){var ins=homeInsights();if(ins.length)html+=fold('🔗 '+(en?'How your facets connect':'Связки граней')+' ('+ins.length+')','<ul class="adv-list">'+ins.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',true,true);}
   if(gr)html+='<div class="cb" style="margin-top:12px;border-left:3px solid '+t.color+';padding-left:12px">🌱 <b>'+(en?'Growth edge:':'Точка роста:')+'</b> '+gr.grow+'</div>';
   return html;
 }
 /* progressive disclosure — punchy line visible, depth one tap away */
-function fold(head,body,open,flat){return '<details class="fold'+(flat?' flat':'')+'"'+(open?' open':'')+'><summary>'+head+'<span class="fold-x">▾</span></summary><div class="fold-b">'+body+'</div></details>';}
+/* open by default so info blocks are visible at a glance (pass open===false to start collapsed) */
+function fold(head,body,open,flat){return '<details class="fold'+(flat?' flat':'')+'"'+((open!==false)?' open':'')+'><summary>'+head+'<span class="fold-x">▾</span></summary><div class="fold-b">'+body+'</div></details>';}
 /* Big Five as a glanceable radar (show, don't tell) */
 function bigRadar(big,color,size){
   size=size||236;var cx=size/2,cy=size/2,R=size*0.32;var en=isEN();
@@ -3000,6 +3074,7 @@ function renderSoul(){
 }
 var LB_NAMES=['Аня','Макс','Лев','Кира','Дима','Соня','Тимур','Вера','Ника','Олег','Рита','Глеб','Юля','Артём','Лера','Паша','Даша','Костя','Маша','Стас','Алина','Игорь','Поля','Женя'];
 var LB_NAMES_EN=['Anna','Max','Leo','Kira','Dima','Sonia','Timur','Vera','Nika','Oleg','Rita','Gleb','Julia','Artem','Lera','Pasha','Dasha','Kostya','Masha','Stas','Alina','Igor','Polly','Jenny'];
+/* placeholder genders per name — at launch these become real Telegram profile photos */
 var LB_GENDER=['f','m','m','f','m','f','m','f','f','m','f','m','f','m','f','m','f','m','f','m','f','m','f','f'];
 var _lbTab='friends';
 function buildBoard(kind){
@@ -3014,8 +3089,8 @@ function buildBoard(kind){
     var gi=i%LB_NAMES.length;var g=(LB_GENDER[gi]==='f')?'women':'men';var pid=(gi*7+(kind==='global'?13:41))%100;
     arr.push({n:nm,r:r,ty:ty,photo:'https://randomuser.me/api/portraits/'+g+'/'+pid+'.jpg'});
   }
-  // insert the user at a position based on rating
-  arr.push({n:(en?'You':'Ты'),r:S.rating,ty:S.result.primary,me:true});
+  // insert the user at a position based on rating — placeholder face by gender (real TG avatar at launch)
+  arr.push({n:(en?'You':'Ты'),r:S.rating,ty:S.result.primary,me:true,photo:'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg'});
   arr.sort(function(a,b){return b.r-a.r;});
   return arr;
 }
@@ -3030,9 +3105,8 @@ function renderLeaderboard(){
   var tabs='<div class="lb-tabs"><button class="lb-tab '+(_lbTab==='friends'?'on':'')+'" onclick="setLbTab(\'friends\')">'+L.lb_friends+'</button><button class="lb-tab '+(_lbTab==='global'?'on':'')+'" onclick="setLbTab(\'global\')">'+L.lb_global+'</button></div>';
   var rows=list.map(function(f,i){var ft=TYPES[f.ty];var rank=i+1;
     var medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
-    var pic=f.me
-      ? '<div class="pic lb-pic" style="border-color:'+t.color+'88;width:38px;height:38px">'+buildAvatarSVG(avatarTraits())+'</div>'
-      : '<div class="pic lb-pic" style="background:'+ft.color+'18;border-color:'+ft.color+'40;width:38px;height:38px">'+typeGlyph(f.ty,18)+'<img class="lb-face" src="'+f.photo+'" loading="lazy" alt="" onerror="this.remove()"></div>';
+    var pcol=f.me?t.color:ft.color;
+    var pic='<div class="pic lb-pic" style="background:'+pcol+'18;border-color:'+pcol+(f.me?'88':'40')+';width:38px;height:38px">'+typeGlyph(f.ty,18)+'<img class="lb-face" src="'+f.photo+'" loading="lazy" alt="" onerror="this.remove()"></div>';
     return '<div class="product lb-row" style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+Tt(f.ty).name+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
   lh.innerHTML='<div class="section-h"><h2>'+L.lb_title+'</h2><span style="font-size:11px;color:#7fe9ff;cursor:pointer" onclick="openShare()">'+L.lb_invite+'</span></div>'+
     tabs+
@@ -3056,8 +3130,8 @@ var I18N={
     board_eye:'Рейтинг',board_h1:'Кто читает людей <span class="grad">лучше?</span>',
     chats_eye:'Чаты',chats_h1:'Твои <span class="grad">знакомства</span>.',
     res_dark_t:'🌑 Тёмная сторона + ты в 4 ролях',res_dark_s:'Тёмная сторона типа, как тебя видят, и поведение в любви, работе, конфликте и с деньгами.',res_dark_cta:'Открыть полный разбор · ⭐ 400',
-    res_gift:'Подарить тест другу',res_share:'Поделиться своим типом',res_duel:'Вызвать друга на дуэль',res_menu:'В меню',
-    duel_eye:'Дуэль · угадай друга',dres_share:'Похвастаться результатом',dres_again:'Ещё дуэль',dres_invite:'Вызвать ещё друга',
+    res_gift:'Подарить тест другу',res_share:'Поделиться своим типом',res_duel:'Вызвать друга на дуэль',res_menu:'В меню',res_sharehub:'Поделиться',
+    duel_eye:'Дуэль · угадай друга',dres_share:'Похвастаться результатом',dres_again:'Ещё дуэль',dres_invite:'Вызвать друга',
     savedot:'✓ сохранено',boot_sub:'почини себя',reset_link:'Начать заново'
   },
   en:{
@@ -3075,8 +3149,8 @@ var I18N={
     board_eye:'Ranking',board_h1:'Who reads people <span class="grad">better?</span>',
     chats_eye:'Chats',chats_h1:'Your <span class="grad">connections</span>.',
     res_dark_t:'🌑 Dark side + you in 4 roles',res_dark_s:'Your type’s dark side, how others see you, and your behavior in love, work, conflict and with money.',res_dark_cta:'Unlock the full breakdown · ⭐ 400',
-    res_gift:'Gift the test to a friend',res_share:'Share your type',res_duel:'Challenge a friend to a duel',res_menu:'Menu',
-    duel_eye:'Duel · guess your friend',dres_share:'Show off your result',dres_again:'One more duel',dres_invite:'Invite another friend',
+    res_gift:'Gift the test to a friend',res_share:'Share your type',res_duel:'Challenge a friend to a duel',res_menu:'Menu',res_sharehub:'Share',
+    duel_eye:'Duel · guess your friend',dres_share:'Show off your result',dres_again:'One more duel',dres_invite:'Invite a friend',
     savedot:'✓ saved',boot_sub:'fix yourself',reset_link:'Start over'
   }
 };
@@ -3102,8 +3176,8 @@ function applyLang(){
   setText('#chatsEyebrow',L.chats_eye);setHTML('#chatsH1',L.chats_h1);
   // static result + duel screen labels (these screens are otherwise JS-rendered, but their fixed buttons live in markup)
   setText('#resDarkT',L.res_dark_t);setText('#resDarkS',L.res_dark_s);setText('#resDarkCta',L.res_dark_cta);
-  setText('#resGiftBtn',L.res_gift);setText('#resShareBtn',L.res_share);setText('#resDuelBtn',L.res_duel);setText('#resMenuBtn',L.res_menu);
-  setText('#dresShareBtn',L.dres_share);setText('#dresInviteBtn',L.dres_invite);setText('#dresMenuBtn',L.res_menu);
+  setText('#resShareBtn',L.res_sharehub);
+  setText('#dresShareBtn',L.dres_share);setText('#dresInviteBtn',L.dres_invite);
   var dab=document.getElementById('duelAgainBtn');if(dab)dab.textContent=L.dres_again;
   setText('#duelEye',L.duel_eye);
   var sd=document.getElementById('savedot');if(sd)sd.textContent=L.savedot;
@@ -3153,6 +3227,7 @@ function tgInit(){try{var tg=window.Telegram&&Telegram.WebApp;if(!tg)return;tg.r
   if(tg.disableVerticalSwipes)tg.disableVerticalSwipes();
 }catch(e){}}
 function boot(){tgInit();load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();
+  track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('zoom');},1800); // spiral expands to fill screen
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('gone');},2950); // app fully revealed
