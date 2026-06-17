@@ -197,6 +197,18 @@
   #sOnboard>.btn{animation-delay:.46s}
   @keyframes obIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   .ob-field{margin-bottom:clamp(13px,2.2vh,18px)}
+  /* wheel date picker */
+  .wheel-pick{position:relative;display:flex;gap:6px;height:176px;border-radius:18px;background:linear-gradient(160deg,rgba(28,24,56,.55),rgba(16,13,32,.6));border:1px solid rgba(255,255,255,.12);overflow:hidden;padding:0 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .wheel-pick::before,.wheel-pick::after{content:'';position:absolute;left:0;right:0;height:60px;z-index:3;pointer-events:none}
+  .wheel-pick::before{top:0;background:linear-gradient(180deg,rgba(13,10,28,.95),transparent)}
+  .wheel-pick::after{bottom:0;background:linear-gradient(0deg,rgba(13,10,28,.95),transparent)}
+  .wheel-band{position:absolute;left:8px;right:8px;top:50%;transform:translateY(-50%);height:44px;border-radius:12px;background:rgba(255,174,66,.12);border:1px solid rgba(255,174,66,.4);box-shadow:0 0 16px rgba(255,174,66,.18);pointer-events:none;z-index:1}
+  .wheel-col{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;-ms-overflow-style:none;text-align:center;position:relative;z-index:2;-webkit-overflow-scrolling:touch}
+  #wcDay{flex:.85}#wcYear{flex:1.3}
+  .wheel-col::-webkit-scrollbar{display:none}
+  .wheel-col .wsp{height:66px}
+  .wheel-col .wi{height:44px;line-height:44px;scroll-snap-align:center;font-size:17px;font-weight:700;color:#8b84b0;transition:color .15s,transform .15s,opacity .15s;opacity:.65;white-space:nowrap}
+  .wheel-col .wi.on{color:#fff;transform:scale(1.12);opacity:1}
   .ob-field label{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.1em;color:#c6c0e4;text-transform:uppercase;margin-bottom:9px;font-weight:700}
   .ob-field label::before{content:'';width:5px;height:5px;border-radius:50%;background:#ffae42;box-shadow:0 0 8px rgba(255,174,66,.7)}
   .ob-input{width:100%;background:rgba(28,24,46,.7);border:1px solid #38335a;border-radius:14px;color:#f2efff;padding:clamp(13px,1.8vh,16px) 16px;font-size:17px;font-weight:600;transition:border-color .2s,box-shadow .2s,background .2s}
@@ -507,8 +519,49 @@
   .share-card .stag{font-size:12px;font-weight:700;margin-top:6px}
   .share-card .sq{font-size:14px;color:#ded8f5;margin-top:14px;line-height:1.4}
   .share-card .sbrand{font-size:9px;letter-spacing:.24em;color:#a39ccb;margin-top:16px;font-family:'SF Mono',monospace}
-  .toast{position:absolute;top:68px;left:50%;transform:translateX(-50%) translateY(-20px) scale(.92);background:linear-gradient(160deg,#221d40,#15122c);border:1px solid #44406a;border-radius:14px;padding:12px 18px;font-size:13px;font-weight:700;z-index:60;opacity:0;transition:transform .34s cubic-bezier(.2,1.4,.4,1),opacity .26s;box-shadow:0 14px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14);max-width:88%;text-align:center;color:#f2efff}
+  .toast-dim{position:fixed;inset:0;z-index:59;background:rgba(4,3,10,.5);opacity:0;pointer-events:none;transition:opacity .26s ease}
+  .toast-dim.show{opacity:1}
+  .toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 74px);left:50%;transform:translateX(-50%) translateY(-16px) scale(.92);background:linear-gradient(160deg,#262048,#16132e);border:1px solid #514a7e;border-radius:16px;padding:14px 22px;font-size:15px;font-weight:800;z-index:60;opacity:0;transition:transform .34s cubic-bezier(.2,1.4,.4,1),opacity .26s;box-shadow:0 18px 50px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.16);max-width:min(90vw,360px);text-align:center;color:#fff;line-height:1.35}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+  /* insight capture FAB + notes */
+  .ins-fab{position:fixed;right:16px;bottom:88px;z-index:55;width:54px;height:54px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:linear-gradient(135deg,#7C3AFF,#00E0C7);color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(124,58,255,.5),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:transform .18s ease}
+  .ins-fab.show{display:flex;animation:fabIn .32s cubic-bezier(.34,1.4,.5,1) both}
+  .ins-fab:active{transform:scale(.88)}
+  .ins-fab svg{width:27px;height:27px}
+  body.no-nav .ins-fab{bottom:26px}
+  @keyframes fabIn{from{opacity:0;transform:scale(.5) translateY(12px)}to{opacity:1;transform:none}}
+  .ins-list{display:flex;flex-direction:column;gap:10px}
+  .ins-card{border-radius:16px;padding:14px 16px;background:linear-gradient(160deg,rgba(48,42,80,.5),rgba(18,16,34,.42));border:1px solid rgba(255,255,255,.1)}
+  .ins-meta{font-size:12px;color:#9a93c2;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .ins-del{margin-left:auto;color:#6f6890;cursor:pointer;font-size:13px;padding:2px 8px;border-radius:8px}
+  .ins-del:active{background:rgba(255,255,255,.08)}
+  .ins-text{font-size:15px;line-height:1.45;color:#efeaff;white-space:pre-wrap;word-break:break-word}
+  /* wardrobe / avatar customization store */
+  .ward-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+  .ward-tabs::-webkit-scrollbar{display:none}
+  .ward-tab{flex:0 0 auto;font-size:12.5px;font-weight:700;color:#a39ccb;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap}
+  .ward-tab.on{color:#06250f;background:linear-gradient(135deg,#D4FF4F,#00E0C7);border-color:transparent}
+  .ward-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+  .ward-item{border-radius:16px;padding:8px;background:linear-gradient(160deg,rgba(48,42,80,.45),rgba(18,16,34,.4));border:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:center;transition:transform .15s,border-color .15s}
+  .ward-item:active{transform:scale(.95)}
+  .ward-item.eq{border-color:#D4FF4F;background:rgba(212,255,79,.1)}
+  .ward-prev{height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .ward-mini{width:64px;height:64px}
+  .ward-mini svg{width:100%;height:100%;border-radius:12px;display:block}
+  .ward-sw{width:52px;height:52px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
+  .ward-sw.frame-mini{background:#241f3a}
+  .ward-lbl{font-size:11.5px;font-weight:800;color:#efeaff;margin-top:6px}
+  .ward-item.eq .ward-lbl{color:#D4FF4F}
+  /* avatar frames / auras (apply to .av-hero and mini swatches) */
+  .av-hero.frame-gold .av-core{box-shadow:0 0 0 3px #ffce6b,0 0 22px rgba(255,206,107,.55)}
+  .av-hero.frame-cyan .av-core{box-shadow:0 0 0 3px #00E0C7,0 0 22px rgba(0,224,199,.55)}
+  .av-hero.frame-violet .av-core{box-shadow:0 0 0 3px #7C3AFF,0 0 24px rgba(124,58,255,.6)}
+  .av-hero.frame-rainbow .av-core{box-shadow:0 0 0 3px #ff5d6c,0 0 0 6px #5d8cff,0 0 26px rgba(124,58,255,.55)}
+  .frame-mini.frame-none{box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+  .frame-mini.frame-gold{box-shadow:inset 0 0 0 3px #ffce6b,0 0 12px rgba(255,206,107,.5)}
+  .frame-mini.frame-cyan{box-shadow:inset 0 0 0 3px #00E0C7,0 0 12px rgba(0,224,199,.5)}
+  .frame-mini.frame-violet{box-shadow:inset 0 0 0 3px #7C3AFF,0 0 12px rgba(124,58,255,.55)}
+  .frame-mini.frame-rainbow{box-shadow:inset 0 0 0 3px #ff5d6c,inset 0 0 0 6px #5d8cff,0 0 14px rgba(124,58,255,.5)}
   .savedot{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-size:10px;color:#52e6a4;background:rgba(82,230,164,.12);border:1px solid rgba(82,230,164,.3);padding:3px 10px;border-radius:8px;opacity:0;transition:.3s;z-index:40}
   .savedot.show{opacity:1}
 
@@ -723,7 +776,15 @@
       <div class="lede center" id="obSub">Сначала познакомимся — это сделает твой портрет точнее.</div>
       <div class="ob-field"><label id="obNameLbl">Как тебя зовут</label><input class="ob-input" id="obName" maxlength="20" placeholder="Имя"></div>
       <div class="ob-field"><label id="obGenderLbl">Пол</label><div class="seg"><button id="obM" onclick="setGender('m')"><span class="gico">👨</span><span id="obMtxt">Мужской</span></button><button id="obF" onclick="setGender('f')"><span class="gico">👩</span><span id="obFtxt">Женский</span></button></div></div>
-      <div class="ob-field"><label id="obBirthLbl">Дата рождения</label><div class="date-row"><input class="ob-input" id="obDay" inputmode="numeric" maxlength="2" placeholder="ДД" oninput="obDate(this,'obMonth')"><input class="ob-input" id="obMonth" inputmode="numeric" maxlength="2" placeholder="ММ" oninput="obDate(this,'obYear')"><input class="ob-input" id="obYear" inputmode="numeric" maxlength="4" placeholder="ГГГГ" oninput="obDate(this,null)"></div></div>
+      <div class="ob-field"><label id="obBirthLbl">Дата рождения</label>
+        <div class="wheel-pick" id="wheelPick">
+          <div class="wheel-band"></div>
+          <div class="wheel-col" id="wcDay"></div>
+          <div class="wheel-col" id="wcMonth"></div>
+          <div class="wheel-col" id="wcYear"></div>
+        </div>
+        <input type="hidden" id="obDay"><input type="hidden" id="obMonth"><input type="hidden" id="obYear">
+      </div>
       <div class="ob-reassure" id="obReassure">🔒 Это останется только у тебя на устройстве</div>
       <button class="btn" onclick="submitOnboard()">Начать</button>
     </div>
@@ -842,6 +903,14 @@
       <div id="soulBody"></div>
     </div>
 
+    <div class="screen hidden" id="sInsights">
+      <div id="insightsBody"></div>
+    </div>
+
+    <div class="screen hidden" id="sWardrobe">
+      <div id="wardrobeBody"></div>
+    </div>
+
     <div class="nav">
       <div class="nav-ind" id="navInd"></div>
       <button id="nHome" onclick="go('home')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.4 L12 4.5 L20 11.4"/><path d="M6 10.4 V18.5 a1.4 1.4 0 0 0 1.4 1.4 H16.6 a1.4 1.4 0 0 0 1.4 -1.4 V10.4"/><path d="M10 19.6 V14.6 a1.2 1.2 0 0 1 1.2 -1.2 H12.8 a1.2 1.2 0 0 1 1.2 1.2 V19.6" fill="currentColor" fill-opacity=".2"/></svg></span>Главная</button>
@@ -852,12 +921,14 @@
     </div>
   </div>
 
+  <button class="ins-fab" id="insFab" onclick="captureInsight()" aria-label="Insight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6v.6h5.6v-.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg></button>
   <div class="duel-flash" id="duelFlash"></div>
   <div class="lvlup" id="lvlup" onclick="this.classList.remove('show')"><div class="lvlup-bg"></div><div class="lvlup-card"><div class="lvlup-ray"></div><div class="lvlup-ic" id="lvlupIc">⬆️</div><div class="lvlup-t" id="lvlupT">LEVEL UP</div><div class="lvlup-n" id="lvlupN">ур. 2</div><div class="lvlup-s" id="lvlupS"></div></div></div>
   <div class="gift-welcome hidden" id="giftWelcome"><div class="gw-glow"></div><div class="gw-inner"><div class="gw-ribbon">🎁</div><div class="gw-from"></div><div class="gw-sub"></div><button class="btn gw-btn" onclick="acceptGift()">Принять подарок →</button><div class="gw-trust"></div></div></div>
   <div class="cheer-back" id="cheerBack"></div>
   <div class="cheer" id="cheer"><div class="ce" id="cheerE">✨</div><div class="ct" id="cheerT">+10</div><div class="cs" id="cheerS"></div></div>
   <div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+  <div class="toast-dim" id="toastDim"></div>
   <div class="toast" id="toast"></div>
   <div class="savedot" id="savedot">✓ сохранено</div>
   <div id="reveal"><div class="burst"><span class="seed"></span><span class="rg" id="revealGlyph">🔥</span><span class="rname" id="revealName">—</span></div></div>
@@ -1115,7 +1186,15 @@ var CHEERS={
     {e:'💥',t:'Решительно',s:'Так отвечают уверенные'},
     {e:'🚀',t:'На полную',s:'Ты не размениваешься'},
     {e:'🏹',t:'Прямо в суть',s:'Никаких полутонов'},
-    {e:'👑',t:'Уверенно',s:'Это многое о тебе говорит'}
+    {e:'👑',t:'Уверенно',s:'Это многое о тебе говорит'},
+    {e:'⚔️',t:'Без компромиссов',s:'Ты выбираешь и не оглядываешься'},
+    {e:'🧭',t:'Чёткий курс',s:'У тебя есть внутренний компас'},
+    {e:'🪨',t:'Твёрдо',s:'Тебя так просто не сдвинуть'},
+    {e:'🦅',t:'Ясный взгляд',s:'Ты видишь, куда идёшь'},
+    {e:'🏔️',t:'Непоколебимо',s:'Стоишь на своём'},
+    {e:'💪',t:'С характером',s:'Так отвечают лидеры'},
+    {e:'🎲',t:'Ва-банк',s:'Ты не боишься выбирать'},
+    {e:'🌋',t:'Мощно',s:'Внутри явно есть энергия'}
   ],
   nuanced:[ /* user picked a middle option (value 1 or 2) */
     {e:'🤔',t:'Хм, тонко',s:'А ты сложнее, чем кажешься'},
@@ -1125,7 +1204,15 @@ var CHEERS={
     {e:'🪞',t:'Вдумчиво',s:'Ты честен с собой'},
     {e:'🌫️',t:'Деликатно',s:'Чувствуется зрелость'},
     {e:'⚖️',t:'Взвешенно',s:'Ты умеешь сомневаться — это сила'},
-    {e:'💭',t:'Глубоко',s:'Так отвечают не все'}
+    {e:'💭',t:'Глубоко',s:'Так отвечают не все'},
+    {e:'🌀',t:'Многослойно',s:'В тебе не одна правда'},
+    {e:'🍃',t:'Гибко',s:'Ты чувствуешь контекст'},
+    {e:'🔍',t:'Внимательно',s:'Замечаешь то, что другие нет'},
+    {e:'🌅',t:'На полутонах',s:'Мир для тебя не плоский'},
+    {e:'🧵',t:'Тонкая нить',s:'Ты соединяешь сложное'},
+    {e:'📿',t:'Осознанно',s:'Думаешь, прежде чем ответить'},
+    {e:'🌙',t:'С глубиной',s:'Ты заглядываешь внутрь'},
+    {e:'🕊️',t:'Мягко',s:'Без резких краёв'}
   ],
   generic:[
     {e:'🌟',t:'О, интересно',s:'Так отвечают немногие'},
@@ -1135,7 +1222,15 @@ var CHEERS={
     {e:'✨',t:'Принято',s:'Складываем картину'},
     {e:'🧠',t:'Так-так',s:'Это многое объясняет'},
     {e:'🎨',t:'Свой стиль',s:'У тебя есть почерк'},
-    {e:'🌠',t:'Запомнил',s:'Идём дальше'}
+    {e:'🌠',t:'Запомнил',s:'Идём дальше'},
+    {e:'🌱',t:'Растём',s:'Каждый ответ — новая грань'},
+    {e:'🧷',t:'Зафиксировал',s:'Это важная деталь'},
+    {e:'🎬',t:'Сцена за сценой',s:'История складывается'},
+    {e:'🪐',t:'Свой мир',s:'Ты не похож на других'},
+    {e:'📸',t:'Щёлк',s:'Поймал ещё один кадр тебя'},
+    {e:'🧶',t:'Сплетаем',s:'Узор становится виден'},
+    {e:'🛰️',t:'Сигнал принят',s:'Считываю тебя дальше'},
+    {e:'🔦',t:'Высветилось',s:'Ещё одна черта на свету'}
   ]
 };
 var CHEERS_EN={
@@ -1147,7 +1242,15 @@ var CHEERS_EN={
     {e:'💥',t:'Decisive',s:'That’s how the confident answer'},
     {e:'🚀',t:'All in',s:'You don’t do half-measures'},
     {e:'🏹',t:'Straight to it',s:'No in-betweens'},
-    {e:'👑',t:'Confident',s:'That says a lot about you'}
+    {e:'👑',t:'Confident',s:'That says a lot about you'},
+    {e:'⚔️',t:'No compromise',s:'You choose and never look back'},
+    {e:'🧭',t:'Clear course',s:'You’ve got an inner compass'},
+    {e:'🪨',t:'Solid',s:'You won’t be moved easily'},
+    {e:'🦅',t:'Clear sight',s:'You see where you’re going'},
+    {e:'🏔️',t:'Unshakeable',s:'You stand your ground'},
+    {e:'💪',t:'With character',s:'That’s how leaders answer'},
+    {e:'🎲',t:'All or nothing',s:'You’re not afraid to choose'},
+    {e:'🌋',t:'Powerful',s:'There’s real energy in you'}
   ],
   nuanced:[
     {e:'🤔',t:'Hmm, subtle',s:'You’re more complex than you seem'},
@@ -1157,7 +1260,15 @@ var CHEERS_EN={
     {e:'🪞',t:'Thoughtful',s:'You’re honest with yourself'},
     {e:'🌫️',t:'Delicate',s:'There’s maturity here'},
     {e:'⚖️',t:'Balanced',s:'You can sit with doubt — that’s strength'},
-    {e:'💭',t:'Deep',s:'Not everyone answers like that'}
+    {e:'💭',t:'Deep',s:'Not everyone answers like that'},
+    {e:'🌀',t:'Many-layered',s:'You hold more than one truth'},
+    {e:'🍃',t:'Flexible',s:'You feel the context'},
+    {e:'🔍',t:'Attentive',s:'You notice what others miss'},
+    {e:'🌅',t:'In half-tones',s:'The world isn’t flat to you'},
+    {e:'🧵',t:'A fine thread',s:'You connect the complex'},
+    {e:'📿',t:'Mindful',s:'You think before you answer'},
+    {e:'🌙',t:'With depth',s:'You look inward'},
+    {e:'🕊️',t:'Gentle',s:'No sharp edges'}
   ],
   generic:[
     {e:'🌟',t:'Oh, interesting',s:'Few answer this way'},
@@ -1167,7 +1278,15 @@ var CHEERS_EN={
     {e:'✨',t:'Noted',s:'Putting the picture together'},
     {e:'🧠',t:'I see, I see',s:'That explains a lot'},
     {e:'🎨',t:'Your own style',s:'You have a signature'},
-    {e:'🌠',t:'Got it',s:'Moving on'}
+    {e:'🌠',t:'Got it',s:'Moving on'},
+    {e:'🌱',t:'Growing',s:'Every answer, a new facet'},
+    {e:'🧷',t:'Pinned',s:'An important detail'},
+    {e:'🎬',t:'Scene by scene',s:'The story comes together'},
+    {e:'🪐',t:'Your own world',s:'You’re unlike the others'},
+    {e:'📸',t:'Click',s:'Caught another frame of you'},
+    {e:'🧶',t:'Weaving',s:'The pattern is showing'},
+    {e:'🛰️',t:'Signal received',s:'Reading you further'},
+    {e:'🔦',t:'Lit up',s:'Another trait in the light'}
   ]
 };
 /* milestone cheers keyed by question index (0-based) */
@@ -1358,6 +1477,18 @@ function avatarOpts(tr,seedName){
     radius:[18]
   };
   if(tr.deco&&DB_ACC[tr.deco]){o.accessories=[DB_ACC[tr.deco]];o.accessoriesProbability=[100];}
+  // equipped cosmetics from the wardrobe store override the trait-derived look
+  var eq=S.equip||{};
+  if(eq.top)o.top=[eq.top];
+  if(eq.hairColor)o.hairColor=[eq.hairColor];
+  if(eq.accessories){o.accessories=[eq.accessories];o.accessoriesProbability=[100];}
+  if(eq.facialHair){o.facialHair=[eq.facialHair];o.facialHairProbability=[100];}
+  if(eq.clothing)o.clothing=[eq.clothing];
+  if(eq.clothesColor)o.clothesColor=[eq.clothesColor];
+  if(eq.skinColor)o.skinColor=[eq.skinColor];
+  if(eq.eyes)o.eyes=[eq.eyes];
+  if(eq.mouth)o.mouth=[eq.mouth];
+  if(eq.backgroundColor){o.backgroundColor=[eq.backgroundColor];o.backgroundType=['solid'];}
   return o;
 }
 function buildAvatarSVG(tr,seedName){
@@ -1402,6 +1533,31 @@ function personaLean(){var lean={red:0,blue:0,orange:0,green:0,yellow:0};
 /* ===== onboarding ===== */
 function setGender(g){S.gender=g;document.getElementById('obM').classList.toggle('on',g==='m');document.getElementById('obF').classList.toggle('on',g==='f');}
 function obDate(el,nextId){el.value=el.value.replace(/[^0-9]/g,'');if(nextId&&el.value.length>=el.maxLength){var n=document.getElementById(nextId);if(n)n.focus();}}
+/* ===== wheel date picker (drum) — haptic + ratchet tick per item ===== */
+var WHEEL_MON_RU=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+var WHEEL_MON_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function wheelInit(){
+  if(!document.getElementById('wcDay'))return;
+  var en=isEN();
+  var days=[];for(var d=1;d<=31;d++)days.push({v:d,l:''+d});
+  var months=[];for(var m=1;m<=12;m++)months.push({v:m,l:(en?WHEEL_MON_EN:WHEEL_MON_RU)[m-1]});
+  var years=[];for(var y=2012;y>=1945;y--)years.push({v:y,l:''+y});
+  wheelCol('wcDay','obDay',days,parseInt((document.getElementById('obDay')||{}).value,10)||16);
+  wheelCol('wcMonth','obMonth',months,parseInt((document.getElementById('obMonth')||{}).value,10)||6);
+  wheelCol('wcYear','obYear',years,parseInt((document.getElementById('obYear')||{}).value,10)||1998);
+}
+function wheelCol(colId,inputId,items,defVal){
+  var col=document.getElementById(colId);if(!col)return;var ITEM=44;
+  col.innerHTML='<div class="wsp"></div>'+items.map(function(it){return '<div class="wi" data-v="'+it.v+'">'+it.l+'</div>';}).join('')+'<div class="wsp"></div>';
+  var defIdx=0;for(var i=0;i<items.length;i++){if(items[i].v===defVal){defIdx=i;break;}}
+  function setOn(idx){var els=col.children;for(var z=1;z<els.length-1;z++)els[z].classList.toggle('on',(z-1)===idx);}
+  function update(silent){var idx=Math.round(col.scrollTop/ITEM);idx=Math.min(Math.max(idx,0),items.length-1);
+    if(idx!==col._cur){col._cur=idx;var inp=document.getElementById(inputId);if(inp)inp.value=items[idx].v;setOn(idx);if(!silent){hap('selection');try{sfx('tick');}catch(e){}}}}
+  col.onscroll=function(){update(false);};
+  // init: value, highlight, position (no sound)
+  var inp0=document.getElementById(inputId);if(inp0)inp0.value=items[defIdx].v;col._cur=defIdx;setOn(defIdx);
+  col.scrollTop=defIdx*ITEM;setTimeout(function(){col.scrollTop=defIdx*ITEM;},0);
+}
 function submitOnboard(){
   var name=document.getElementById('obName').value.trim();
   var day=parseInt(document.getElementById('obDay').value,10),month=parseInt(document.getElementById('obMonth').value,10),year=parseInt(document.getElementById('obYear').value,10);
@@ -1423,7 +1579,8 @@ function submitOnboard(){
 
 /* ===== quiz ===== */
 var Q=null;
-function startQuiz(){Q={i:0,ans:[]};track('test_start',{kind:'core'});go('quiz');renderScene();}
+var _quizKind='core';
+function startQuiz(){_quizKind='core';Q={i:0,ans:[]};track('test_start',{kind:'core'});go('quiz');renderScene();}
 function exitQuiz(){
   var L=I18N[S.lang||'ru'];var en=(S.lang==='en');
   var started=(Q&&Q.i>0)||(typeof MT!=='undefined'&&MT&&MT.i>0);
@@ -1479,6 +1636,114 @@ function showCheer(done,c){
     el.classList.remove('show');el.classList.add('out');back.classList.remove('show');
     setTimeout(function(){el.classList.remove('out');if(done)done();},340);
   },820); // short, calm hold so it never nags
+}
+/* progress-aware encouragement after finishing a test (1..5 facets) */
+function progressCheer(){var en=isEN();var p=avatarProgress();
+  if(p>=5){showCheer(null,{e:'🎉',t:(en?'Passport complete!':'Паспорт собран!'),s:(en?'All 5 facets assembled — this is the full you':'Все 5 граней собраны — это полный ты')});return;}
+  var left=5-p;
+  if(en)showCheer(null,{e:'🧩',t:(left===1?'One facet left!':'Facet '+p+' of 5'),s:(left===1?'One more test and your passport is complete':left+' more to a full passport')});
+  else showCheer(null,{e:'🧩',t:(left===1?'Осталась 1 грань!':'Грань '+p+' из 5'),s:(left===1?'Ещё один тест — и паспорт собран':'Ещё '+left+' до полного паспорта')});
+}
+
+/* ===== insights / notes — capture a thought, earn rating (anti-abuse daily cap) ===== */
+var INS_PROMPTS={ru:['Что зацепило прямо сейчас?','Какая мысль о себе пришла?','Запиши вывод, пока не забыл','Что это говорит о тебе?','Инсайт момента — одной строкой','О чём захотелось подумать?','Что ты понял про себя?'],
+  en:['What just struck you?','A thought about yourself?','Jot the takeaway before it fades','What does this say about you?','The insight of the moment, in one line','What made you pause?','What did you realize about you?']};
+var INS_DONE={ru:['Записал ✍️','Мысль сохранена 💡','Поймали инсайт ✨','В копилку 📌','Ценно. Записал','Зафиксировано 🧠'],
+  en:['Saved ✍️','Thought kept 💡','Insight caught ✨','Added 📌','Valuable. Saved','Captured 🧠']};
+function insPick(a){return a[Math.floor(Math.random()*a.length)];}
+function escIns(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function insRewardLeft(){var d=dayNum();if(S._insDay!==d)return 10;return Math.max(0,10-(S._insCount||0));}
+function captureInsight(){var en=isEN();var ph=insPick(INS_PROMPTS[en?'en':'ru']);var left=insRewardLeft();
+  var foot='<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(left>0?(en?'+5 to rating for an insight':'+5 к рейтингу за инсайт'):(en?'Daily reward cap reached — still saved':'Лимит награды на сегодня — но сохраним'))+' · <span onclick="closeModal();go(\'insights\')" style="color:#7fe9ff;cursor:pointer">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</span></div>';
+  var body='<textarea id="insText" rows="3" maxlength="400" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px 14px;border-radius:14px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:15px;resize:none;outline:none"></textarea>'+foot;
+  modal(en?'Capture an insight':'Записать инсайт',en?'A thought worth keeping? Don’t lose it.':'Пришла ценная мысль? Запиши, чтобы не потерять.',function(){saveInsight();},body);
+  setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Save':'Сохранить');var ta=document.getElementById('insText');if(ta)ta.focus();},30);
+}
+function saveInsight(){var en=isEN();var ta=document.getElementById('insText');var txt=ta?ta.value.trim():'';
+  if(txt.length<3){pop(en?'Write a bit more ✍️':'Напиши чуть больше ✍️');return;}
+  S.insights=S.insights||[];S.insights.unshift({t:Date.now(),text:txt.slice(0,400),type:S.result?S.result.primary:''});
+  var d=dayNum();if(S._insDay!==d){S._insDay=d;S._insCount=0;}
+  var rewarded=false;if((S._insCount||0)<10){S.rating+=5;S._insCount=(S._insCount||0)+1;rewarded=true;}
+  save();syncWallet();track('insight_saved',{len:txt.length,rewarded:rewarded});
+  closeModal();hap('success');pop(insPick(INS_DONE[en?'en':'ru'])+(rewarded?'  +5 🏆':''));
+  var sc=document.getElementById('sInsights');if(sc&&!sc.classList.contains('hidden'))renderInsights();
+}
+function deleteInsight(i){S.insights=S.insights||[];if(i>=0&&i<S.insights.length){S.insights.splice(i,1);save();renderInsights();}}
+function renderInsights(){var en=isEN();var host=document.getElementById('insightsBody');if(!host)return;var arr=S.insights||[];
+  var head='<div class="section-h"><h2>'+(en?'My insights':'Мои инсайты')+'</h2></div>';
+  var addBtn='<button class="btn" style="margin-bottom:14px" onclick="captureInsight()">'+(en?'+ New insight':'+ Новый инсайт')+'</button>';
+  if(!arr.length){host.innerHTML=head+addBtn+'<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'No insights yet. Tap the 💡 button during a test to capture a thought — and earn rating for it.':'Пока пусто. Жми кнопку 💡 во время теста, чтобы поймать мысль — и получить за неё рейтинг.')+'</div></div>';return;}
+  var rows=arr.map(function(o,i){var dt=new Date(o.t);var ds=dt.getDate()+'.'+('0'+(dt.getMonth()+1)).slice(-2);var tn=o.type?Tt(o.type).name:'';
+    return '<div class="ins-card"><div class="ins-meta">📌 '+ds+(tn?(' · '+tn):'')+'<span class="ins-del" onclick="deleteInsight('+i+')">✕</span></div><div class="ins-text">'+escIns(o.text)+'</div></div>';}).join('');
+  host.innerHTML=head+addBtn+'<div class="ins-list">'+rows+'</div>';
+}
+
+/* ===== avatar wardrobe / customization store ===== */
+var WARD_CATS=[
+ {k:'top',ru:'Причёска',en:'Hair',opt:'top'},
+ {k:'hat',ru:'Уборы',en:'Headwear',opt:'top'},
+ {k:'hairColor',ru:'Цвет волос',en:'Hair color',opt:'hairColor',color:true},
+ {k:'accessories',ru:'Очки',en:'Glasses',opt:'accessories'},
+ {k:'facialHair',ru:'Борода',en:'Facial hair',opt:'facialHair'},
+ {k:'clothing',ru:'Одежда',en:'Clothing',opt:'clothing'},
+ {k:'clothesColor',ru:'Цвет одежды',en:'Clothes color',opt:'clothesColor',color:true},
+ {k:'skinColor',ru:'Цвет кожи',en:'Skin tone',opt:'skinColor',color:true},
+ {k:'eyes',ru:'Глаза',en:'Eyes',opt:'eyes'},
+ {k:'mouth',ru:'Эмоция',en:'Expression',opt:'mouth'},
+ {k:'backgroundColor',ru:'Фон',en:'Background',opt:'backgroundColor',color:true},
+ {k:'frame',ru:'Рамка',en:'Frame',opt:'frame',frame:true}
+];
+var WARD_ITEMS={
+ top:[{v:'shortFlat',p:0},{v:'theCaesar',p:0},{v:'bob',p:60},{v:'curly',p:80},{v:'dreads',p:120},{v:'fro',p:120},{v:'bun',p:80},{v:'longButNotTooLong',p:100}],
+ hat:[{v:'hat',p:80},{v:'turban',p:120},{v:'winterHat1',p:100},{v:'hijab',p:100}],
+ hairColor:[{v:'2c1b18',p:0},{v:'4a312c',p:0},{v:'724133',p:40},{v:'a55728',p:60},{v:'b58143',p:60},{v:'c93305',p:120},{v:'e8e1e1',p:150}],
+ accessories:[{v:'round',p:60},{v:'prescription02',p:60},{v:'wayfarers',p:120},{v:'sunglasses',p:150}],
+ facialHair:[{v:'beardLight',p:60},{v:'beardMedium',p:80},{v:'moustacheFancy',p:80},{v:'beardMajestic',p:150}],
+ clothing:[{v:'shirtCrewNeck',p:0},{v:'hoodie',p:80},{v:'blazerAndShirt',p:120},{v:'graphicShirt',p:100},{v:'overall',p:80},{v:'collarAndSweater',p:100}],
+ clothesColor:[{v:'262e33',p:0},{v:'7c3aff',p:60},{v:'00e0c7',p:60},{v:'ff5d8f',p:80},{v:'ffb547',p:80},{v:'d4ff4f',p:120}],
+ skinColor:[{v:'ffdbb4',p:0},{v:'edb98a',p:0},{v:'d08b5b',p:0},{v:'ae5d29',p:0},{v:'614335',p:0}],
+ eyes:[{v:'default',p:0},{v:'happy',p:40},{v:'wink',p:60},{v:'squint',p:40},{v:'hearts',p:120}],
+ mouth:[{v:'smile',p:0},{v:'default',p:0},{v:'twinkle',p:60},{v:'serious',p:40},{v:'tongue',p:80}],
+ backgroundColor:[{v:'ffae42',p:0},{v:'1c1838',p:40},{v:'7c3aff',p:60},{v:'00e0c7',p:60},{v:'ff5d8f',p:80},{v:'d4ff4f',p:120}],
+ frame:[{v:'none',p:0},{v:'gold',p:100},{v:'cyan',p:100},{v:'violet',p:120},{v:'rainbow',p:200}]
+};
+var _wardTab=0;
+function setWardTab(i){_wardTab=i;renderWardrobe();}
+function wardPreview(opt,value){
+  try{var o=avatarOpts(avatarTraits());
+    if(opt==='backgroundColor'){o.backgroundColor=[value];o.backgroundType=['solid'];}
+    else{o[opt]=[value];if(opt==='accessories')o.accessoriesProbability=[100];if(opt==='facialHair')o.facialHairProbability=[100];}
+    return window.SpiralAvatar?window.SpiralAvatar(o):'';
+  }catch(e){return '';}
+}
+function wardTap(opt,value,price){
+  var en=isEN();
+  if(avatarProgress()<5){pop(en?'Assemble your avatar first':'Сначала собери аватара');return;}
+  var key=opt+':'+value;var owned=(price===0)||(S.ownedCosmetics&&S.ownedCosmetics[key]);
+  if(owned){S.equip=S.equip||{};if(S.equip[opt]===value)delete S.equip[opt];else S.equip[opt]=value;save();hap('selection');renderWardrobe();return;}
+  if(S.stars<price){pop(en?'Not enough ⭐ — earn more in duels':'Недостаточно ⭐ — заработай в дуэлях');return;}
+  modal(en?'Buy this item?':'Купить предмет?',(en?'Unlock and wear it for ':'Открыть и надеть за ')+price+' ⭐.',function(){
+    S.stars-=price;S.ownedCosmetics=S.ownedCosmetics||{};S.ownedCosmetics[key]=1;S.equip=S.equip||{};S.equip[opt]=value;save();syncWallet();track('cosmetic_buy',{opt:opt,value:value,price:price});closeModal();hap('success');pop(en?'Equipped ✨':'Надето ✨');renderWardrobe();
+  });
+}
+function renderWardrobe(){
+  var en=isEN();var host=document.getElementById('wardrobeBody');if(!host)return;
+  var head='<div class="section-h"><h2>'+(en?'Avatar studio':'Студия аватара')+'</h2><span style="font-size:13px;font-weight:800;color:#ffce6b">'+S.stars+' ⭐</span></div>';
+  var prev='<div style="display:flex;justify-content:center;margin:4px 0 14px">'+avatarHero('big')+'</div>';
+  if(avatarProgress()<5){
+    host.innerHTML=head+prev+'<div class="card-soft" style="text-align:center"><div class="ch" style="justify-content:center">🔒 '+(en?'LOCKED':'ЗАБЛОКИРОВАНО')+'</div><div class="cb">'+(en?'Finish assembling your avatar (5/5 tests) to unlock customization.':'Собери аватара полностью (5/5 тестов), чтобы открыть кастомизацию.')+'</div></div>';
+    return;
+  }
+  var tabs='<div class="ward-tabs">'+WARD_CATS.map(function(c,i){return '<button class="ward-tab'+(i===_wardTab?' on':'')+'" onclick="setWardTab('+i+')">'+(en?c.en:c.ru)+'</button>';}).join('')+'</div>';
+  var cat=WARD_CATS[_wardTab];var items=WARD_ITEMS[cat.k]||[];
+  var grid='<div class="ward-grid">'+items.map(function(it){
+    var key=cat.opt+':'+it.v;var owned=(it.p===0)||(S.ownedCosmetics&&S.ownedCosmetics[key]);var equipped=(S.equip&&S.equip[cat.opt]===it.v);
+    var pv=cat.color?('<div class="ward-sw" style="background:#'+it.v+'"></div>'):cat.frame?('<div class="ward-sw frame-mini frame-'+it.v+'"></div>'):('<div class="ward-mini">'+wardPreview(cat.opt,it.v)+'</div>');
+    var label=equipped?(en?'On ✓':'Надето ✓'):owned?(en?'Wear':'Надеть'):(it.p===0?(en?'Free':'Free'):(it.p+' ⭐'));
+    return '<div class="ward-item'+(equipped?' eq':'')+'" onclick="wardTap(\''+cat.opt+'\',\''+it.v+'\','+it.p+')"><div class="ward-prev">'+pv+'</div><div class="ward-lbl">'+label+'</div></div>';
+  }).join('')+'</div>';
+  var note='<div class="cb" style="font-size:11.5px;color:#8a83ad;margin-top:14px;text-align:center">'+(en?'Earn ⭐ in duels & insights. More categories (moles, tattoos) and NFT export coming.':'Зарабатывай ⭐ в дуэлях и за инсайты. Скоро: родинки, тату и экспорт в NFT.')+'</div>';
+  host.innerHTML=head+prev+tabs+grid+note;
 }
 function lifePathNum(d,m,y){var s=(''+d+m+(y||1990)).split('').reduce(function(a,b){return a+(+b||0);},0);while(s>9&&s!==11&&s!==22){s=(''+s).split('').reduce(function(a,b){return a+(+b);},0);}return s||1;}
 var ENERGY={generator:{name:'Двигатель',glyph:'🔋',line:'у тебя глубокий ровный источник сил — ты выкладываешься в то, что откликается, и тогда тебя не остановить'},projector:{name:'Направляющий',glyph:'🧭',line:'ты видишь людей и системы насквозь — твоя сила не в напоре, а в точном слове в нужный момент'},manifestor:{name:'Инициатор',glyph:'⚡',line:'ты создаёшь импульс и запускаешь то, чего ещё нет — тебе тесно, когда ждут разрешения'},reflector:{name:'Зеркало',glyph:'🌙',line:'ты тонко улавливаешь среду — выбирай окружение осознанно, оно формирует тебя сильнее, чем ты думаешь'}};
@@ -1538,6 +1803,7 @@ function playReveal(r){var t=TYPES[r.primary];var rv=document.getElementById('re
   hap('success');sfx('reveal');
   setTimeout(function(){rv.classList.remove('show');renderResult();go('result');
     if(S._pendingCmp){var fr=S._pendingCmp;setTimeout(function(){renderCompare(fr);},1000);}
+    else{setTimeout(progressCheer,900);}
   },2600);
 }
 function goResult(){if(!S.result)return go('home');renderResult();go('result');}
@@ -1986,7 +2252,7 @@ function showReport(key){
 
 /* ===== mini-test runner (reuses the scene UI) ===== */
 var MT=null;
-function runTest(key){var tb=isEN()?TEST_BANKS_EN[key]:TEST_BANKS[key];MT={key:key,i:0,ans:[],bank:tb};go('quiz');renderMTScene();}
+function runTest(key){_quizKind='mt';var tb=isEN()?TEST_BANKS_EN[key]:TEST_BANKS[key];MT={key:key,i:0,ans:[],bank:tb};go('quiz');renderMTScene();}
 function renderMTScene(){
   if(!MT||MT.i>=MT.bank.q.length)return;
   var q=MT.bank.q[MT.i];
@@ -2063,13 +2329,11 @@ function showTestResult(key,fresh){
       html+=fold('<span style="color:#ff7a88">⛔ '+(en?'What to avoid':'Чего избегать')+'</span>','<ul class="adv-list">'+adv.dont.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>');
     }
     // share + PvP actions for this test
-    html+='<div class="action-stack"><button class="btn go" onclick="shareTestResult(\''+key+'\')">'+(en?'Share result':'Поделиться результатом')+'</button>'+
-      (S.result?'<button class="btn cold" onclick="startDuelFlow()">'+(en?'Play a friend (PvP)':'Сыграть с другом (PvP)')+'</button>':'')+
-      '<button class="btn ghost" onclick="go(\'home\')">'+(en?'Home':'На главную')+'</button></div>';
+    html+='<div class="action-stack"><button class="btn go" onclick="openShareHub()">'+(en?'Share':'Поделиться')+'</button></div>';
     html+=nextTestCTA();
     ah.innerHTML=avatarCardHTML(fresh?(en?'+1 avatar feature!':'+1 черта аватара!'):'')+html;
   }
-  if(fresh){try{if(navigator.vibrate)navigator.vibrate([0,30,50,30]);}catch(e){}pop(en?'Avatar updated 🎭':'Аватар обновлён 🎭');}
+  if(fresh){try{if(navigator.vibrate)navigator.vibrate([0,30,50,30]);}catch(e){}setTimeout(progressCheer,650);}
 }
 function shareTestResult(key){var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];var dom=S.tests[key];var res=tb.result[dom]||tb.result.default;
   modal(en?'Share':'Поделиться',en?('Your result on “'+testTitle(key)+'”: <b>'+res.n+'</b>. Invite a friend to take the same test and compare — or challenge them to a PvP duel.'):('Твой результат теста «'+tb.title+'»: <b>'+res.n+'</b>. Позови друга пройти тот же тест и сравните — или вызови на PvP-дуэль.'),function(){closeModal();pop(en?'Link copied ✨':'Ссылка скопирована ✨');});
@@ -2101,7 +2365,8 @@ function avatarHero(size){
   var sparks='';if(tier>=3){var n=tier>=6?5:tier>=5?4:tier>=4?3:2;for(var s=0;s<n;s++){sparks+='<i style="transform:translate(-50%,-50%) rotate('+(s*(360/n))+'deg) translateY(calc(-1*var(--r)))"></i>';}}
   var emblem=tier>=6?'🌟':(tier>=5?'💎':(tier>=4?'👑':(tier>=3?'◆':(tier>=2?'✦':''))));
   var badge=tier>=2?'<div class="av-tier-badge">'+emblem+'</div>':'';
-  return '<div class="av-hero '+size+' tier-'+tier+(done?'':' av-wip')+'" style="--ac:'+t.color+'"><div class="av-aura"></div><div class="av-ring"></div><div class="av-orbit">'+sparks+'</div><div class="av-core">'+core+'</div>'+badge+'</div>';
+  var frame=(S.equip&&S.equip.frame&&S.equip.frame!=='none')?(' frame-'+S.equip.frame):'';
+  return '<div class="av-hero '+size+' tier-'+tier+(done?'':' av-wip')+frame+'" style="--ac:'+t.color+'"><div class="av-aura"></div><div class="av-ring"></div><div class="av-orbit">'+sparks+'</div><div class="av-core">'+core+'</div>'+badge+'</div>';
 }
 function avatarVisual(tr,big){
   var prog=avatarProgress();var done=prog>=5;var st=avatarSlotsState();
@@ -2556,9 +2821,9 @@ function renderAvatar(){
   if(done){
     document.getElementById('avatarActions').innerHTML=
       '<div class="action-stack">'+
-      '<button class="btn go" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
+      '<button class="btn go" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>'+
+      '<button class="btn cold" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
       '<button class="btn ghost" onclick="saveAvatarImage()">'+(en?'Save to stories':'Сохранить в сторис')+'</button>'+
-      '<button class="btn ghost" onclick="go(\'store\')">'+(en?'More tests':'Ещё тесты')+'</button>'+
       '</div>';
   }else{
     var nk=nextTest();
@@ -2615,7 +2880,7 @@ function saveAvatarImage(){
   img.onerror=function(){pop(en?'Couldn’t build the image':'Не удалось собрать картинку');};
   img.src=svg64;
 }
-var SCREENS=['onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul'];
+var SCREENS=['onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul','insights','wardrobe'];
 /* progressive nav — tabs unlock as you earn them (clean first-run, reward on unlock) */
 function navVisible(id){if(id==='nHome')return true;if(id==='nChats')return avatarProgress()>=5;return !!S.result;}
 function updateNav(){
@@ -2638,8 +2903,10 @@ function go(scr){for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+ca
   var focus=(scr==='onboard'||scr==='quiz'||scr==='analyze'||scr==='duel');
   var nav=document.querySelector('.nav');if(nav)nav.classList.toggle('nav-hidden',focus);
   document.body.classList.toggle('no-nav',focus);
+  // insight capture FAB — available while engaging with content (test, result, passport, soul)
+  var fab=document.getElementById('insFab');if(fab)fab.classList.toggle('show',scr==='quiz'||scr==='result'||scr==='passport'||scr==='soul');
   if(go._ready)hap('selection'); else go._ready=true;
-  if(scr==='home')renderHome();if(scr==='store')renderStore();if(scr==='avatar')renderAvatar();if(scr==='board')renderBoardScreen();if(scr==='chats')renderChats();if(scr==='passport')renderPassport();if(scr==='soul')renderSoul();
+  if(scr==='onboard')wheelInit();if(scr==='home')renderHome();if(scr==='store')renderStore();if(scr==='avatar')renderAvatar();if(scr==='board')renderBoardScreen();if(scr==='chats')renderChats();if(scr==='passport')renderPassport();if(scr==='soul')renderSoul();if(scr==='insights')renderInsights();if(scr==='wardrobe')renderWardrobe();
   var sc=document.getElementById('s'+cap(scr));if(sc){sc.scrollTo(0,0);sc.classList.remove('enter');void sc.offsetWidth;sc.classList.add('enter');}}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 /* personal insight from accumulated results — gets richer with more tests */
@@ -2712,6 +2979,7 @@ function renderHome(){
     var idx=(S._insightIdx||0)%ins.length;S._insightIdx=idx+1;
     var t=TYPES[S.result.primary];
     ih.innerHTML='<div class="section-h"><h2>'+(en?'Insight for you':'Инсайт для тебя')+'</h2></div><div class="card-soft" style="border-left:3px solid '+t.color+'"><div class="ch" style="color:'+t.color+'">✨ '+(S.name?S.name:(en?'your portrait':'твой портрет'))+'</div><div class="cb">'+ins[idx]+'</div>'+(ins.length>1?'<div style="font-size:12px;color:#7fe9ff;margin-top:10px;cursor:pointer" onclick="renderHome()">'+(en?'another insight →':'ещё инсайт →')+'</div>':'')+'</div>';
+    ih.innerHTML+='<div class="card-soft" onclick="go(\'insights\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;margin-top:10px"><span style="font-size:22px">💡</span><div><div class="ch">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</div><div class="cb">'+((S.insights&&S.insights.length)?(en?'Tap to view your saved thoughts':'Открыть сохранённые мысли'):(en?'Catch a thought during a test (💡)':'Лови мысли во время теста (💡)'))+'</div></div></div>';
   }else ih.innerHTML='';
   var nh=document.getElementById('homeNext');
   if(S.result){
@@ -3188,6 +3456,11 @@ function applyLang(){
 }
 function rerenderCurrent(){
   var cur=document.querySelector('.screen:not(.hidden)');if(!cur)return;
+  if(cur.id==='sOnboard'){try{wheelInit();}catch(e){}return;} // rebuild wheels (month names) on language switch
+  if(cur.id==='sQuiz'){ // keep an in-progress test localized when language is switched mid-test
+    try{ if(_quizKind==='mt'&&MT){MT.bank=isEN()?TEST_BANKS_EN[MT.key]:TEST_BANKS[MT.key];renderMTScene();} else if(Q){renderScene();} }catch(e){}
+    return;
+  }
   var fn={sHome:renderHome,sStore:renderStore,sAvatar:renderAvatar,sBoard:renderBoardScreen,sChats:renderChats,sPassport:renderPassport,sResult:renderResult,sSoul:renderSoul}[cur.id];
   if(fn)try{fn();}catch(e){}
 }
@@ -3198,7 +3471,7 @@ function syncWallet(){var ws=document.getElementById('wStars');if(ws)ws.textCont
 function modal(t,h,onYes,extra){var en=isEN();var b=document.getElementById('modalBody');b.innerHTML='<h3>'+t+'</h3><p>'+h+'</p>'+(extra||'')+(onYes?'<div class="btn-row" style="margin-top:18px"><button class="btn ghost" id="mNo" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button><button class="btn gold" id="mYes">'+(en?'Open':'Открыть')+'</button></div>':(extra?'':'<button class="btn ghost" onclick="closeModal()">'+(en?'Got it':'Понятно')+'</button>'));document.getElementById('modalBg').classList.add('show');if(onYes)document.getElementById('mYes').onclick=onYes;}
 function closeModal(){document.getElementById('modalBg').classList.remove('show');}
 document.getElementById('modalBg').addEventListener('click',function(e){if(e.target.id==='modalBg')closeModal();});
-var popT;function pop(t){var el=document.getElementById('toast');el.innerHTML=t;el.classList.add('show');clearTimeout(popT);popT=setTimeout(function(){el.classList.remove('show');},2200);}
+var popT;function pop(t){var el=document.getElementById('toast');var dim=document.getElementById('toastDim');el.innerHTML=t;el.classList.add('show');if(dim)dim.classList.add('show');clearTimeout(popT);popT=setTimeout(function(){el.classList.remove('show');if(dim)dim.classList.remove('show');},2000);}
 
 /* unified haptics: Telegram HapticFeedback when in a Mini App, else vibrate */
 function hap(kind){try{var tg=window.Telegram&&Telegram.WebApp,h=tg&&tg.HapticFeedback;
@@ -3219,6 +3492,7 @@ function sfx(name){if(!SFX.on)return;sfxInit();if(!SFX.ctx)return;
     case 'quest':blip(659,0,0.12,'sine',0.09);blip(988,0.09,0.18,'sine',0.07);break;
     case 'levelup':[523,659,784,1047].forEach(function(f,i){blip(f,i*0.09,0.28,'triangle',0.08);});break;
     case 'reveal':blip(330,0,0.5,'sine',0.06);blip(660,0.12,0.5,'sine',0.05);blip(990,0.26,0.45,'sine',0.04);break;
+    case 'tick':blip(1150,0,0.025,'square',0.035);break;
   }}
 function toggleSound(){S.sound=(S.sound===false);SFX.on=!S.sound;save();var l=document.getElementById('sndLabel');if(l)l.textContent=SFX.on?'🔊':'🔇';if(SFX.on){sfxInit();sfx('select');}pop(SFX.on?(isEN()?'Sound on':'Звук вкл'):(isEN()?'Sound off':'Звук выкл'));}
 function tgInit(){try{var tg=window.Telegram&&Telegram.WebApp;if(!tg)return;tg.ready();tg.expand();
@@ -3226,7 +3500,10 @@ function tgInit(){try{var tg=window.Telegram&&Telegram.WebApp;if(!tg)return;tg.r
   if(tg.setHeaderColor)tg.setHeaderColor('#05060a');
   if(tg.disableVerticalSwipes)tg.disableVerticalSwipes();
 }catch(e){}}
-function boot(){tgInit();load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();
+function boot(){tgInit();
+  // ensure the insight FAB is a direct <body> child so position:fixed resolves against the viewport (not #app)
+  var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
+  load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();
   track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('zoom');},1800); // spiral expands to fill screen
