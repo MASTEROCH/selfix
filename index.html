@@ -1896,7 +1896,7 @@ function spawnGlyphParticles(color){var g=document.getElementById('heroGlyph');i
 
 function buyFull(){
   var en=isEN();
-  modal(en?'Unlock the full breakdown?':'Открыть полный разбор?',en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 400 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 400 звёздами Telegram.',function(){S.fullOwned=true;save();closeModal();pop(en?'Full breakdown unlocked 🔓':'Полный разбор открыт 🔓');renderResult();});}
+  modal(en?'Unlock the full breakdown?':'Открыть полный разбор?',en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 400 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 400 звёздами Telegram.',function(){closeModal();buyStars('full',(en?'Full breakdown':'Полный разбор'),400,function(){S.fullOwned=true;save();syncWallet();pop(en?'Full breakdown unlocked 🔓':'Полный разбор открыт 🔓');renderResult();});});}
 
 /* ===== DUEL (PvP on rating, daily limit) ===== */
 var D=null;
@@ -2225,7 +2225,7 @@ function openTest(key){
   if(S.ownedTests&&S.ownedTests[key]){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   modal(en?'Unlock this test?':'Открыть тест?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><br>'+(en?'It opens a new facet of your portrait and an avatar feature.<br><br>Paid with ⭐ 250 Telegram Stars.':'Откроет новую грань твоего портрета и черту аватара.<br><br>Оплата ⭐ 250 звёздами Telegram.'),function(){
-    S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();closeModal();runTest(key);});
+    closeModal();buyStars('test_'+key,testTitle(key),250,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
   // already owned -> open directly
@@ -2668,7 +2668,13 @@ function openConversation(idx){
     '<div class="cl-ring" style="--p:'+m.score+';--rc:'+sc+'"><b>'+m.score+'</b></div></div>'+
     '<div class="net-eyebrow">🤖 '+(en?'two clones talking':'диалог двух клонов')+'</div>';
   host.innerHTML=header+'<div class="cl-thread" id="clThread"></div><div id="clVerdict"></div>';
-  playCloneThread(host,document.getElementById('clThread'),cloneDialogue(m.peer,m.br),myAv,pAv,function(){renderVerdict(m,sc,'<button class="btn lime" onclick="connectPeer(\''+m.peer.name+'\')">'+(en?'Message '+m.peer.name+' →':'Написать '+m.peer.name+' →')+'</button><button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>');});
+  var thread=document.getElementById('clThread');
+  var onDone=function(){renderVerdict(m,sc,'<button class="btn lime" onclick="connectPeer(\''+m.peer.name+'\')">'+(en?'Message '+m.peer.name+' →':'Написать '+m.peer.name+' →')+'</button><button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>');};
+  var playWith=function(lines){m.dialogue=lines;playCloneThread(host,thread,lines,myAv,pAv,onDone);};
+  if(CLONE_URL){ // live Claude dialogue, fall back to heuristic on any failure
+    thread.innerHTML='<div class="cl-typing" style="align-self:center"><i></i><i></i><i></i></div>';
+    cloneChat(m).then(function(live){thread.innerHTML='';playWith(live&&live.length?live:cloneDialogue(m.peer,m.br));});
+  }else{ playWith(cloneDialogue(m.peer,m.br)); }
 }
 function renderVerdict(m,sc,footer){
   var v=document.getElementById('clVerdict');if(!v)return;var en=isEN();var br=m.br;var why=whyTalk(m.peer,m.br);
@@ -2747,6 +2753,8 @@ var BOT_USER='SelfixBot';
 /* ===== Config: set these when the backend is live (analytics + feedback). Empty = graceful no-op. ===== */
 var ANALYTICS_URL='';   // e.g. 'https://your-worker.example.com/track'  (POST {event, props, ...})
 var FEEDBACK_URL='';    // e.g. 'https://your-worker.example.com/feedback' (POST {text, type, ...})
+var CLONE_URL='';       // e.g. 'https://your-worker.example.com/clone/chat' — live AI clone dialogue (Claude). Empty = offline heuristic.
+var PAY_URL='';         // e.g. 'https://your-worker.example.com/pay/invoice' — Telegram Stars. Empty/web = direct grant (demo).
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
 /* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
@@ -2761,6 +2769,31 @@ function track(event,props){
   }catch(e){}
 }
 function inTelegram(){try{return !!(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData);}catch(e){return false;}}
+/* live AI clone dialogue via backend (Claude). Resolves to lines [{s,t}] or null → caller falls back to heuristic. */
+function cloneChat(m){
+  if(!CLONE_URL||!m||!m.peer)return Promise.resolve(null);
+  try{
+    var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
+    var pbig=null;try{pbig=peerBig(m.peer);}catch(e){try{pbig=TYPE_BIG[m.peer.type];}catch(e2){}}
+    var peer={name:m.peer.name,type:m.peer.type,big:pbig};
+    return fetch(CLONE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({me:me,peer:peer,score:m.score,lang:isEN()?'en':'ru'})})
+      .then(function(r){return r.json();}).then(function(d){
+        if(d&&!d.fallback&&d.lines&&d.lines.length){if(d.verdict)m._liveVerdict=d.verdict;return d.lines.map(function(l){return {s:(l.s==='peer'?'peer':'me'),t:String(l.t||'')};});}
+        return null;
+      }).catch(function(){return null;});
+  }catch(e){return Promise.resolve(null);}
+}
+/* Telegram Stars purchase. If backend+TG present → real invoice; else grant directly (demo/web). */
+function buyStars(sku,title,amount,onGranted){
+  var en=isEN();
+  if(PAY_URL&&inTelegram()&&window.Telegram&&Telegram.WebApp&&Telegram.WebApp.openInvoice){
+    fetch(PAY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku:sku,title:title,amount:amount,aid:anonId(),initData:Telegram.WebApp.initData||''})})
+      .then(function(r){return r.json();}).then(function(d){
+        if(d&&d.link){Telegram.WebApp.openInvoice(d.link,function(status){if(status==='paid'){track('purchase',{sku:sku,amount:amount});onGranted();}else if(status==='failed'||status==='cancelled'){pop(en?'Payment not completed':'Оплата не завершена');}});}
+        else{onGranted();}
+      }).catch(function(){onGranted();});
+  }else{track('purchase',{sku:sku,amount:amount,demo:true});onGranted();}
+}
 /* deep-link that works in Telegram (t.me/bot) AND on a plain web host (for custdev) */
 function deepLink(startParam){return inTelegram()?('t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
 function giftLink(){return deepLink('gift_'+b64urlEnc(S.name||'')+'_'+(S.result?S.result.primary:'orange'));}
