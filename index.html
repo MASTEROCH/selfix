@@ -1645,6 +1645,25 @@ function progressCheer(){var en=isEN();var p=avatarProgress();
   else showCheer(null,{e:'🧩',t:(left===1?'Осталась 1 грань!':'Грань '+p+' из 5'),s:(left===1?'Ещё один тест — и паспорт собран':'Ещё '+left+' до полного паспорта')});
 }
 
+/* ===== personality dynamics: re-take the core test & see how you changed ===== */
+function coreHistory(){return (S.history||[]).filter(function(h){return h&&h.primary;});}
+function retakeCore(){var en=isEN();modal(en?'Retake the core test?':'Перепройти ядро?',en?'Answer the 10 core questions again — we’ll show how your portrait shifted since last time. Your facets and avatar stay.':'Ответь снова на 10 вопросов ядра — покажем, как сместился портрет с прошлого раза. Грани и аватар останутся.',function(){closeModal();startQuiz();});setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Retake':'Перепройти');},0);}
+function changeCard(en){
+  var h=coreHistory();if(h.length<2)return '';
+  var cur=h[h.length-1],prev=h[h.length-2];
+  var curT=TYPES[cur.primary]||{color:'#fff'},prevT=TYPES[prev.primary]||{color:'#fff'};
+  var dt='';try{var days=Math.max(1,Math.round((cur.t-prev.t)/86400000));dt=en?(days+(days===1?' day':' days')+' apart'):(days+' дн.');}catch(e){}
+  var typeLine=(cur.primary!==prev.primary)
+    ? (en?'Type shifted: ':'Тип сменился: ')+'<b style="color:'+prevT.color+'">'+Tt(prev.primary).name+'</b> → <b style="color:'+curT.color+'">'+Tt(cur.primary).name+'</b>'
+    : (en?'Type held steady: ':'Тип устойчив: ')+'<b style="color:'+curT.color+'">'+Tt(cur.primary).name+'</b>';
+  var deltas='';
+  if(cur.big&&prev.big){
+    var arr=['O','C','E','A','N'].map(function(f){return {f:f,d:(cur.big[f]||0)-(prev.big[f]||0)};}).filter(function(x){return Math.abs(x.d)>=5;}).sort(function(a,b){return Math.abs(b.d)-Math.abs(a.d);}).slice(0,3);
+    if(arr.length)deltas='<div class="cb" style="margin-top:8px">'+arr.map(function(x){var nm=FACTOR_INFO[x.f].t[en?'en':'ru'];var up=x.d>0;return '<span style="display:inline-block;margin:2px 10px 0 0;font-weight:700;color:'+(up?'#52e6a4':'#ff7d92')+'">'+nm+' '+(up?'↑ +'+x.d:'↓ '+x.d)+'</span>';}).join('')+'</div>';
+    else deltas='<div class="cb" style="margin-top:8px;color:#9a93c2">'+(en?'Your profile stayed remarkably stable.':'Профиль почти не изменился — ты стабилен.')+'</div>';
+  }
+  return '<div class="card-soft" style="border-left:3px solid #7C3AFF;margin-top:12px"><div class="ch" style="color:#b89cff">🕰 '+(en?'How you’ve changed':'Как ты изменился')+' · '+dt+'</div><div class="cb" style="margin-top:6px">'+typeLine+'</div>'+deltas+'</div>';
+}
 /* ===== insights / notes — capture a thought, earn rating (anti-abuse daily cap) ===== */
 var INS_PROMPTS={ru:['Что зацепило прямо сейчас?','Какая мысль о себе пришла?','Запиши вывод, пока не забыл','Что это говорит о тебе?','Инсайт момента — одной строкой','О чём захотелось подумать?','Что ты понял про себя?'],
   en:['What just struck you?','A thought about yourself?','Jot the takeaway before it fades','What does this say about you?','The insight of the moment, in one line','What made you pause?','What did you realize about you?']};
@@ -1790,7 +1809,7 @@ function finishQuiz(){
   var ae=document.getElementById('analyzeText');ae.textContent=texts[0];
   var iv=setInterval(function(){k++;if(k<texts.length)ae.textContent=texts[k];},650);
   setTimeout(function(){clearInterval(iv);var r=scoreAnswers(Q.ans);
-    S.history=S.history||[];S.history.push({primary:r.primary,pct:r.pct,t:Date.now()});if(S.history.length>20)S.history.shift();
+    S.history=S.history||[];S.history.push({primary:r.primary,pct:r.pct,big:r.big,t:Date.now()});if(S.history.length>20)S.history.shift();
     S.result=r;save();track('test_finish',{kind:'core',type:r.primary});playReveal(r);
   },1950);
 }
@@ -3158,7 +3177,8 @@ function renderPassport(){
     '<button class="btn ghost" onclick="inviteCompare()">'+(en?'Compare with a friend':'Сравниться с другом')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button>'+
     '<button class="btn ghost" onclick="go(\'home\')">'+(en?'Home':'На главную')+'</button></div>';
-  host.innerHTML=hero+bar+steps+summary+big+actions;
+  var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
+  host.innerHTML=hero+changeCard(en)+bar+steps+summary+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
 /* ===== SOUL SHEET — game layer: Big Five → RPG character + growth quests =====
