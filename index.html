@@ -521,7 +521,7 @@
   .share-card .sbrand{font-size:9px;letter-spacing:.24em;color:#a39ccb;margin-top:16px;font-family:'SF Mono',monospace}
   .toast-dim{position:fixed;inset:0;z-index:59;background:rgba(4,3,10,.5);opacity:0;pointer-events:none;transition:opacity .26s ease}
   .toast-dim.show{opacity:1}
-  .toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 74px);left:50%;transform:translateX(-50%) translateY(-16px) scale(.92);background:linear-gradient(160deg,#262048,#16132e);border:1px solid #514a7e;border-radius:16px;padding:14px 22px;font-size:15px;font-weight:800;z-index:60;opacity:0;transition:transform .34s cubic-bezier(.2,1.4,.4,1),opacity .26s;box-shadow:0 18px 50px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.16);max-width:min(90vw,360px);text-align:center;color:#fff;line-height:1.35}
+  .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);left:50%;transform:translateX(-50%) translateY(16px) scale(.92);background:linear-gradient(160deg,#262048,#16132e);border:1px solid #514a7e;border-radius:16px;padding:14px 22px;font-size:15px;font-weight:800;z-index:60;opacity:0;transition:transform .34s cubic-bezier(.2,1.4,.4,1),opacity .26s;box-shadow:0 18px 50px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.16);max-width:min(90vw,360px);text-align:center;color:#fff;line-height:1.35}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
   /* insight capture FAB + notes */
   .ins-fab{position:fixed;right:16px;bottom:88px;z-index:55;width:54px;height:54px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:linear-gradient(135deg,#7C3AFF,#00E0C7);color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(124,58,255,.5),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:transform .18s ease}
@@ -827,7 +827,7 @@
         </div>
       </div>
       <div class="action-stack">
-        <button class="btn go" id="resShareBtn" onclick="openShareHub()">Поделиться</button>
+        <button class="btn ghost" id="resShareBtn" onclick="openShareHub()">Поделиться</button>
       </div>
       <div id="resFeedback" style="margin-top:16px"></div>
     </div>
@@ -2615,6 +2615,17 @@ function normalizeMeet(m){
   if(m&&m.peer&&(!m.br||!m.dialogue||!m.why)){var br=matchBreakdown(m.peer);m.br=br;m.score=br.score;m.dialogue=cloneDialogue(m.peer,br);m.why=whyTalk(m.peer,br);}
   return m;
 }
+/* early taste of the magic: after the CORE test, let the clone meet ONE resonant person (best match), before 5/5 */
+function openTeaserMeet(){
+  if(!S.result)return;
+  var best=null,bestBr=null;
+  PEER_POOL.forEach(function(pp){var br=matchBreakdown(pp);if(!best||br.score>bestBr.score){best=pp;bestBr=br;}});
+  if(!best)return;
+  var meet={peer:best,score:bestBr.score,br:bestBr,dialogue:cloneDialogue(best,bestBr),why:whyTalk(best,bestBr)};
+  S._lastMeet=[meet];S._teaserSeen=true;save();
+  track('teaser_clone',{score:bestBr.score});
+  openConversation(0);
+}
 function sendAvatarOut(){
   if(avatarProgress()<5)return;
   S._sent=true;save();reportState('clone_sent');
@@ -3045,6 +3056,10 @@ function renderHome(){
     var t=TYPES[S.result.primary];
     ih.innerHTML='<div class="section-h"><h2>'+(en?'Insight for you':'Инсайт для тебя')+'</h2></div><div class="card-soft" style="border-left:3px solid '+t.color+'"><div class="ch" style="color:'+t.color+'">✨ '+(S.name?S.name:(en?'your portrait':'твой портрет'))+'</div><div class="cb">'+ins[idx]+'</div>'+(ins.length>1?'<div style="font-size:12px;color:#7fe9ff;margin-top:10px;cursor:pointer" onclick="renderHome()">'+(en?'another insight →':'ещё инсайт →')+'</div>':'')+'</div>';
     ih.innerHTML+='<div class="card-soft" onclick="go(\'insights\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;margin-top:10px"><span style="font-size:22px">💡</span><div><div class="ch">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</div><div class="cb">'+((S.insights&&S.insights.length)?(en?'Tap to view your saved thoughts':'Открыть сохранённые мысли'):(en?'Catch a thought during a test (💡)':'Лови мысли во время теста (💡)'))+'</div></div></div>';
+    // early clone teaser — taste the "magic" before assembling the full avatar (5/5)
+    if(avatarProgress()<5){
+      ih.innerHTML+='<div class="card-soft" style="border:1px solid rgba(212,255,79,.35);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.10),transparent 70%),rgba(28,24,46,.5);margin-top:10px"><div class="ch" style="color:#D4FF4F">✨ '+(en?'Someone already resonates with you':'Кто-то уже резонирует с тобой')+'</div><div class="cb">'+(en?'Your clone made the first move. See how your clones talked — then assemble your avatar (5/5) so it finds everyone itself.':'Твой клон сделал первый шаг. Посмотри, как поговорили ваши клоны — а потом собери аватар (5/5), чтобы он находил всех сам.')+'</div><button class="btn lime" style="margin-top:12px" onclick="openTeaserMeet()">'+(en?'Watch the clones talk →':'Смотреть диалог клонов →')+'</button></div>';
+    }
   }else ih.innerHTML='';
   var nh=document.getElementById('homeNext');
   if(S.result){
