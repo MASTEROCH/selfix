@@ -297,6 +297,10 @@
   .analyze .ring{width:116px;height:116px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,#7C3AFF 140deg,#00E0C7 250deg,transparent 340deg);-webkit-mask:radial-gradient(circle,transparent 52%,#000 54%);mask:radial-gradient(circle,transparent 52%,#000 54%);animation:spin 1.05s linear infinite,ringPulse 1.7s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(124,58,255,.45))}
   @keyframes ringPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(124,58,255,.35))}50%{filter:drop-shadow(0 0 22px rgba(0,224,199,.5))}}
   .analyze .at{font-size:14px;letter-spacing:.06em;color:#c6c0e4;min-height:20px}
+  /* universal brand-spiral loader (test→result transition, and any load) */
+  .load-spiral{width:132px;height:132px;animation:spin 14s linear infinite;filter:drop-shadow(0 0 16px rgba(124,58,255,.4))}
+  .load-spiral svg{width:100%;height:100%;display:block}
+  .load-spiral .ls-path{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.8s cubic-bezier(.4,0,.2,1) forwards,strokeGlow 2.6s ease-in-out 1.8s infinite}
 
   /* RESULT */
   .typehero{position:relative;border-radius:26px;padding:34px 24px;margin-bottom:18px;text-align:center;overflow:hidden;border:1px solid #38335a;box-shadow:0 26px 64px rgba(0,0,0,.55)}
@@ -562,6 +566,35 @@
   .frame-mini.frame-cyan{box-shadow:inset 0 0 0 3px #00E0C7,0 0 12px rgba(0,224,199,.5)}
   .frame-mini.frame-violet{box-shadow:inset 0 0 0 3px #7C3AFF,0 0 12px rgba(124,58,255,.55)}
   .frame-mini.frame-rainbow{box-shadow:inset 0 0 0 3px #ff5d6c,inset 0 0 0 6px #5d8cff,0 0 14px rgba(124,58,255,.5)}
+  /* legendary / unique animated frames */
+  .av-hero.frame-aurora .av-core{box-shadow:0 0 0 3px #52e6a4,0 0 26px rgba(0,224,199,.6);animation:fr-aurora 3s ease-in-out infinite}
+  @keyframes fr-aurora{0%,100%{box-shadow:0 0 0 3px #52e6a4,0 0 22px rgba(82,230,164,.5)}50%{box-shadow:0 0 0 4px #00e0c7,0 0 32px rgba(0,224,199,.75)}}
+  .av-hero.frame-fire .av-core{box-shadow:0 0 0 3px #ff5d6c,0 0 26px rgba(255,93,108,.6);animation:fr-fire 1.5s ease-in-out infinite}
+  @keyframes fr-fire{0%,100%{box-shadow:0 0 0 3px #ff5d6c,0 0 22px rgba(255,93,108,.55)}50%{box-shadow:0 0 0 4px #ffae42,0 0 34px rgba(255,174,66,.85)}}
+  .av-hero.frame-neon .av-core{box-shadow:0 0 0 2px #00e0c7,0 0 16px #00e0c7,0 0 34px rgba(0,224,199,.85);animation:fr-neon 1.8s ease-in-out infinite}
+  @keyframes fr-neon{0%,100%{box-shadow:0 0 0 2px #00e0c7,0 0 14px #00e0c7,0 0 28px rgba(0,224,199,.7)}50%{box-shadow:0 0 0 2px #7c3aff,0 0 20px #7c3aff,0 0 40px rgba(124,58,255,.85)}}
+  .av-hero.frame-galaxy .av-core{box-shadow:0 0 0 3px #7c3aff,0 0 0 6px #5d8cff,0 0 32px rgba(124,58,255,.75);animation:fr-galaxy 2.4s ease-in-out infinite}
+  @keyframes fr-galaxy{0%,100%{box-shadow:0 0 0 3px #7c3aff,0 0 0 6px #5d8cff,0 0 28px rgba(124,58,255,.7)}50%{box-shadow:0 0 0 3px #ff5d8f,0 0 0 6px #7c3aff,0 0 36px rgba(255,93,143,.8)}}
+  .frame-mini.frame-aurora{box-shadow:inset 0 0 0 3px #52e6a4,0 0 12px rgba(0,224,199,.55)}
+  .frame-mini.frame-fire{box-shadow:inset 0 0 0 3px #ff5d6c,inset 0 0 0 6px #ffae42,0 0 12px rgba(255,93,108,.55)}
+  .frame-mini.frame-neon{box-shadow:inset 0 0 0 2px #00e0c7,0 0 12px #00e0c7}
+  .frame-mini.frame-galaxy{box-shadow:inset 0 0 0 3px #7c3aff,inset 0 0 0 6px #5d8cff,0 0 12px rgba(124,58,255,.6)}
+  /* rarity badges + borders + try-on bar */
+  .ward-item{position:relative}
+  .ward-item.r-rare{border-color:rgba(93,140,255,.45)}
+  .ward-item.r-legend{border-color:rgba(255,206,107,.5)}
+  .ward-item.r-unique{border-color:rgba(212,255,79,.55)}
+  .ward-item.trying{outline:2px solid #fff;outline-offset:1px}
+  .ward-badge{font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:7px;margin-top:5px;display:inline-block}
+  .ward-badge.rare{color:#9fc0ff;background:rgba(93,140,255,.16)}
+  .ward-badge.legend{color:#ffd98a;background:rgba(255,206,107,.16)}
+  .ward-badge.unique{color:#e6ff8f;background:rgba(212,255,79,.16)}
+  .rar-rare{color:#9fc0ff}.rar-legend{color:#ffd98a}.rar-unique{color:#e6ff8f}
+  .ward-lock{position:absolute;top:5px;right:7px;font-size:11px;opacity:.8}
+  .ward-buybar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:16px;padding:12px 14px;margin-bottom:12px;background:linear-gradient(135deg,rgba(124,58,255,.25),rgba(0,224,199,.14));border:1px solid rgba(255,255,255,.16)}
+  .ward-bb-t{font-size:13px;font-weight:800;color:#fff}
+  .ward-bb-s{font-size:11px;color:#cfc8ee;margin-top:2px}
+  .ward-buybar .btn{padding:10px 16px;font-size:13px;flex:0 0 auto;width:auto;margin:0}
   .savedot{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-size:10px;color:#52e6a4;background:rgba(82,230,164,.12);border:1px solid rgba(82,230,164,.3);padding:3px 10px;border-radius:8px;opacity:0;transition:.3s;z-index:40}
   .savedot.show{opacity:1}
 
@@ -807,7 +840,7 @@
     </div>
 
     <!-- ANALYZE -->
-    <div class="screen hidden" id="sAnalyze"><div class="analyze"><div class="ring"></div><div class="at" id="analyzeText">Читаю твои ответы…</div></div></div>
+    <div class="screen hidden" id="sAnalyze"><div class="analyze"><div class="load-spiral"><svg viewBox="0 0 100 100" fill="none"><defs><linearGradient id="lsg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5d6c"/><stop offset=".4" stop-color="#ffae42"/><stop offset=".7" stop-color="#52dd92"/><stop offset="1" stop-color="#5d8cff"/></linearGradient></defs><path class="ls-path" d="M54.0,50.0 L54.2,50.5 L54.4,51.1 L54.4,51.7 L54.4,52.4 L54.2,53.1 L54.0,53.8 L53.7,54.4 L53.2,55.1 L52.7,55.7 L52.0,56.2 L51.3,56.6 L50.4,57.0 L49.5,57.2 L48.6,57.4 L47.6,57.4 L46.6,57.2 L45.6,57.0 L44.6,56.5 L43.6,56.0 L42.7,55.3 L41.9,54.5 L41.2,53.5 L40.6,52.4 L40.1,51.3 L39.8,50.0 L39.6,48.7 L39.6,47.3 L39.8,46.0 L40.1,44.6 L40.7,43.2 L41.4,42.0 L42.4,40.8 L43.4,39.7 L44.7,38.7 L46.1,37.9 L47.6,37.2 L49.2,36.8 L50.8,36.5 L52.6,36.5 L54.3,36.7 L56.1,37.1 L57.8,37.8 L59.4,38.6 L60.9,39.7 L62.3,41.0 L63.6,42.5 L64.6,44.2 L65.5,46.0 L66.1,48.0 L66.5,50.0 L66.6,52.1 L66.5,54.2 L66.0,56.4 L65.3,58.4 L64.4,60.4 L63.1,62.3 L61.6,64.1 L59.9,65.6 L58.0,67.0 L55.9,68.1 L53.6,68.9 L51.2,69.5 L48.8,69.7 L46.3,69.6 L43.7,69.3 L41.3,68.5 L38.9,67.5 L36.6,66.2 L34.5,64.5 L32.6,62.6 L30.9,60.5 L29.5,58.1 L28.4,55.5 L27.7,52.8 L27.2,50.0 L27.2,47.1 L27.5,44.2 L28.2,41.3 L29.2,38.6 L30.6,35.9 L32.3,33.4 L34.4,31.1 L36.7,29.1 L39.4,27.4 L42.2,26.0 L45.2,25.0 L48.4,24.3 L51.6,24.1 L54.9,24.2 L58.2,24.8 L61.4,25.8 L64.5,27.2 L67.4,29.0 L70.0,31.2 L72.5,33.7 L74.5,36.5 L76.3,39.6 L77.6,42.9 L78.5,46.4 L79.0,50.0 L79.0,53.7 L78.6,57.3 L77.7,61.0 L76.3,64.5 L74.5,67.8 L72.2,70.9 L69.6,73.7 L66.6,76.2 L63.3,78.3 L59.7,80.0 L55.9,81.2 L52.0,81.9 L48.0,82.2 L43.9,81.9 L39.9,81.1 L35.9,79.9 L32.2,78.1 L28.6,75.8 L25.4,73.1 L22.5,70.0 L20.0,66.5 L17.9,62.7 L16.3,58.6 L15.3,54.4 L14.8,50.0 L14.8,45.6 L15.4,41.1 L16.5,36.7 L18.2,32.5 L20.5,28.5 L23.2,24.8 L26.4,21.5 L30.0,18.5 L34.0,16.1 L38.3,14.1 L42.9,12.7 L47.6,11.8 L52.4,11.6 L57.3,11.9 L62.1,12.9 L66.7,14.5 L71.2,16.6 L75.3,19.4 L79.2,22.6 L82.6,26.3 L85.5,30.5 L87.9,35.0 L89.7,39.8 L90.9,44.8 L91.5,50.0 L91.4,55.2 L90.7,60.4 L89.3,65.6 L87.2,70.5 L84.6,75.1 L81.3,79.4 L77.6,83.3 L73.3,86.7 L68.6,89.6 L63.6,91.8" stroke="url(#lsg)" stroke-width="3.4" stroke-linecap="round"/></svg></div><div class="at" id="analyzeText">Читаю твои ответы…</div></div></div>
 
     <!-- RESULT -->
     <div class="screen hidden" id="sResult">
@@ -1713,22 +1746,26 @@ var WARD_CATS=[
  {k:'backgroundColor',ru:'Фон',en:'Background',opt:'backgroundColor',color:true},
  {k:'frame',ru:'Рамка',en:'Frame',opt:'frame',frame:true}
 ];
+var RARITY_PRICE={basic:0,rare:50,legend:150,unique:300};
+function wardPrice(r){return RARITY_PRICE[r]||0;}
+function rarName(r,en){return r==='unique'?(en?'Unique':'Уникальная'):r==='legend'?(en?'Legendary':'Легендарная'):r==='rare'?(en?'Rare':'Редкая'):(en?'Basic':'Базовая');}
+/* {v, r} — rarity drives price. skinColor stays free (identity). Values are DiceBear avataaars enums / hex. */
 var WARD_ITEMS={
- top:[{v:'shortFlat',p:0},{v:'theCaesar',p:0},{v:'bob',p:60},{v:'curly',p:80},{v:'dreads',p:120},{v:'fro',p:120},{v:'bun',p:80},{v:'longButNotTooLong',p:100}],
- hat:[{v:'hat',p:80},{v:'turban',p:120},{v:'winterHat1',p:100},{v:'hijab',p:100}],
- hairColor:[{v:'2c1b18',p:0},{v:'4a312c',p:0},{v:'724133',p:40},{v:'a55728',p:60},{v:'b58143',p:60},{v:'c93305',p:120},{v:'e8e1e1',p:150}],
- accessories:[{v:'round',p:60},{v:'prescription02',p:60},{v:'wayfarers',p:120},{v:'sunglasses',p:150}],
- facialHair:[{v:'beardLight',p:60},{v:'beardMedium',p:80},{v:'moustacheFancy',p:80},{v:'beardMajestic',p:150}],
- clothing:[{v:'shirtCrewNeck',p:0},{v:'hoodie',p:80},{v:'blazerAndShirt',p:120},{v:'graphicShirt',p:100},{v:'overall',p:80},{v:'collarAndSweater',p:100}],
- clothesColor:[{v:'262e33',p:0},{v:'7c3aff',p:60},{v:'00e0c7',p:60},{v:'ff5d8f',p:80},{v:'ffb547',p:80},{v:'d4ff4f',p:120}],
- skinColor:[{v:'ffdbb4',p:0},{v:'edb98a',p:0},{v:'d08b5b',p:0},{v:'ae5d29',p:0},{v:'614335',p:0}],
- eyes:[{v:'default',p:0},{v:'happy',p:40},{v:'wink',p:60},{v:'squint',p:40},{v:'hearts',p:120}],
- mouth:[{v:'smile',p:0},{v:'default',p:0},{v:'twinkle',p:60},{v:'serious',p:40},{v:'tongue',p:80}],
- backgroundColor:[{v:'ffae42',p:0},{v:'1c1838',p:40},{v:'7c3aff',p:60},{v:'00e0c7',p:60},{v:'ff5d8f',p:80},{v:'d4ff4f',p:120}],
- frame:[{v:'none',p:0},{v:'gold',p:100},{v:'cyan',p:100},{v:'violet',p:120},{v:'rainbow',p:200}]
+ top:[{v:'shortFlat',r:'basic'},{v:'shortRound',r:'basic'},{v:'shortWaved',r:'basic'},{v:'theCaesar',r:'basic'},{v:'bob',r:'rare'},{v:'curly',r:'rare'},{v:'sides',r:'rare'},{v:'straight01',r:'rare'},{v:'shaggy',r:'rare'},{v:'fro',r:'legend'},{v:'bun',r:'legend'},{v:'dreads01',r:'legend'},{v:'longButNotTooLong',r:'legend'},{v:'miaWallace',r:'unique'},{v:'frida',r:'unique'}],
+ hat:[{v:'hat',r:'rare'},{v:'hijab',r:'rare'},{v:'froBand',r:'rare'},{v:'turban',r:'legend'},{v:'winterHat01',r:'legend'}],
+ hairColor:[{v:'2c1b18',r:'basic'},{v:'4a312c',r:'basic'},{v:'724133',r:'basic'},{v:'a55728',r:'rare'},{v:'b58143',r:'rare'},{v:'d6b370',r:'rare'},{v:'c93305',r:'legend'},{v:'e8e1e1',r:'legend'},{v:'7c3aff',r:'unique'},{v:'00e0c7',r:'unique'},{v:'ff5d8f',r:'unique'}],
+ accessories:[{v:'round',r:'rare'},{v:'prescription01',r:'rare'},{v:'prescription02',r:'rare'},{v:'wayfarers',r:'legend'},{v:'sunglasses',r:'legend'},{v:'eyepatch',r:'unique'},{v:'kurt',r:'unique'}],
+ facialHair:[{v:'beardLight',r:'rare'},{v:'moustacheFancy',r:'rare'},{v:'beardMedium',r:'legend'},{v:'moustacheMagnum',r:'legend'},{v:'beardMajestic',r:'unique'}],
+ clothing:[{v:'shirtCrewNeck',r:'basic'},{v:'shirtScoopNeck',r:'basic'},{v:'shirtVNeck',r:'basic'},{v:'hoodie',r:'rare'},{v:'collarAndSweater',r:'rare'},{v:'blazerAndShirt',r:'legend'},{v:'blazerAndSweater',r:'legend'},{v:'graphicShirt',r:'legend'},{v:'overall',r:'unique'}],
+ clothesColor:[{v:'262e33',r:'basic'},{v:'3c4f5c',r:'basic'},{v:'5199e4',r:'basic'},{v:'7c3aff',r:'rare'},{v:'00e0c7',r:'rare'},{v:'ff5d8f',r:'rare'},{v:'ffb547',r:'rare'},{v:'d4ff4f',r:'legend'},{v:'e6e6e6',r:'legend'},{v:'ffd700',r:'unique'},{v:'ff0080',r:'unique'}],
+ skinColor:[{v:'ffdbb4',r:'basic'},{v:'edb98a',r:'basic'},{v:'fd9841',r:'basic'},{v:'d08b5b',r:'basic'},{v:'ae5d29',r:'basic'},{v:'614335',r:'basic'}],
+ eyes:[{v:'default',r:'basic'},{v:'happy',r:'rare'},{v:'wink',r:'rare'},{v:'squint',r:'rare'},{v:'hearts',r:'legend'},{v:'side',r:'legend'},{v:'winkWacky',r:'unique'},{v:'surprised',r:'unique'}],
+ mouth:[{v:'default',r:'basic'},{v:'smile',r:'basic'},{v:'twinkle',r:'rare'},{v:'serious',r:'rare'},{v:'tongue',r:'legend'},{v:'eating',r:'legend'},{v:'screamOpen',r:'unique'}],
+ backgroundColor:[{v:'ffae42',r:'basic'},{v:'1c1838',r:'basic'},{v:'3c4f5c',r:'basic'},{v:'7c3aff',r:'rare'},{v:'00e0c7',r:'rare'},{v:'ff5d8f',r:'rare'},{v:'d4ff4f',r:'legend'},{v:'ffd700',r:'legend'},{v:'0a0a0a',r:'unique'},{v:'ff0080',r:'unique'}],
+ frame:[{v:'none',r:'basic'},{v:'gold',r:'rare'},{v:'cyan',r:'rare'},{v:'violet',r:'rare'},{v:'rainbow',r:'legend'},{v:'aurora',r:'legend'},{v:'fire',r:'legend'},{v:'neon',r:'unique'},{v:'galaxy',r:'unique'}]
 };
 var _wardTab=0;
-function setWardTab(i){_wardTab=i;renderWardrobe();}
+function setWardTab(i){_wardTab=i;S._tryOn=null;renderWardrobe();}
 function wardPreview(opt,value){
   try{var o=avatarOpts(avatarTraits());
     if(opt==='backgroundColor'){o.backgroundColor=[value];o.backgroundType=['solid'];}
@@ -1736,34 +1773,55 @@ function wardPreview(opt,value){
     return window.SpiralAvatar?window.SpiralAvatar(o):'';
   }catch(e){return '';}
 }
-function wardTap(opt,value,price){
+/* big preview = equipped look + (transient) try-on override */
+function wardHero(){
+  try{
+    var o=avatarOpts(avatarTraits());var t=S._tryOn;
+    if(t){ if(t.opt==='backgroundColor'){o.backgroundColor=[t.value];o.backgroundType=['solid'];}
+      else if(t.opt!=='frame'){o[t.opt]=[t.value];if(t.opt==='accessories')o.accessoriesProbability=[100];if(t.opt==='facialHair')o.facialHairProbability=[100];} }
+    var svg=window.SpiralAvatar?window.SpiralAvatar(o):buildAvatarSVG(avatarTraits());
+    var frame=(t&&t.opt==='frame')?t.value:((S.equip&&S.equip.frame)||'none');
+    return '<div class="av-hero big'+(frame&&frame!=='none'?' frame-'+frame:'')+'" style="--ac:#7C3AFF"><div class="av-core">'+svg+'</div></div>';
+  }catch(e){return avatarHero('big');}
+}
+function wardOwned(opt,v,r){return r==='basic'||(S.ownedCosmetics&&S.ownedCosmetics[opt+':'+v]);}
+function wardEquip(opt,v){S.equip=S.equip||{};if(S.equip[opt]===v&&opt!=='skinColor')delete S.equip[opt];else S.equip[opt]=v;S._tryOn=null;save();hap('selection');renderWardrobe();}
+function wardTap(opt,v,r){
   var en=isEN();
   if(avatarProgress()<5){pop(en?'Assemble your avatar first':'Сначала собери аватара');return;}
-  var key=opt+':'+value;var owned=(price===0)||(S.ownedCosmetics&&S.ownedCosmetics[key]);
-  if(owned){S.equip=S.equip||{};if(S.equip[opt]===value)delete S.equip[opt];else S.equip[opt]=value;save();hap('selection');renderWardrobe();return;}
-  if(S.stars<price){pop(en?'Not enough ⭐ — earn more in duels':'Недостаточно ⭐ — заработай в дуэлях');return;}
-  modal(en?'Buy this item?':'Купить предмет?',(en?'Unlock and wear it for ':'Открыть и надеть за ')+price+' ⭐.',function(){
-    S.stars-=price;S.ownedCosmetics=S.ownedCosmetics||{};S.ownedCosmetics[key]=1;S.equip=S.equip||{};S.equip[opt]=value;save();syncWallet();track('cosmetic_buy',{opt:opt,value:value,price:price});closeModal();hap('success');pop(en?'Equipped ✨':'Надето ✨');renderWardrobe();
+  if(wardOwned(opt,v,r)){wardEquip(opt,v);return;}
+  S._tryOn={opt:opt,value:v,r:r};hap('selection');renderWardrobe(); // try-on preview; apply requires purchase
+}
+function wardBuy(){
+  var en=isEN();var t=S._tryOn;if(!t)return;var price=wardPrice(t.r);
+  buyStars('cos_'+t.opt+'_'+t.value, (en?'Avatar item':'Предмет аватара'), price, function(){
+    S.ownedCosmetics=S.ownedCosmetics||{};S.ownedCosmetics[t.opt+':'+t.value]=1;S.equip=S.equip||{};S.equip[t.opt]=t.value;S._tryOn=null;save();track('cosmetic_buy',{opt:t.opt,value:t.value,price:price});hap('success');pop(en?'Equipped ✨':'Надето ✨');renderWardrobe();
   });
 }
 function renderWardrobe(){
   var en=isEN();var host=document.getElementById('wardrobeBody');if(!host)return;
-  var head='<div class="section-h"><h2>'+(en?'Avatar studio':'Студия аватара')+'</h2><span style="font-size:13px;font-weight:800;color:#ffce6b">'+S.stars+' ⭐</span></div>';
-  var prev='<div style="display:flex;justify-content:center;margin:4px 0 14px">'+avatarHero('big')+'</div>';
+  var head='<div class="section-h"><h2>'+(en?'Avatar studio':'Студия аватара')+'</h2></div>';
   if(avatarProgress()<5){
-    host.innerHTML=head+prev+'<div class="card-soft" style="text-align:center"><div class="ch" style="justify-content:center">🔒 '+(en?'LOCKED':'ЗАБЛОКИРОВАНО')+'</div><div class="cb">'+(en?'Finish assembling your avatar (5/5 tests) to unlock customization.':'Собери аватара полностью (5/5 тестов), чтобы открыть кастомизацию.')+'</div></div>';
+    host.innerHTML=head+'<div style="display:flex;justify-content:center;margin:4px 0 14px">'+avatarHero('big')+'</div><div class="card-soft" style="text-align:center"><div class="ch" style="justify-content:center">🔒 '+(en?'LOCKED':'ЗАБЛОКИРОВАНО')+'</div><div class="cb">'+(en?'Finish assembling your avatar (5/5 tests) to unlock customization.':'Собери аватара полностью (5/5 тестов), чтобы открыть кастомизацию.')+'</div></div>';
     return;
+  }
+  var prev='<div style="display:flex;justify-content:center;margin:4px 0 12px">'+wardHero()+'</div>';
+  // try-on action bar
+  var bar='';var t=S._tryOn;
+  if(t){var price=wardPrice(t.r);
+    bar='<div class="ward-buybar"><div><div class="ward-bb-t">'+(en?'Trying on':'Примеряешь')+' · <span class="rar-'+t.r+'">'+rarName(t.r,en)+'</span></div><div class="ward-bb-s">'+(en?'Buy via Telegram Stars to keep it on':'Купи через Telegram Stars, чтобы оставить')+'</div></div><button class="btn gold" onclick="wardBuy()">'+(en?'Buy · ⭐ ':'Купить · ⭐ ')+price+'</button></div>';
   }
   var tabs='<div class="ward-tabs">'+WARD_CATS.map(function(c,i){return '<button class="ward-tab'+(i===_wardTab?' on':'')+'" onclick="setWardTab('+i+')">'+(en?c.en:c.ru)+'</button>';}).join('')+'</div>';
   var cat=WARD_CATS[_wardTab];var items=WARD_ITEMS[cat.k]||[];
   var grid='<div class="ward-grid">'+items.map(function(it){
-    var key=cat.opt+':'+it.v;var owned=(it.p===0)||(S.ownedCosmetics&&S.ownedCosmetics[key]);var equipped=(S.equip&&S.equip[cat.opt]===it.v);
+    var owned=wardOwned(cat.opt,it.v,it.r);var equipped=(S.equip&&S.equip[cat.opt]===it.v);var trying=(t&&t.opt===cat.opt&&t.value===it.v);
     var pv=cat.color?('<div class="ward-sw" style="background:#'+it.v+'"></div>'):cat.frame?('<div class="ward-sw frame-mini frame-'+it.v+'"></div>'):('<div class="ward-mini">'+wardPreview(cat.opt,it.v)+'</div>');
-    var label=equipped?(en?'On ✓':'Надето ✓'):owned?(en?'Wear':'Надеть'):(it.p===0?(en?'Free':'Free'):(it.p+' ⭐'));
-    return '<div class="ward-item'+(equipped?' eq':'')+'" onclick="wardTap(\''+cat.opt+'\',\''+it.v+'\','+it.p+')"><div class="ward-prev">'+pv+'</div><div class="ward-lbl">'+label+'</div></div>';
+    var badge=(it.r&&it.r!=='basic')?'<div class="ward-badge '+it.r+'">'+rarName(it.r,en)+'</div>':'';
+    var label=equipped?(en?'On ✓':'Надето ✓'):owned?(en?'Wear':'Надеть'):('⭐ '+wardPrice(it.r));
+    return '<div class="ward-item r-'+(it.r||'basic')+(equipped?' eq':'')+(trying?' trying':'')+'" onclick="wardTap(\''+cat.opt+'\',\''+it.v+'\',\''+(it.r||'basic')+'\')"><div class="ward-prev">'+pv+(owned||it.r==='basic'?'':'<span class="ward-lock">🔒</span>')+'</div>'+badge+'<div class="ward-lbl">'+label+'</div></div>';
   }).join('')+'</div>';
-  var note='<div class="cb" style="font-size:11.5px;color:#8a83ad;margin-top:14px;text-align:center">'+(en?'Earn ⭐ in duels & insights. More categories (moles, tattoos) and NFT export coming.':'Зарабатывай ⭐ в дуэлях и за инсайты. Скоро: родинки, тату и экспорт в NFT.')+'</div>';
-  host.innerHTML=head+prev+tabs+grid+note;
+  var note='<div class="cb" style="font-size:11.5px;color:#8a83ad;margin-top:14px;text-align:center">'+(en?'Tap any item to try it on. Buy via Telegram Stars to keep it. (moles, tattoos & NFT export coming)':'Жми на любой предмет — примерь. Покупка через Telegram Stars, чтобы оставить. (родинки, тату и NFT — скоро)')+'</div>';
+  host.innerHTML=head+prev+bar+tabs+grid+note;
 }
 function lifePathNum(d,m,y){var s=(''+d+m+(y||1990)).split('').reduce(function(a,b){return a+(+b||0);},0);while(s>9&&s!==11&&s!==22){s=(''+s).split('').reduce(function(a,b){return a+(+b);},0);}return s||1;}
 var ENERGY={generator:{name:'Двигатель',glyph:'🔋',line:'у тебя глубокий ровный источник сил — ты выкладываешься в то, что откликается, и тогда тебя не остановить'},projector:{name:'Направляющий',glyph:'🧭',line:'ты видишь людей и системы насквозь — твоя сила не в напоре, а в точном слове в нужный момент'},manifestor:{name:'Инициатор',glyph:'⚡',line:'ты создаёшь импульс и запускаешь то, чего ещё нет — тебе тесно, когда ждут разрешения'},reflector:{name:'Зеркало',glyph:'🌙',line:'ты тонко улавливаешь среду — выбирай окружение осознанно, оно формирует тебя сильнее, чем ты думаешь'}};
