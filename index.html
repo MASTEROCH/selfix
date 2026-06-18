@@ -1552,6 +1552,10 @@ function avatarTraits(){
   return tr;
 }
 function avatarProgress(){var n=0;if(S.result)n++;var t=S.tests||{};['love','work','fears','shadow'].forEach(function(k){if(t[k])n++;});return n;}
+/* the social magic (clone meets people, talk to your double, chats) unlocks right after the CORE test.
+   completing all 5 facets doesn't gate the magic — it sharpens it (deeper, more accurate matches). */
+function canMeet(){return !!S.result;}
+function avatarFull(){return avatarProgress()>=5;}
 
 
 /* ===== personalization (name + birth) ===== */
@@ -2473,10 +2477,10 @@ function avatarVisual(tr,big){
   return '<div class="'+cls+'">'+buildAvatarSVG(tr)+shroud+'</div>';
 }
 function avatarValueText(prog,en){
-  if(prog>=5)return en?'Your avatar is fully assembled — a one-of-a-kind portrait of you. Send it to meet others and bring back insights, save it to stories, share it.'
-                     :'Аватар собран полностью — уникальный портрет тебя. Отправь его знакомиться и приносить инсайты, сохрани в сторис, поделись.';
-  return en?('This is your living avatar — a face built only from your answers. Each test reveals one facial feature. At 5/5 it comes alive: it can meet other people\u2019s avatars, bring you insights, and become your shareable face. '+prog+'/5 revealed — '+(5-prog)+' to go.')
-          :('Это твой живой аватар — лицо, собранное только из твоих ответов. Каждый тест открывает одну черту. На 5/5 он оживает: знакомится с аватарами других, приносит тебе инсайты и становится твоим лицом для шеринга. Открыто '+prog+'/5 — осталось '+(5-prog)+'.');
+  if(prog>=5)return en?'Your avatar is fully assembled — a one-of-a-kind portrait of you, and your clone matches at their sharpest. Send it to meet others, save it to stories, share it.'
+                     :'Аватар собран полностью — уникальный портрет тебя, и клон матчит максимально точно. Отправь его знакомиться, сохрани в сторис, поделись.';
+  return en?('This is your living avatar — a face built only from your answers. It already meets other clones from your core profile; each test you complete reveals a feature and sharpens who it attracts. '+prog+'/5 revealed — '+(5-prog)+' to go.')
+          :('Это твой живой аватар — лицо, собранное только из твоих ответов. Он уже знакомится с клонами других по твоему ядру; каждый пройденный тест открывает черту и делает выбор «своих» точнее. Открыто '+prog+'/5 — осталось '+(5-prog)+'.');
 }
 function avatarCardHTML(badge){
   var tr=avatarTraits();var prog=avatarProgress();var done=prog>=5;var en=(S.lang==='en');
@@ -2501,7 +2505,13 @@ var PEER_POOL=[
   {name:'Тимур',type:'orange',love:'pursuer',work:'achiever',fears:'control',shadow:'manip'},
   {name:'Вера',type:'yellow',love:'avoidant',work:'ideator',fears:'identity',shadow:'cold'},
   {name:'Ника',type:'red',love:'pursuer',work:'leader',fears:'identity',shadow:'escape'},
-  {name:'Глеб',type:'blue',love:'avoidant',work:'doer',fears:'control',shadow:'manip'}
+  {name:'Глеб',type:'blue',love:'avoidant',work:'doer',fears:'control',shadow:'manip'},
+  {name:'Майя',type:'yellow',love:'secure',work:'ideator',fears:'control',shadow:'escape'},
+  {name:'Артём',type:'red',love:'avoidant',work:'achiever',fears:'failure',shadow:'cold'},
+  {name:'Лиза',type:'green',love:'pursuer',work:'connector',fears:'identity',shadow:'manip'},
+  {name:'Олег',type:'blue',love:'anxious',work:'doer',fears:'alone',shadow:'vengeful'},
+  {name:'Даша',type:'orange',love:'secure',work:'leader',fears:'identity',shadow:'escape'},
+  {name:'Рита',type:'yellow',love:'anxious',work:'ideator',fears:'alone',shadow:'cold'}
 ];
 /* Big Five tendency per spiral type (0..100), aligned with the duel TEND mapping */
 var TYPE_BIG={
@@ -2528,6 +2538,11 @@ var FBE_DESC_EN={
   A:{hi:'about care and harmony',lo:'direct and up for debate'},
   N:{hi:'deeply feeling',lo:'calm and steady'}
 };
+/* honesty chip: real people vs AI personas you can still talk to. Never let a user
+   mistake a demo clone for a real person — but frame the AI persona as real value. */
+function peerTag(peer){var en=isEN();return peer&&peer.real
+  ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:#52e6a4;background:rgba(82,230,164,.14);border:1px solid rgba(82,230,164,.35);padding:2px 8px;border-radius:20px">● '+(en?'real person':'реальный человек')+'</span>'
+  : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:#9b8cff;background:rgba(124,58,255,.16);border:1px solid rgba(124,58,255,.4);padding:2px 8px;border-radius:20px">✦ '+(en?'AI persona':'ИИ-персонаж')+'</span>';}
 function fSide(v){return v>=56?'hi':v<=44?'lo':'mid';}
 function poleLine(f,v){var s=fSide(v);if(s==='mid')return null;return (isEN()?FBE_DESC_EN:FBE_DESC)[f][s];}
 function hashStr(s){var h=2166136261;s=''+s;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h>>>0;}
@@ -2697,7 +2712,7 @@ function openTeaserMeet(){
   });
 }
 function sendAvatarOut(){
-  if(avatarProgress()<5)return;
+  if(!canMeet())return;
   S._sent=true;save();reportState('clone_sent');
   var host=document.getElementById('netHost');
   if(host)host.innerHTML='<div class="card-soft" style="text-align:center"><div class="net-pulse">🌀</div><div class="cb" style="margin-top:10px">'+(isEN()?'Your clone went off to meet other clones…':'Твой клон ушёл знакомиться с другими клонами…')+'</div></div>';
@@ -2719,7 +2734,7 @@ function renderMeetings(met){
     return '<div class="card-soft res-stagger" style="animation-delay:'+(idx*120)+'ms;border-left:3px solid '+pt.color+'">'+
       '<div style="display:flex;align-items:center;gap:13px;margin-bottom:6px">'+
         '<div class="cl-ring" style="--p:'+m.score+';--rc:'+sc+';width:54px;height:54px"><b style="font-size:14px">'+m.score+'</b></div>'+
-        '<div style="flex:1"><div style="font-weight:800">'+m.peer.name+' · '+Tt(m.peer.type).name+' '+typeGlyph(m.peer.type,15)+'</div>'+
+        '<div style="flex:1"><div style="font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+m.peer.name+' · '+Tt(m.peer.type).name+' '+typeGlyph(m.peer.type,15)+' '+peerTag(m.peer)+'</div>'+
         '<div style="font-size:12px;color:'+sc+';font-weight:700">'+why.head+'</div></div></div>'+
       '<div class="cb" style="font-size:13.5px">'+why.body+'</div>'+
       '<button class="btn violet sm" style="margin-top:12px" onclick="openConversation('+idx+')">▶ '+(en?'Watch the clones talk':'Смотреть диалог клонов')+'</button></div>';
@@ -2752,7 +2767,7 @@ function openConversation(idx){
   var en=isEN();var pt=TYPES[m.peer.type],sc=scoreColor(m.score);
   var myAv=buildAvatarSVG(avatarTraits()),pAv=buildAvatarSVG(peerTraits(m.peer),m.peer.name);
   var header='<div class="cl-back" onclick="go(\'chats\')">← '+(en?'to connections':'к знакомствам')+'</div>'+
-    '<div class="cl-head"><div class="cl-av-lg">'+pAv+'</div><div style="flex:1"><div style="font-weight:800;font-size:17px">'+m.peer.name+'</div><div class="cl-since">'+Tt(m.peer.type).name+' '+typeGlyph(typeKeyOf(pt),15)+' · '+(en?'clone ↔ clone':'клон ↔ клон')+'</div></div>'+
+    '<div class="cl-head"><div class="cl-av-lg">'+pAv+'</div><div style="flex:1"><div style="font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+m.peer.name+' '+peerTag(m.peer)+'</div><div class="cl-since">'+Tt(m.peer.type).name+' '+typeGlyph(typeKeyOf(pt),15)+' · '+(en?'clone ↔ clone':'клон ↔ клон')+'</div></div>'+
     '<div class="cl-ring" style="--p:'+m.score+';--rc:'+sc+'"><b>'+m.score+'</b></div></div>'+
     '<div class="net-eyebrow">🤖 '+(en?'two clones talking':'диалог двух клонов')+'</div>';
   host.innerHTML=header+'<div class="cl-thread" id="clThread"></div><div id="clVerdict"></div>';
@@ -2884,7 +2899,7 @@ function cloneChat(m){
     var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
     var pbig=null;try{pbig=peerBig(m.peer);}catch(e){try{pbig=TYPE_BIG[m.peer.type];}catch(e2){}}
     var peer={name:m.peer.name,type:m.peer.type,big:pbig};
-    return fetch(CLONE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({me:me,peer:peer,score:m.score,lang:isEN()?'en':'ru'})})
+    return fetch(CLONE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({me:me,peer:peer,score:m.score,lang:isEN()?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''}),credentials:'omit'})
       .then(function(r){return r.json();}).then(function(d){
         if(d&&!d.fallback&&d.lines&&d.lines.length){if(d.verdict)m._liveVerdict=d.verdict;return d.lines.map(function(l){return {s:(l.s==='peer'?'peer':'me'),t:String(l.t||'')};});}
         return null;
@@ -2955,10 +2970,13 @@ function talkSend(){
   if(!TALK||TALK._busy)return;var en=isEN();var ta=document.getElementById('talkText');var txt=ta?ta.value.trim():'';if(!txt)return;
   ta.value='';talkGrow(ta);TALK.history.push({role:'user',content:txt});TALK._busy=true;TALK._typing=true;renderTalk();hap('selection');track('clone_talk',{mode:TALK.mode});
   var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
-  var payload={mode:TALK.mode,me:me,peer:TALK.peer?{name:TALK.peer.name,type:TALK.peer.type,big:peerBig(TALK.peer)}:null,history:TALK.history.slice(-12),lang:en?'en':'ru'};
+  var payload={mode:TALK.mode,me:me,peer:TALK.peer?{name:TALK.peer.name,type:TALK.peer.type,big:peerBig(TALK.peer)}:null,history:TALK.history.slice(-12),lang:en?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''};
   var done=function(reply){TALK._typing=false;TALK._busy=false;TALK.history.push({role:'clone',content:reply||(en?'…(couldn’t reach the clone, try again)':'…(не дозвонился до клона, попробуй ещё)')});renderTalk();};
   if(!TALK_URL){done(en?'I’m offline right now — the live clone needs a connection.':'Я сейчас офлайн — живому клону нужно соединение.');return;}
-  fetch(TALK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){done(d&&d.reply?d.reply:'');}).catch(function(){done('');});
+  fetch(TALK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){
+    if(d&&d.err==='rate_limited'){done(en?'We’ve talked a lot today — let’s pick this up tomorrow.':'Мы сегодня уже много пообщались — давай продолжим завтра.');return;}
+    done(d&&d.reply?d.reply:'');
+  }).catch(function(){done('');});
 }
 /* deep-link that works in Telegram (t.me/bot) AND on a plain web host (for custdev) */
 function deepLink(startParam){return inTelegram()?('t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
@@ -3037,29 +3055,27 @@ function renderAvatar(){
   host.innerHTML=avatarHero('big')+tierChip+
     avatarFeatureDots()+
     '<div class="card-soft" style="text-align:center"><div class="ch" style="justify-content:center">'+(en?'ASSEMBLED '+prog+' / 5 FEATURES':'СОБРАНО '+prog+' / 5 ЧЕРТ')+'</div><div class="cb">'+avatarTraitList()+'</div></div>';
-  if(done){
-    document.getElementById('avatarActions').innerHTML=
-      '<div class="action-stack">'+
-      '<button class="btn go" onclick="openTalkSelf()">'+(en?'💬 Talk to your double':'💬 Поговори со своим двойником')+'</button>'+
-      '<button class="btn cold" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>'+
-      '<button class="btn ghost" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
-      '<button class="btn ghost" onclick="saveAvatarImage()">'+(en?'Save to stories':'Сохранить в сторис')+'</button>'+
-      '</div>';
-  }else{
-    var nk=nextTest();
-    document.getElementById('avatarActions').innerHTML=
-      '<div class="action-stack">'+
-      (nk?'<button class="btn" onclick="openTest(\''+nk+'\')">'+(en?'Open “'+testTitle(nk)+'” · add a feature':'Открыть «'+testTitle(nk)+'» · собрать черту')+'</button>':'')+
-      '<button class="btn ghost" onclick="go(\'store\')">'+(en?'All tests →':'Все тесты →')+'</button>'+
-      '</div>';
-  }
-  // networking section — only when avatar fully assembled
+  var nk=nextTest();
+  var sharpen=(!done&&nk)?'<button class="btn cold" onclick="openTest(\''+nk+'\')">'+(en?'✨ Sharpen the match · «'+testTitle(nk)+'» ('+prog+'/5)':'✨ Точнее матч · «'+testTitle(nk)+'» ('+prog+'/5)')+'</button>':'';
+  document.getElementById('avatarActions').innerHTML=
+    '<div class="action-stack">'+
+    '<button class="btn go" onclick="openTalkSelf()">'+(en?'💬 Talk to your double':'💬 Поговори со своим двойником')+'</button>'+
+    sharpen+
+    (done?'<button class="btn cold" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>':'')+
+    '<button class="btn ghost" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
+    '<button class="btn ghost" onclick="saveAvatarImage()">'+(en?'Save to stories':'Сохранить в сторис')+'</button>'+
+    '</div>';
+  // networking — the core magic, available right after the core test; completing 5/5 deepens it
   var nh=document.getElementById('netHost');
-  if(done){
+  if(canMeet()){
     if(S._lastMeet&&S._lastMeet.length){renderMeetings(S._lastMeet);}
-    else{nh.innerHTML='<div class="card-soft" style="text-align:center;border:1px solid rgba(212,255,79,.3);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.1),transparent 70%),rgba(28,24,46,.5)"><div class="net-eyebrow" style="margin-bottom:8px">✨ '+(en?'your clone is ready to meet':'клон готов знакомиться')+'</div><div class="cb">'+(en?'Your clone is fully assembled. Send it out — it talks to other people’s clones itself and comes back with who you should connect with, and why.':'Твой клон собран полностью. Отправь его — он сам поговорит с клонами других людей и вернётся с тем, с кем тебе стоит пообщаться, и объяснит почему.')+'</div><button class="btn lime" style="margin-top:14px" onclick="sendAvatarOut()">'+(en?'Send your clone to meet →':'Отправить клона знакомиться →')+'</button></div>';}
+    else{
+      var depth=done?(en?'Your clone is fully assembled — matches are at their sharpest.':'Клон собран полностью — матчи максимально точные.')
+                    :(en?'Your clone is built from your core. It can meet others now — complete more tests ('+prog+'/5) to sharpen who it attracts.':'Клон собран из твоего ядра. Он уже может знакомиться — пройди ещё тесты ('+prog+'/5), чтобы точнее находить «своих».');
+      nh.innerHTML='<div class="card-soft" style="text-align:center;border:1px solid rgba(212,255,79,.3);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.1),transparent 70%),rgba(28,24,46,.5)"><div class="net-eyebrow" style="margin-bottom:8px">✨ '+(en?'your clone is ready to meet':'клон готов знакомиться')+'</div><div class="cb">'+(en?'Send your clone out — it talks to other people’s clones itself and comes back with who you should connect with, and why. ':'Отправь своего клона — он сам поговорит с клонами других людей и вернётся с тем, с кем тебе стоит пообщаться, и объяснит почему. ')+depth+'</div><button class="btn lime" style="margin-top:14px" onclick="sendAvatarOut()">'+(en?'Send your clone to meet →':'Отправить клона знакомиться →')+'</button></div>';
+    }
   }else{
-    nh.innerHTML='<div class="card-soft" style="text-align:center;opacity:.7"><div class="ch" style="justify-content:center">🔒 '+(en?'MEETINGS UNLOCK AT 5/5':'ЗНАКОМСТВА ОТКРОЮТСЯ НА 5/5')+'</div><div class="cb">'+(en?'Once your avatar is fully assembled, it can meet others’ avatars and bring you insights. '+(5-prog)+' to go.':'Когда аватар соберётся полностью, он сможет знакомиться с аватарами других и приносить тебе инсайты. Осталось '+(5-prog)+'.')+'</div></div>';
+    nh.innerHTML='<div class="card-soft" style="text-align:center;opacity:.7"><div class="ch" style="justify-content:center">🔒 '+(en?'TAKE THE CORE TEST FIRST':'СНАЧАЛА ПРОЙДИ ЯДРО')+'</div><div class="cb">'+(en?'Pass the core personality test and your clone can start meeting others.':'Пройди основной тест личности — и твой клон сможет знакомиться с другими.')+'</div></div>';
   }
 }
 function avatarTraitList(){
@@ -3102,7 +3118,7 @@ function saveAvatarImage(){
 }
 var SCREENS=['onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul','insights','wardrobe','talk'];
 /* progressive nav — tabs unlock as you earn them (clean first-run, reward on unlock) */
-function navVisible(id){if(id==='nHome')return true;if(id==='nChats')return avatarProgress()>=5;return !!S.result;}
+function navVisible(id){if(id==='nHome')return true;if(id==='nChats')return canMeet();return !!S.result;}
 function updateNav(){
   S._navSeen=S._navSeen||{nHome:true};
   var ids=['nHome','nResult','nBoard','nChats','nStore'],newly=[];
@@ -3204,7 +3220,7 @@ function renderHome(){
     ih.innerHTML+='<div class="card-soft" onclick="go(\'insights\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;margin-top:10px"><span style="font-size:22px">💡</span><div><div class="ch">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</div><div class="cb">'+((S.insights&&S.insights.length)?(en?'Tap to view your saved thoughts':'Открыть сохранённые мысли'):(en?'Catch a thought during a test (💡)':'Лови мысли во время теста (💡)'))+'</div></div></div>';
     // early clone teaser — taste the "magic" before assembling the full avatar (5/5)
     if(avatarProgress()<5){
-      ih.innerHTML+='<div class="card-soft" style="border:1px solid rgba(212,255,79,.35);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.10),transparent 70%),rgba(28,24,46,.5);margin-top:10px"><div class="ch" style="color:#D4FF4F">✨ '+(en?'Someone already resonates with you':'Кто-то уже резонирует с тобой')+'</div><div class="cb">'+(en?'Your clone made the first move. See how your clones talked — then assemble your avatar (5/5) so it finds everyone itself.':'Твой клон сделал первый шаг. Посмотри, как поговорили ваши клоны — а потом собери аватар (5/5), чтобы он находил всех сам.')+'</div><button class="btn lime" style="margin-top:12px" onclick="openTeaserMeet()">'+(en?'Watch the clones talk →':'Смотреть диалог клонов →')+'</button></div>';
+      ih.innerHTML+='<div class="card-soft" style="border:1px solid rgba(212,255,79,.35);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.10),transparent 70%),rgba(28,24,46,.5);margin-top:10px"><div class="ch" style="color:#D4FF4F">✨ '+(en?'Someone already resonates with you':'Кто-то уже резонирует с тобой')+'</div><div class="cb">'+(en?'Your clone made the first move. See how your clones talked — then open your avatar to send it meeting everyone, and complete more tests to sharpen the match.':'Твой клон сделал первый шаг. Посмотри, как поговорили ваши клоны — а потом открой аватар и отправь его знакомиться со всеми; проходи тесты, чтобы матч был точнее.')+'</div><button class="btn lime" style="margin-top:12px" onclick="openTeaserMeet()">'+(en?'Watch the clones talk →':'Смотреть диалог клонов →')+'</button></div>';
     }
   }else ih.innerHTML='';
   var nh=document.getElementById('homeNext');
@@ -3244,14 +3260,14 @@ function renderChats(){
     host.innerHTML='<div class="card-soft" style="text-align:center;padding:28px 18px">'+
       '<div style="font-size:42px">💬</div>'+
       '<div class="ch" style="justify-content:center;margin-top:8px">'+(en?'NOTHING YET':'ПОКА ПУСТО')+'</div>'+
-      '<div class="cb" style="margin-top:6px">'+(en?'Assemble your avatar fully and send your clone to meet others — those it matched with appear here. You’ll see how your clones talked, and why it’s worth connecting in real life.':'Собери аватар полностью и отправь своего клона знакомиться — те, с кем он совпал, появятся здесь. Ты увидишь, как ваши клоны поговорили, и узнаешь, почему стоит пообщаться вживую.')+'</div>'+
+      '<div class="cb" style="margin-top:6px">'+(en?'Send your clone to meet others — those it matched with appear here. You’ll see how your clones talked, and why it’s worth connecting in real life.':'Отправь своего клона знакомиться — те, с кем он совпал, появятся здесь. Ты увидишь, как ваши клоны поговорили, и узнаешь, почему стоит пообщаться вживую.')+'</div>'+
       '<button class="btn" style="margin-top:14px" onclick="go(\'avatar\')">'+(en?'To avatar →':'К аватару →')+'</button></div>';
     return;
   }
   host.innerHTML='<div class="section-h"><h2>'+(en?'Clone matches':'Совпали по клонам')+'</h2></div>'+met.map(function(m,idx){m=normalizeMeet(m);var pt=TYPES[m.peer.type];var sc=scoreColor(m.score);var why=whyTalk(m.peer,m.br);
     return '<div class="product" onclick="openConversation('+idx+')">'+
       '<div class="cl-ring" style="--p:'+m.score+';--rc:'+sc+';width:46px;height:46px"><b style="font-size:13px">'+m.score+'</b></div>'+
-      '<div class="meta"><div class="nm">'+m.peer.name+' '+typeGlyph(typeKeyOf(pt),15)+'</div><div class="s" style="color:'+sc+'">'+why.head+'</div></div><div class="price" style="color:'+sc+'">💬</div></div>';
+      '<div class="meta"><div class="nm" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'+m.peer.name+' '+typeGlyph(typeKeyOf(pt),15)+' '+peerTag(m.peer)+'</div><div class="s" style="color:'+sc+'">'+why.head+'</div></div><div class="price" style="color:'+sc+'">💬</div></div>';
   }).join('')+'<button class="btn ghost mt" onclick="go(\'avatar\')">'+(en?'Find more connections →':'Найти ещё знакомства →')+'</button>';
 }
 /* ===== PASSPORT — личная анкета, собирается шаг за шагом ===== */

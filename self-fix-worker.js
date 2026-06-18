@@ -36,15 +36,16 @@ export default {
     if (url.pathname === '/health') return json({ ok: true });
     if (url.pathname === '/setup' && request.method === 'GET') {
       if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'bad secret' });
-      return json(await setupBot(env));
+      return json(await setupBot(env, url.origin));
     }
     if (request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch (e) {}
+      const ip = request.headers.get('cf-connecting-ip') || '0';
       if (url.pathname === '/track')       return await onTrack(env, body);
       if (url.pathname === '/feedback')    return await onFeedback(env, body);
-      if (url.pathname === '/clone/chat')  return json(await onClone(env, body));
-      if (url.pathname === '/clone/talk')  return json(await onTalk(env, body));
+      if (url.pathname === '/clone/chat')  return json(await onClone(env, body, ip));
+      if (url.pathname === '/clone/talk')  return json(await onTalk(env, body, ip));
       if (url.pathname === '/pay/invoice') return json(await onInvoice(env, body));
       if (url.pathname === '/pay/webhook') return await onWebhook(env, body);
       if (url.pathname === '/state')       return await onState(env, body);
@@ -84,9 +85,29 @@ async function onFeedback(env, body) {
   return new Response(null, { status: 204, headers: CORS });
 }
 
+/* ---------- cost-control: per-identity daily rate-limit (KV) ----------
+   Backstop so the Claude endpoints can't be hammered into a big bill / abused.
+   Keyed by validated Telegram user id when present, else by IP. Fails OPEN if no KV. */
+async function rateLimit(env, scope, id, limit) {
+  if (!env.USERS) return { ok: true };                       // no KV bound → don't block
+  const day = Math.floor(Date.now() / 86400000);
+  const key = `rl:${scope}:${day}:${id}`;
+  let n = 0; try { n = parseInt(await env.USERS.get(key), 10) || 0; } catch (e) {}
+  if (n >= limit) return { ok: false, n };
+  try { await env.USERS.put(key, String(n + 1), { expirationTtl: 90000 }); } catch (e) {} // ~25h
+  return { ok: true, n: n + 1 };
+}
+// resolve a rate-limit identity: prefer verified TG user, else IP
+async function rlIdentity(env, body, ip) {
+  try { const u = await validateInit(body.initData || '', env.BOT_TOKEN); if (u && u.id) return 'u' + u.id; } catch (e) {}
+  return 'ip' + (ip || '0');
+}
+
 /* ---------- live AI clone↔clone dialogue (Claude Haiku) ---------- */
-async function onClone(env, body) {
+async function onClone(env, body, ip) {
   if (!env.ANTHROPIC_API_KEY) return { lines: [], verdict: '', fallback: true };
+  const rl = await rateLimit(env, 'clone', await rlIdentity(env, body, ip), 60);
+  if (!rl.ok) return { lines: [], verdict: '', fallback: true, err: 'rate_limited' };
   const me = body.me || {}, peer = body.peer || {}, lang = body.lang === 'en' ? 'en' : 'ru';
   const sys = lang === 'en'
     ? `You write a short, vivid first-meeting dialogue between two people's personality "clones", grounded in their Big Five profiles. Return STRICT JSON only: {"lines":[{"s":"me"|"peer","t":"..."}],"verdict":"one warm sentence: should they connect and why"}. 6-8 alternating lines starting with "me", natural and specific to the traits, no emojis, each line <=120 chars.`
@@ -108,8 +129,10 @@ async function onClone(env, body) {
 }
 
 /* ---------- interactive clone chat (talk to YOUR clone, or a match's clone) ---------- */
-async function onTalk(env, body) {
+async function onTalk(env, body, ip) {
   if (!env.ANTHROPIC_API_KEY) return { reply: '', fallback: true };
+  const rl = await rateLimit(env, 'talk', await rlIdentity(env, body, ip), 100);
+  if (!rl.ok) return { reply: '', fallback: true, err: 'rate_limited' };
   const lang = body.lang === 'en' ? 'en' : 'ru';
   const mode = body.mode === 'peer' ? 'peer' : 'self';
   const me = body.me || {}, peer = body.peer || {};
@@ -308,7 +331,7 @@ function pickNudge(rec, idleH) {
 }
 
 /* ---------- bot self-setup (menu button, commands, description) ---------- */
-async function setupBot(env) {
+async function setupBot(env, origin) {
   // NB: intentionally does NOT touch description / short description — those are owned manually in @BotFather.
   const out = {};
   out.menu = await (await tg(env, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Открыть', web_app: { url: APP_URL } } })).json();
@@ -317,6 +340,15 @@ async function setupBot(env) {
     { command: 'help', description: 'Что это и как работает' },
     { command: 'stop', description: 'Отключить напоминания' },
   ] })).json();
+  // webhook → so Stars pre_checkout + successful_payment (and /start) reach this worker
+  if (origin) {
+    out.webhook = await (await tg(env, 'setWebhook', {
+      url: origin + '/pay/webhook',
+      allowed_updates: ['message', 'pre_checkout_query'],
+      drop_pending_updates: false,
+    })).json();
+  }
+  out.webhookInfo = await (await tg(env, 'getWebhookInfo', {})).json();
   return { ok: true, out };
 }
 function welcomeText(lang) {
