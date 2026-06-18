@@ -44,9 +44,12 @@ export default {
       if (url.pathname === '/track')       return await onTrack(env, body);
       if (url.pathname === '/feedback')    return await onFeedback(env, body);
       if (url.pathname === '/clone/chat')  return json(await onClone(env, body));
+      if (url.pathname === '/clone/talk')  return json(await onTalk(env, body));
       if (url.pathname === '/pay/invoice') return json(await onInvoice(env, body));
       if (url.pathname === '/pay/webhook') return await onWebhook(env, body);
       if (url.pathname === '/state')       return await onState(env, body);
+      if (url.pathname === '/entitlements')return json(await onEntitlements(env, body));
+      if (url.pathname === '/match')       return json(await onMatch(env, body));
     }
     return new Response('not found', { status: 404, headers: CORS });
   },
@@ -104,6 +107,63 @@ async function onClone(env, body) {
   } catch (e) { return { lines: [], verdict: '', fallback: true, err: 'fetch_fail: ' + String((e && e.message) || e).slice(0, 140) }; }
 }
 
+/* ---------- interactive clone chat (talk to YOUR clone, or a match's clone) ---------- */
+async function onTalk(env, body) {
+  if (!env.ANTHROPIC_API_KEY) return { reply: '', fallback: true };
+  const lang = body.lang === 'en' ? 'en' : 'ru';
+  const mode = body.mode === 'peer' ? 'peer' : 'self';
+  const me = body.me || {}, peer = body.peer || {};
+  const persona = mode === 'peer' ? peer : me;
+  const sys = lang === 'en'
+    ? `You ARE a person's personality "clone", grounded in their Big Five profile. Speak first-person AS them — warm, specific, self-aware, concise (1-3 sentences). ${mode === 'peer' ? 'You are ' + (peer.name || 'this person') + ', chatting with someone getting to know you.' : "You are the user's own digital double — reflect them, help them understand themselves."} No emojis. Stay fully in character.`
+    : `Ты — «клон» личности человека на основе его профиля Big Five. Говори от первого лица КАК он — тепло, конкретно, осознанно, коротко (1-3 предложения). ${mode === 'peer' ? 'Ты — ' + (peer.name || 'этот человек') + ', общаешься с тем, кто хочет тебя узнать.' : 'Ты — цифровой двойник самого пользователя: отражай его, помогай понять себя.'} Без эмодзи. Полностью в образе.`;
+  const msgs = [
+    { role: 'user', content: `Profile: name=${persona.name || ''}, type=${persona.type || ''}, big=${JSON.stringify(persona.big || {})}.` },
+    { role: 'assistant', content: lang === 'en' ? 'Got it. I am ready.' : 'Понял. Я готов.' },
+  ];
+  (body.history || []).slice(-12).forEach(h => { if (h && h.content) msgs.push({ role: h.role === 'clone' ? 'assistant' : 'user', content: String(h.content).slice(0, 500) }); });
+  if (msgs[msgs.length - 1].role !== 'user') return { reply: '', fallback: true, err: 'no user turn' };
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 320, system: sys, messages: msgs }),
+    });
+    const j = await r.json();
+    if (j.error) return { reply: '', fallback: true, err: (j.error.type || '') + ': ' + String(j.error.message || '').slice(0, 160) };
+    return { reply: ((j.content && j.content[0] && j.content[0].text) || '').trim() };
+  } catch (e) { return { reply: '', fallback: true, err: 'fetch_fail' }; }
+}
+
+/* ---------- entitlements (server-truth purchases) ---------- */
+async function onEntitlements(env, body) {
+  if (!env.USERS) return { skus: [] };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { skus: [] };
+  let list = []; try { list = JSON.parse(await env.USERS.get('ent:' + u.id)) || []; } catch (e) {}
+  return { skus: list };
+}
+
+/* ---------- real matching: return other real users with profiles ---------- */
+async function onMatch(env, body) {
+  if (!env.USERS) return { users: [] };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { users: [] };
+  await upsertUser(env, u, { type: body.type, big: body.big, hasResult: true, username: u.username || body.username, touch: true });
+  const out = []; let cursor;
+  do {
+    const list = await env.USERS.list({ prefix: 'user:', cursor });
+    cursor = list.list_complete ? null : list.cursor;
+    for (const k of list.keys) {
+      if (out.length >= 20) break;
+      if (k.name === 'user:' + u.id) continue;
+      let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
+      if (!rec || !rec.type || !rec.big || rec.optOutMatch) continue;
+      out.push({ id: rec.id, name: rec.name || '', type: rec.type, big: rec.big, username: rec.username || '' });
+    }
+  } while (cursor && out.length < 20);
+  return { users: out };
+}
+
 /* ---------- Telegram Stars invoice ---------- */
 async function onInvoice(env, body) {
   if (!env.BOT_TOKEN) return { ok: false, link: null };
@@ -129,6 +189,15 @@ async function onWebhook(env, update) {
     const m = update.message;
     if (m && m.successful_payment) {
       const sp = m.successful_payment;
+      // grant entitlement server-side (source of truth) by telegram user id
+      try {
+        if (env.USERS && m.from && m.from.id) {
+          const sku = String(sp.invoice_payload || '').split(':')[0];
+          const ek = 'ent:' + m.from.id;
+          let list = []; try { list = JSON.parse(await env.USERS.get(ek)) || []; } catch (e) {}
+          if (sku && list.indexOf(sku) < 0) { list.push(sku); await env.USERS.put(ek, JSON.stringify(list)); }
+        }
+      } catch (e) {}
       if (env.OWNER_CHAT_ID) await tg(env, 'sendMessage', { chat_id: env.OWNER_CHAT_ID, text: `⭐ Payment: ${sp.total_amount} XTR · ${sp.invoice_payload}` });
       return new Response('ok', { headers: CORS });
     }
@@ -160,6 +229,7 @@ async function onState(env, body) {
       stage: body.stage, lang: body.lang,
       facets: typeof body.facets === 'number' ? body.facets : undefined,
       hasResult: !!body.hasResult, avatarFull: !!body.avatarFull, touch: true,
+      type: body.type, big: body.big, username: u.username || body.username,
     });
   } catch (e) {}
   return new Response(null, { status: 204, headers: CORS });
@@ -184,6 +254,9 @@ async function upsertUser(env, from, patch) {
   if (patch.avatarFull) rec.avatarFull = true;
   if (patch.optOut === true) rec.optOut = true;
   if (patch.optOut === false) rec.optOut = false;
+  if (patch.type) rec.type = patch.type;
+  if (patch.big) rec.big = patch.big;
+  if (patch.username) rec.username = patch.username;
   await env.USERS.put(key, JSON.stringify(rec));
 }
 

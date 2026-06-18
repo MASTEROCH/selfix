@@ -448,6 +448,11 @@
   .cl-bub{padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.46;color:#efeaff;background:linear-gradient(160deg,rgba(52,46,84,.72),rgba(22,19,40,.62));border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
   .cl-msg.peer .cl-bub{border-bottom-left-radius:5px}
   .cl-msg.me .cl-bub{border-bottom-right-radius:5px;background:linear-gradient(160deg,rgba(124,58,255,.36),rgba(0,224,199,.16));border-color:rgba(124,58,255,.4);color:#fff}
+  /* interactive clone chat input */
+  .talk-input{position:sticky;bottom:0;display:flex;gap:9px;align-items:flex-end;padding:10px 0 4px;background:linear-gradient(0deg,#0c0a16 70%,transparent)}
+  .talk-input textarea{flex:1;resize:none;max-height:96px;padding:11px 14px;border-radius:16px;background:rgba(10,8,20,.7);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14.5px;line-height:1.4;outline:none}
+  .talk-send{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;color:#06222b;background:linear-gradient(135deg,#D4FF4F,#00E0C7);display:flex;align-items:center;justify-content:center;transition:transform .15s}
+  .talk-send:active{transform:scale(.9)}.talk-send svg{width:20px;height:20px}
   @keyframes clIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
   .cl-typing{align-self:flex-start;display:flex;gap:4px;padding:12px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(52,46,84,.6),rgba(22,19,40,.5));border:1px solid rgba(255,255,255,.08)}
   .cl-typing i{width:6px;height:6px;border-radius:50%;background:#b7b0dd;animation:clDot 1s infinite}
@@ -942,6 +947,10 @@
 
     <div class="screen hidden" id="sWardrobe">
       <div id="wardrobeBody"></div>
+    </div>
+
+    <div class="screen hidden" id="sTalk">
+      <div id="talkBody"></div>
     </div>
 
     <div class="nav">
@@ -2676,25 +2685,32 @@ function normalizeMeet(m){
 /* early taste of the magic: after the CORE test, let the clone meet ONE resonant person (best match), before 5/5 */
 function openTeaserMeet(){
   if(!S.result)return;
-  var best=null,bestBr=null;
-  PEER_POOL.forEach(function(pp){var br=matchBreakdown(pp);if(!best||br.score>bestBr.score){best=pp;bestBr=br;}});
-  if(!best)return;
-  var meet={peer:best,score:bestBr.score,br:bestBr,dialogue:cloneDialogue(best,bestBr),why:whyTalk(best,bestBr)};
-  S._lastMeet=[meet];S._teaserSeen=true;save();
-  track('teaser_clone',{score:bestBr.score});
-  openConversation(0);
+  fetchMatchPeers(function(pool){
+    var best=null,bestBr=null;
+    pool.slice(0,12).forEach(function(pp){var br=matchBreakdown(pp);if(!best||br.score>bestBr.score){best=pp;bestBr=br;}});
+    if(!best){best=PEER_POOL[0];bestBr=matchBreakdown(best);}
+    var meet={peer:best,score:bestBr.score,br:bestBr,dialogue:cloneDialogue(best,bestBr),why:whyTalk(best,bestBr)};
+    S._lastMeet=[meet];S._teaserSeen=true;save();
+    track('teaser_clone',{score:bestBr.score,real:!!best.real});
+    openConversation(0);
+  });
 }
 function sendAvatarOut(){
   if(avatarProgress()<5)return;
   S._sent=true;save();reportState('clone_sent');
-  var pool=PEER_POOL.slice();for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=pool[i];pool[i]=pool[j];pool[j]=t;}
-  var met=pool.slice(0,3).map(function(p){var br=matchBreakdown(p);return {peer:p,score:br.score,br:br,dialogue:cloneDialogue(p,br),why:whyTalk(p,br)};});
-  met.sort(function(a,b){return b.score-a.score;});
-  S._lastMeet=met;save();
   var host=document.getElementById('netHost');
-  host.innerHTML='<div class="card-soft" style="text-align:center"><div class="net-pulse">🌀</div><div class="cb" style="margin-top:10px">'+(isEN()?'Your clone went off to meet other clones…':'Твой клон ушёл знакомиться с другими клонами…')+'</div></div>';
+  if(host)host.innerHTML='<div class="card-soft" style="text-align:center"><div class="net-pulse">🌀</div><div class="cb" style="margin-top:10px">'+(isEN()?'Your clone went off to meet other clones…':'Твой клон ушёл знакомиться с другими клонами…')+'</div></div>';
   try{if(navigator.vibrate)navigator.vibrate(30);}catch(e){}
-  setTimeout(function(){renderMeetings(met);},2200);
+  fetchMatchPeers(function(pool){
+    // real users first, then shuffled fallback for variety; rank all by match, keep top 3
+    var reals=pool.filter(function(p){return p.real;});var fakes=pool.filter(function(p){return !p.real;});
+    for(var i=fakes.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=fakes[i];fakes[i]=fakes[j];fakes[j]=t;}
+    var cand=reals.concat(fakes).slice(0,12);
+    var met=cand.map(function(p){var br=matchBreakdown(p);return {peer:p,score:br.score,br:br,dialogue:cloneDialogue(p,br),why:whyTalk(p,br)};});
+    met.sort(function(a,b){return b.score-a.score;});met=met.slice(0,3);
+    S._lastMeet=met;save();
+    setTimeout(function(){renderMeetings(met);},1500);
+  });
 }
 function renderMeetings(met){
   var host=document.getElementById('netHost');if(!host)return;var en=isEN();
@@ -2740,7 +2756,13 @@ function openConversation(idx){
     '<div class="net-eyebrow">🤖 '+(en?'two clones talking':'диалог двух клонов')+'</div>';
   host.innerHTML=header+'<div class="cl-thread" id="clThread"></div><div id="clVerdict"></div>';
   var thread=document.getElementById('clThread');
-  var onDone=function(){renderVerdict(m,sc,'<button class="btn lime" onclick="connectPeer(\''+m.peer.name+'\')">'+(en?'Message '+m.peer.name+' →':'Написать '+m.peer.name+' →')+'</button><button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>');};
+  var onDone=function(){
+    var foot='<button class="btn go" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'💬 Chat with '+m.peer.name+'’s clone':'💬 Поговорить с клоном '+m.peer.name)+'</button>';
+    if(m.peer.real&&m.peer.username)foot+='<button class="btn lime" onclick="contactPeer('+idx+')">'+(en?'Message '+m.peer.name+' on Telegram →':'Написать '+m.peer.name+' в Telegram →')+'</button>';
+    else if(m.peer.real)foot+='<button class="btn cold" onclick="connectPeer(\''+m.peer.name+'\')">'+(en?'Send a connect request':'Отправить запрос на знакомство')+'</button>';
+    foot+='<button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>';
+    renderVerdict(m,sc,foot);
+  };
   var playWith=function(lines){m.dialogue=lines;playCloneThread(host,thread,lines,myAv,pAv,onDone);};
   if(CLONE_URL){ // live Claude dialogue, fall back to heuristic on any failure
     thread.innerHTML='<div class="cl-typing" style="align-self:center"><i></i><i></i><i></i></div>';
@@ -2827,6 +2849,9 @@ var FEEDBACK_URL='https://selfix.rc-c7b.workers.dev/feedback';
 var CLONE_URL='https://selfix.rc-c7b.workers.dev/clone/chat';
 var PAY_URL='https://selfix.rc-c7b.workers.dev/pay/invoice';
 var STATE_URL='https://selfix.rc-c7b.workers.dev/state';  // reports lifecycle stage (for smart re-engagement push). No-op outside Telegram.
+var ENT_URL='https://selfix.rc-c7b.workers.dev/entitlements'; // server-truth purchases (restored on launch)
+var TALK_URL='https://selfix.rc-c7b.workers.dev/clone/talk';  // interactive clone chat (Claude)
+var MATCH_URL='https://selfix.rc-c7b.workers.dev/match';      // real users to match against (fallback to PEER_POOL)
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
 /* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
@@ -2847,7 +2872,7 @@ function reportState(stage){
     if(!STATE_URL||!inTelegram())return;
     var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
     var facets=(typeof avatarProgress==='function')?avatarProgress():0;
-    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',initData:initData});
+    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',type:(S&&S.result)?S.result.primary:'',big:(S&&S.result)?S.result.big:null,initData:initData});
     fetch(STATE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});
   }catch(e){}
 }
@@ -2875,6 +2900,64 @@ function buyStars(sku,title,amount,onGranted){
         else{onGranted();}
       }).catch(function(){onGranted();});
   }else{track('purchase',{sku:sku,amount:amount,demo:true});onGranted();}
+}
+/* ===== server-truth purchases: restore entitlements on launch (Telegram only) ===== */
+function applyEntitlements(skus){
+  if(!skus||!skus.length)return;S.ownedTests=S.ownedTests||{};S.ownedCosmetics=S.ownedCosmetics||{};
+  skus.forEach(function(s){
+    if(s==='full')S.fullOwned=true;
+    else if(s.indexOf('test_')===0)S.ownedTests[s.slice(5)]=true;
+    else if(s.indexOf('cos_')===0){var rest=s.slice(4);var i=rest.indexOf('_');if(i>0)S.ownedCosmetics[rest.slice(0,i)+':'+rest.slice(i+1)]=1;}
+  });
+  save();
+}
+function fetchEntitlements(){
+  if(!ENT_URL||!inTelegram())return;var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
+  fetch(ENT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){if(d&&d.skus)applyEntitlements(d.skus);}).catch(function(){});
+}
+/* ===== real matching: real users first, fallback to the offline pool ===== */
+function fetchMatchPeers(cb){
+  var fb=PEER_POOL.slice();
+  if(!MATCH_URL||!inTelegram()){cb(fb);return;}
+  var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData){cb(fb);return;}
+  fetch(MATCH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData,type:S.result?S.result.primary:'',big:S.result?S.result.big:null}),credentials:'omit'})
+    .then(function(r){return r.json();}).then(function(d){
+      var reals=((d&&d.users)||[]).filter(function(u){return u.type&&u.big;}).map(function(u){return {name:u.name||(isEN()?'Someone':'Кто-то'),type:u.type,big:u.big,real:true,username:u.username,id:u.id};});
+      var mixed=reals.concat(fb);cb(mixed.length?mixed:fb);
+    }).catch(function(){cb(fb);});
+}
+/* ===== interactive clone chat (talk to your clone, or a match's clone) ===== */
+var TALK=null;
+function openTalkSelf(){if(!S.result)return;var en=isEN();TALK={mode:'self',peer:null,history:[],name:(en?'Your clone':'Твой двойник')};go('talk');renderTalkShell();talkGreet();}
+function openTalkPeer(meet){if(!meet||!meet.peer)return;TALK={mode:'peer',peer:meet.peer,history:[],name:meet.peer.name};go('talk');renderTalkShell();talkGreet();}
+function talkGreet(){
+  var en=isEN();var g=TALK.mode==='self'
+    ?(en?'Hey — I’m you, just clearer. Ask me anything about yourself.':'Привет — я это ты, только яснее. Спроси меня о себе что угодно.')
+    :(en?'Hi! I’m '+TALK.name+'’s clone. Ask me anything.':'Привет! Я клон '+TALK.name+'. Спрашивай что хочешь.');
+  TALK.history.push({role:'clone',content:g});renderTalk();
+}
+function renderTalkShell(){
+  var en=isEN();var host=document.getElementById('talkBody');if(!host)return;
+  var who=TALK.mode==='self'?(en?'Talk to your double':'Разговор с двойником'):(en?'Clone of ':'Клон ')+TALK.name;
+  host.innerHTML='<div class="cl-back" onclick="go(\''+(TALK.mode==='peer'?'chats':'avatar')+'\')">← '+(en?'back':'назад')+'</div>'+
+    '<div class="cl-head"><div class="cl-av-lg">'+(TALK.mode==='peer'?buildAvatarSVG(peerTraits(TALK.peer),TALK.peer.name):buildAvatarSVG(avatarTraits()))+'</div><div style="flex:1"><div style="font-weight:800;font-size:17px">'+who+'</div><div class="cl-since">'+(en?'live · powered by AI':'вживую · на ИИ')+'</div></div></div>'+
+    '<div class="cl-thread" id="talkThread"></div>'+
+    '<div class="talk-input"><textarea id="talkText" rows="1" maxlength="300" placeholder="'+(en?'Type a message…':'Напиши сообщение…')+'" oninput="talkGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();talkSend();}"></textarea><button class="talk-send" onclick="talkSend()" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>';
+}
+function talkGrow(el){el.style.height='auto';el.style.height=Math.min(96,el.scrollHeight)+'px';}
+function renderTalk(){
+  var th=document.getElementById('talkThread');if(!th||!TALK)return;
+  th.innerHTML=TALK.history.map(function(m){var me=m.role==='user';return '<div class="cl-msg '+(me?'me':'peer')+'"><div class="cl-bub">'+escIns(m.content)+'</div></div>';}).join('')+(TALK._typing?'<div class="cl-typing" style="align-self:flex-start"><i></i><i></i><i></i></div>':'');
+  var host=document.getElementById('talkBody');if(host)host.scrollTo(0,host.scrollHeight);
+}
+function talkSend(){
+  if(!TALK||TALK._busy)return;var en=isEN();var ta=document.getElementById('talkText');var txt=ta?ta.value.trim():'';if(!txt)return;
+  ta.value='';talkGrow(ta);TALK.history.push({role:'user',content:txt});TALK._busy=true;TALK._typing=true;renderTalk();hap('selection');track('clone_talk',{mode:TALK.mode});
+  var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
+  var payload={mode:TALK.mode,me:me,peer:TALK.peer?{name:TALK.peer.name,type:TALK.peer.type,big:peerBig(TALK.peer)}:null,history:TALK.history.slice(-12),lang:en?'en':'ru'};
+  var done=function(reply){TALK._typing=false;TALK._busy=false;TALK.history.push({role:'clone',content:reply||(en?'…(couldn’t reach the clone, try again)':'…(не дозвонился до клона, попробуй ещё)')});renderTalk();};
+  if(!TALK_URL){done(en?'I’m offline right now — the live clone needs a connection.':'Я сейчас офлайн — живому клону нужно соединение.');return;}
+  fetch(TALK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){done(d&&d.reply?d.reply:'');}).catch(function(){done('');});
 }
 /* deep-link that works in Telegram (t.me/bot) AND on a plain web host (for custdev) */
 function deepLink(startParam){return inTelegram()?('t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
@@ -2941,6 +3024,7 @@ function sendFeedback(){
   S._fbSent=true;save();var host=document.getElementById('resFeedback');if(host)host.innerHTML='<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'Thank you 🙏 Your words mean a lot.':'Спасибо 🙏 Твои слова очень важны.')+'</div></div>';
   pop(en?'Thank you 🙏':'Спасибо 🙏');hap('success');
 }
+function contactPeer(idx){var m=(S._lastMeet||[])[idx];if(!m||!m.peer||!m.peer.username)return;var url='https://t.me/'+m.peer.username;try{var tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.openTelegramLink)tg.openTelegramLink(url);else window.open(url,'_blank');}catch(e){}track('contact_peer');}
 function connectPeer(name){var en=isEN();modal((en?'Connect with ':'Знакомство с ')+name,en?'Your clone already made the first move. In the live SELF-FIX a request goes to '+name+', and you continue the conversation yourselves when you both want to. For now it’s a demo — but this is exactly how clones bring people together.':'Твой клон уже сделал первый шаг. В живой версии SELF-FIX отсюда уходит запрос к '+name+', и вы продолжаете общение сами, когда оба захотите. Сейчас это демо механики — но именно так клоны и сводят людей.',function(){closeModal();pop((en?'Request sent to ':'Запрос отправлен ')+name+(en?' (demo) ✨':' (демо) ✨'));});
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=en?'Send request':'Отправить запрос';},0);}
 
@@ -2955,8 +3039,9 @@ function renderAvatar(){
   if(done){
     document.getElementById('avatarActions').innerHTML=
       '<div class="action-stack">'+
-      '<button class="btn go" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>'+
-      '<button class="btn cold" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
+      '<button class="btn go" onclick="openTalkSelf()">'+(en?'💬 Talk to your double':'💬 Поговори со своим двойником')+'</button>'+
+      '<button class="btn cold" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>'+
+      '<button class="btn ghost" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
       '<button class="btn ghost" onclick="saveAvatarImage()">'+(en?'Save to stories':'Сохранить в сторис')+'</button>'+
       '</div>';
   }else{
@@ -3014,7 +3099,7 @@ function saveAvatarImage(){
   img.onerror=function(){pop(en?'Couldn’t build the image':'Не удалось собрать картинку');};
   img.src=svg64;
 }
-var SCREENS=['onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul','insights','wardrobe'];
+var SCREENS=['onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul','insights','wardrobe','talk'];
 /* progressive nav — tabs unlock as you earn them (clean first-run, reward on unlock) */
 function navVisible(id){if(id==='nHome')return true;if(id==='nChats')return avatarProgress()>=5;return !!S.result;}
 function updateNav(){
@@ -3027,7 +3112,7 @@ function updateNav(){
 }
 function go(scr){for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+cap(SCREENS[i])).classList.toggle('hidden',SCREENS[i]!==scr);
   var btns=document.querySelectorAll('.nav button');for(var j=0;j<btns.length;j++)btns[j].classList.remove('on');
-  var m={home:'nHome',quiz:'nHome',analyze:'nHome',result:'nResult',duel:'nResult',duelResult:'nResult',passport:'nResult',soul:'nResult',store:'nStore',avatar:'nStore',board:'nBoard',chats:'nChats'};if(m[scr])document.getElementById(m[scr]).classList.add('on');
+  var m={home:'nHome',quiz:'nHome',analyze:'nHome',result:'nResult',duel:'nResult',duelResult:'nResult',passport:'nResult',soul:'nResult',store:'nStore',avatar:'nStore',board:'nBoard',chats:'nChats',talk:'nChats'};if(m[scr])document.getElementById(m[scr]).classList.add('on');
   updateNav();
   var ind=document.getElementById('navInd');
   if(ind){var aid=m[scr];var ab=aid&&document.getElementById(aid);
@@ -3642,7 +3727,7 @@ function boot(){tgInit();
   var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
   load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();
   track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
-  reportState('open');
+  reportState('open');fetchEntitlements();
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('zoom');},1800); // spiral expands to fill screen
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('gone');},2950); // app fully revealed
