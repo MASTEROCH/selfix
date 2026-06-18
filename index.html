@@ -2754,7 +2754,7 @@ var BOT_USER='selffix_bot';
 /* ===== Config: set these when the backend is live (analytics + feedback). Empty = graceful no-op. ===== */
 var ANALYTICS_URL='https://selfix.rc-c7b.workers.dev/track';
 var FEEDBACK_URL='https://selfix.rc-c7b.workers.dev/feedback';
-var CLONE_URL='';       // ← set to 'https://selfix.rc-c7b.workers.dev/clone/chat' AFTER adding ANTHROPIC_API_KEY (else offline heuristic)
+var CLONE_URL='https://selfix.rc-c7b.workers.dev/clone/chat';
 var PAY_URL='https://selfix.rc-c7b.workers.dev/pay/invoice';
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
