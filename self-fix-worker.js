@@ -236,6 +236,7 @@ function pickNudge(rec, idleH) {
 
 /* ---------- bot self-setup (menu button, commands, description) ---------- */
 async function setupBot(env) {
+  // NB: intentionally does NOT touch description / short description — those are owned manually in @BotFather.
   const out = {};
   out.menu = await (await tg(env, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Открыть', web_app: { url: APP_URL } } })).json();
   out.cmds = await (await tg(env, 'setMyCommands', { commands: [
@@ -243,8 +244,6 @@ async function setupBot(env) {
     { command: 'help', description: 'Что это и как работает' },
     { command: 'stop', description: 'Отключить напоминания' },
   ] })).json();
-  out.desc = await (await tg(env, 'setMyDescription', { description: 'SELF-FIX — узнай, кто ты на самом деле, по науке (Big Five), собери живого ИИ-двойника, и он найдёт твоих людей.' })).json();
-  out.short = await (await tg(env, 'setMyShortDescription', { short_description: 'Зеркало нового поколения: тест за 2 минуты + твой ИИ-двойник.' })).json();
   return { ok: true, out };
 }
 function welcomeText(lang) {
