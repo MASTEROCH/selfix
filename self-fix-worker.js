@@ -89,14 +89,15 @@ async function onClone(env, body) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 700, system: sys, messages: [{ role: 'user', content: usr }] }),
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system: sys, messages: [{ role: 'user', content: usr }] }),
     });
     const j = await r.json();
+    if (j.error) return { lines: [], verdict: '', fallback: true, err: (j.error.type || '') + ': ' + String(j.error.message || '').slice(0, 180) };
     const text = (j.content && j.content[0] && j.content[0].text) || '';
     const m = text.match(/\{[\s\S]*\}/);
     if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
-  } catch (e) {}
-  return { lines: [], verdict: '', fallback: true };
+    return { lines: [], verdict: '', fallback: true, err: 'parse_fail: ' + text.slice(0, 140) };
+  } catch (e) { return { lines: [], verdict: '', fallback: true, err: 'fetch_fail: ' + String((e && e.message) || e).slice(0, 140) }; }
 }
 
 /* ---------- Telegram Stars invoice ---------- */
