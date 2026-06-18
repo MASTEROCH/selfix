@@ -1719,6 +1719,7 @@ function captureInsight(){var en=isEN();var ph=insPick(INS_PROMPTS[en?'en':'ru']
   var foot='<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(left>0?(en?'+5 to rating for an insight':'+5 к рейтингу за инсайт'):(en?'Daily reward cap reached — still saved':'Лимит награды на сегодня — но сохраним'))+' · <span onclick="closeModal();go(\'insights\')" style="color:#7fe9ff;cursor:pointer">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</span></div>';
   var body='<textarea id="insText" rows="3" maxlength="400" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px 14px;border-radius:14px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:15px;resize:none;outline:none"></textarea>'+foot;
   modal(en?'Capture an insight':'Записать инсайт',en?'A thought worth keeping? Don’t lose it.':'Пришла ценная мысль? Запиши, чтобы не потерять.',function(){saveInsight();},body);
+  syncFab();
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Save':'Сохранить');var ta=document.getElementById('insText');if(ta)ta.focus();},30);
 }
 function saveInsight(){var en=isEN();var ta=document.getElementById('insText');var txt=ta?ta.value.trim():'';
@@ -3110,7 +3111,9 @@ function updateNav(){
   if(newly.length){save();newly.forEach(function(b,i){b.classList.remove('reveal');void b.offsetWidth;b.style.animationDelay=(i*90)+'ms';b.classList.add('reveal');});
     setTimeout(function(){pop(isEN()?'New sections unlocked 🔓':'Открыты новые разделы 🔓');},360);}
 }
-function go(scr){for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+cap(SCREENS[i])).classList.toggle('hidden',SCREENS[i]!==scr);
+function fabScreens(s){return s==='result'||s==='passport'||s==='soul';}
+function syncFab(){var fab=document.getElementById('insFab');if(!fab)return;var mb=document.getElementById('modalBg');var modalOpen=mb&&mb.classList.contains('show');fab.classList.toggle('show',!modalOpen&&fabScreens(go._cur));}
+function go(scr){go._cur=scr;for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+cap(SCREENS[i])).classList.toggle('hidden',SCREENS[i]!==scr);
   var btns=document.querySelectorAll('.nav button');for(var j=0;j<btns.length;j++)btns[j].classList.remove('on');
   var m={home:'nHome',quiz:'nHome',analyze:'nHome',result:'nResult',duel:'nResult',duelResult:'nResult',passport:'nResult',soul:'nResult',store:'nStore',avatar:'nStore',board:'nBoard',chats:'nChats',talk:'nChats'};if(m[scr])document.getElementById(m[scr]).classList.add('on');
   updateNav();
@@ -3122,8 +3125,8 @@ function go(scr){for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+ca
   var focus=(scr==='onboard'||scr==='quiz'||scr==='analyze'||scr==='duel');
   var nav=document.querySelector('.nav');if(nav)nav.classList.toggle('nav-hidden',focus);
   document.body.classList.toggle('no-nav',focus);
-  // insight capture FAB — available while engaging with content (test, result, passport, soul)
-  var fab=document.getElementById('insFab');if(fab)fab.classList.toggle('show',scr==='quiz'||scr==='result'||scr==='passport'||scr==='soul');
+  // insight capture FAB — only while reading your OWN results (result/passport/soul), never during a test, and never over an open modal
+  syncFab();
   if(go._ready)hap('selection'); else go._ready=true;
   if(scr==='onboard')wheelInit();if(scr==='home')renderHome();if(scr==='store')renderStore();if(scr==='avatar')renderAvatar();if(scr==='board')renderBoardScreen();if(scr==='chats')renderChats();if(scr==='passport')renderPassport();if(scr==='soul')renderSoul();if(scr==='insights')renderInsights();if(scr==='wardrobe')renderWardrobe();
   var sc=document.getElementById('s'+cap(scr));if(sc){sc.scrollTo(0,0);sc.classList.remove('enter');void sc.offsetWidth;sc.classList.add('enter');}}
@@ -3690,8 +3693,8 @@ function setText(sel,txt,keepIcon){var e=document.querySelector(sel);if(!e)retur
 function setHTML(sel,html){var e=document.querySelector(sel);if(e)e.innerHTML=html;}
 function toggleLang(){S.lang=(S.lang==='en')?'ru':'en';save();applyLang();pop(S.lang==='en'?'English':'Русский');}
 function syncWallet(){var ws=document.getElementById('wStars');if(ws)ws.textContent=S.stars;var wr=document.getElementById('wRating');if(wr){var prev=parseInt(wr.textContent,10);if(prev!==S.rating){wr.textContent=S.rating;var chip=document.getElementById('ratingChip');if(chip){chip.classList.remove('bump');void chip.offsetWidth;chip.classList.add('bump');}}else wr.textContent=S.rating;}}
-function modal(t,h,onYes,extra){var en=isEN();var b=document.getElementById('modalBody');b.innerHTML='<h3>'+t+'</h3><p>'+h+'</p>'+(extra||'')+(onYes?'<div class="btn-row" style="margin-top:18px"><button class="btn ghost" id="mNo" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button><button class="btn gold" id="mYes">'+(en?'Open':'Открыть')+'</button></div>':(extra?'':'<button class="btn ghost" onclick="closeModal()">'+(en?'Got it':'Понятно')+'</button>'));document.getElementById('modalBg').classList.add('show');if(onYes)document.getElementById('mYes').onclick=onYes;}
-function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+function modal(t,h,onYes,extra){var en=isEN();var b=document.getElementById('modalBody');b.innerHTML='<h3>'+t+'</h3><p>'+h+'</p>'+(extra||'')+(onYes?'<div class="btn-row" style="margin-top:18px"><button class="btn ghost" id="mNo" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button><button class="btn gold" id="mYes">'+(en?'Open':'Открыть')+'</button></div>':(extra?'':'<button class="btn ghost" onclick="closeModal()">'+(en?'Got it':'Понятно')+'</button>'));document.getElementById('modalBg').classList.add('show');if(onYes)document.getElementById('mYes').onclick=onYes;syncFab();}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');syncFab();}
 document.getElementById('modalBg').addEventListener('click',function(e){if(e.target.id==='modalBg')closeModal();});
 var popT;function pop(t){var el=document.getElementById('toast');var dim=document.getElementById('toastDim');el.innerHTML=t;el.classList.add('show');if(dim)dim.classList.add('show');clearTimeout(popT);popT=setTimeout(function(){el.classList.remove('show');if(dim)dim.classList.remove('show');},2000);}
 
