@@ -471,7 +471,18 @@
   .cl-msg.peer .cl-bub{border-bottom-left-radius:5px}
   .cl-msg.me .cl-bub{border-bottom-right-radius:5px;background:linear-gradient(160deg,rgba(124,58,255,.36),rgba(0,224,199,.16));border-color:rgba(124,58,255,.4);color:#fff}
   /* interactive clone chat input */
-  .talk-input{position:sticky;bottom:0;display:flex;gap:9px;align-items:flex-end;padding:10px 0 4px;background:linear-gradient(0deg,#0c0a16 70%,transparent)}
+  /* chat fills the viewport: header pinned top, thread scrolls, input pinned bottom */
+  #sTalk{display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+  #sTalk #talkBody{display:flex;flex-direction:column;flex:1;min-height:0}
+  #sTalk .cl-thread{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:2px 0 0;padding-bottom:6px;min-height:0}
+  #sTalk .cl-back{flex:0 0 auto}#sTalk .cl-head{flex:0 0 auto}
+  .talk-tg{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;padding:11px;border-radius:14px;font-weight:800;font-size:14px;color:#06222b;background:linear-gradient(135deg,#5ec6ff,#2aa9ff);border:none;cursor:pointer;box-shadow:0 6px 18px rgba(42,169,255,.3)}
+  .talk-tg:active{transform:scale(.98)}
+  .talk-quick{flex:0 0 auto;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:2px 0 8px;-webkit-overflow-scrolling:touch}
+  .talk-quick::-webkit-scrollbar{display:none}
+  .talk-quick button{flex:0 0 auto;background:rgba(124,58,255,.15);border:1px solid rgba(124,58,255,.34);color:#cbb8ff;border-radius:18px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .talk-quick button:active{transform:scale(.96)}
+  .talk-input{flex:0 0 auto;display:flex;gap:9px;align-items:flex-end;padding:6px 0 calc(8px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#0c0a16 70%,transparent)}
   .talk-input textarea{flex:1;resize:none;max-height:96px;padding:11px 14px;border-radius:16px;background:rgba(10,8,20,.7);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14.5px;line-height:1.4;outline:none}
   .talk-send{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;color:#06222b;background:linear-gradient(135deg,#D4FF4F,#00E0C7);display:flex;align-items:center;justify-content:center;transition:transform .15s}
   .talk-send:active{transform:scale(.9)}.talk-send svg{width:20px;height:20px}
@@ -788,7 +799,7 @@
   @keyframes avfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   .net-pulse{font-size:54px;display:inline-block;animation:spin 1.2s linear infinite,pulse 1.2s ease-in-out infinite}
   /* achievements grid */
-  .ach-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
+  .ach-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:6px}
   .ach{cursor:pointer}
   .achdone{position:absolute;top:5px;right:6px;font-size:10px;color:#52e6a4;font-weight:800}
   .achbar{width:80%;height:4px;border-radius:3px;background:#100d20;margin:5px auto 2px;overflow:hidden}
@@ -799,11 +810,12 @@
   .ach-modal-ic{font-size:80px;position:relative;filter:drop-shadow(0 0 24px rgba(255,207,92,.5))}
   .ach-modal-n{font-size:28px;font-weight:800;color:#fff;margin-top:8px;position:relative}
   .ach-modal-badge{font-size:12px;font-weight:800;letter-spacing:.1em;color:#ffcf5c;margin-top:8px;position:relative}
-  .ach{position:relative;aspect-ratio:1;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);text-align:center;padding:6px}
+  .ach{position:relative;aspect-ratio:1;min-width:0;overflow:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);text-align:center;padding:6px}
   .ach.got{border-color:rgba(255,207,92,.45);background:linear-gradient(160deg,rgba(255,207,92,.16),rgba(40,36,62,.5))}
   .ach .ai{font-size:26px;filter:grayscale(1) opacity(.4)}
   .ach.got .ai{filter:none}
-  .ach .an{font-size:8.5px;line-height:1.1;color:#b3add0;font-weight:700}
+  .ach .an{font-size:8.5px;line-height:1.1;color:#b3add0;font-weight:700;max-width:100%;word-break:break-word;hyphens:auto}
+  .ach .achpct{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .ach.got .an{color:#ffcf5c}
   .ach .lockicon{position:absolute;top:5px;right:6px;font-size:9px;opacity:.5}
   /* test catalog rows */
@@ -3069,19 +3081,44 @@ function talkGreet(){
     :(en?'Hi! I’m '+TALK.name+'’s clone. Ask me anything.':'Привет! Я клон '+TALK.name+'. Спрашивай что хочешь.');
   TALK.history.push({role:'clone',content:g});renderTalk();
 }
+/* self double: show the avatar at the user's ACTUAL progress (shrouded) — don't spoil the unbuilt face */
+function talkAvatarSelf(){
+  var tr=avatarTraits();var p=(typeof avatarProgress==='function')?avatarProgress():5;
+  var svg=buildAvatarSVG(tr);if(p>=5)return svg;
+  var bands='';for(var i=0;i<5;i++){bands+='<div class="av-band'+(i<p?' open':'')+'" style="top:'+(i*20)+'%"></div>';}
+  return '<div style="position:relative;width:100%;height:100%">'+svg+'<div class="av-shroud">'+bands+'</div></div>';
+}
+var TALK_QUICK_SELF={ru:['Какая у меня сильная сторона?','В чём моя тень?','Что мне мешает?','Как меня видят люди?'],
+  en:['What’s my strength?','What’s my shadow side?','What holds me back?','How do people see me?']};
+var TALK_QUICK_PEER={ru:['Расскажи о себе','Что у нас общего?','Чем ты живёшь?','Почему нам стоит пообщаться?'],
+  en:['Tell me about yourself','What do we have in common?','What are you into?','Why should we connect?']};
+function talkQuick(btn){var ta=document.getElementById('talkText');if(!ta||!TALK||TALK._busy)return;ta.value=btn.textContent;talkSend();}
+function contactTalkPeer(){if(!TALK||!TALK.peer||!TALK.peer.username)return;var url='https://t.me/'+TALK.peer.username;try{var t=window.Telegram&&Telegram.WebApp;if(t&&t.openTelegramLink)t.openTelegramLink(url);else window.open(url,'_blank');}catch(e){}track('contact_peer');}
 function renderTalkShell(){
   var en=isEN();var host=document.getElementById('talkBody');if(!host)return;
   var who=TALK.mode==='self'?(en?'Talk to your double':'Разговор с двойником'):(en?'Clone of ':'Клон ')+TALK.name;
+  var av=TALK.mode==='peer'?buildAvatarSVG(peerTraits(TALK.peer),TALK.peer.name):talkAvatarSelf();
+  var sub=TALK.mode==='peer'
+    ?((TALK.peer&&TALK.peer.real)?(en?'real person · via AI clone':'реальный человек · клон на ИИ'):(en?'AI persona':'ИИ-персонаж'))
+    :(en?'live · powered by AI':'вживую · на ИИ');
+  var tg='';
+  if(TALK.mode==='peer'&&TALK.peer&&TALK.peer.real&&TALK.peer.username){
+    tg='<button class="talk-tg" onclick="contactTalkPeer()"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.5.4-.9.4l.3-4.7 8.6-7.8c.4-.3-.1-.5-.6-.2L7.2 13.2 2.6 11.8c-1-.3-1-1 .2-1.5L20.6 3c.8-.3 1.5.2 1.3 1.3Z"/></svg>'+(en?'Message '+TALK.name+' on Telegram':'Написать '+TALK.name+' в Telegram')+'</button>';
+  }
+  var quick=(TALK.mode==='self'?TALK_QUICK_SELF:TALK_QUICK_PEER)[en?'en':'ru'];
+  var chips='<div class="talk-quick">'+quick.map(function(q){return '<button onclick="talkQuick(this)">'+q+'</button>';}).join('')+'</div>';
   host.innerHTML='<div class="cl-back" onclick="go(\''+(TALK.mode==='peer'?'chats':'avatar')+'\')">← '+(en?'back':'назад')+'</div>'+
-    '<div class="cl-head"><div class="cl-av-lg">'+(TALK.mode==='peer'?buildAvatarSVG(peerTraits(TALK.peer),TALK.peer.name):buildAvatarSVG(avatarTraits()))+'</div><div style="flex:1"><div style="font-weight:800;font-size:17px">'+who+'</div><div class="cl-since">'+(en?'live · powered by AI':'вживую · на ИИ')+'</div></div></div>'+
+    '<div class="cl-head"><div class="cl-av-lg">'+av+'</div><div style="flex:1"><div style="font-weight:800;font-size:17px">'+who+'</div><div class="cl-since">'+sub+'</div></div></div>'+
+    tg+
     '<div class="cl-thread" id="talkThread"></div>'+
+    chips+
     '<div class="talk-input"><textarea id="talkText" rows="1" maxlength="300" placeholder="'+(en?'Type a message…':'Напиши сообщение…')+'" oninput="talkGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();talkSend();}"></textarea><button class="talk-send" onclick="talkSend()" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>';
 }
 function talkGrow(el){el.style.height='auto';el.style.height=Math.min(96,el.scrollHeight)+'px';}
 function renderTalk(){
   var th=document.getElementById('talkThread');if(!th||!TALK)return;
   th.innerHTML=TALK.history.map(function(m){var me=m.role==='user';return '<div class="cl-msg '+(me?'me':'peer')+'"><div class="cl-bub">'+escIns(m.content)+'</div></div>';}).join('')+(TALK._typing?'<div class="cl-typing" style="align-self:flex-start"><i></i><i></i><i></i></div>':'');
-  var host=document.getElementById('talkBody');if(host)host.scrollTo(0,host.scrollHeight);
+  th.scrollTop=th.scrollHeight;
 }
 function talkSend(){
   if(!TALK||TALK._busy)return;var en=isEN();var ta=document.getElementById('talkText');var txt=ta?ta.value.trim():'';if(!txt)return;
@@ -3255,7 +3292,7 @@ function go(scr){go._cur=scr;for(var i=0;i<SCREENS.length;i++)document.getElemen
     if(ab&&navVisible(aid)){var setInd=function(){ind.style.left=(ab.offsetLeft+ab.offsetWidth/2)+'px';ind.style.opacity='1';};setInd();requestAnimationFrame(setInd);}
     else ind.style.opacity='0';}
   // focus mode: hide chrome (navbar) during onboarding/quiz/analyze for distraction-free flow
-  var focus=(scr==='onboard'||scr==='quiz'||scr==='analyze'||scr==='duel');
+  var focus=(scr==='onboard'||scr==='quiz'||scr==='analyze'||scr==='duel'||scr==='talk');
   var nav=document.querySelector('.nav');if(nav)nav.classList.toggle('nav-hidden',focus);
   document.body.classList.toggle('no-nav',focus);
   // insight capture FAB — only while reading your OWN results (result/passport/soul), never during a test, and never over an open modal
