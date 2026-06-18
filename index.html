@@ -2087,9 +2087,9 @@ function renderResult(){
   var mh=document.getElementById('spMeters');
   var bigBars='';
   if(r.big){
-    bigBars='<div class="mh" style="margin-top:18px">'+(en?'Your Big Five profile · the science':'Твой профиль Big Five · научная основа')+'</div>'+
-      '<div style="text-align:center;margin-top:6px">'+bigRadar(r.big,t.color,224)+radarLegend()+
-      '<div class="cb" style="font-size:12px;color:#9a93c2;margin-top:12px">'+(en?'Big Five (OCEAN) is the only personality model with serious scientific grounding. Your spiral type is derived from it. ':'Big Five (OCEAN) — единственная модель личности с серьёзной научной базой. Твой спиральный тип выведен из неё. ')+'<span onclick="methodologyInfo()" style="color:#7fe9ff;cursor:pointer">'+(en?'how it works ⓘ':'как это работает ⓘ')+'</span></div></div>';
+    bigBars=fold('📊 '+(en?'The science · Big Five':'Научная основа · Big Five'),
+      '<div style="text-align:center">'+bigRadar(r.big,t.color,224)+radarLegend()+
+      '<div class="cb" style="font-size:12px;color:#9a93c2;margin-top:12px">'+(en?'Big Five (OCEAN) is the only personality model with serious scientific grounding. Your spiral type is derived from it. ':'Big Five (OCEAN) — единственная модель личности с серьёзной научной базой. Твой спиральный тип выведен из неё. ')+'<span onclick="methodologyInfo()" style="color:#7fe9ff;cursor:pointer">'+(en?'how it works ⓘ':'как это работает ⓘ')+'</span></div></div>',false);
   }
   mh.innerHTML='<div class="mh">'+(en?'Your spiral':'Твоя спираль')+'</div>'+ORDER.map(function(k){var tt=TYPES[k];return '<div class="meter-row"><span class="nm" style="color:'+tt.color+'">'+Tt(k).name+'</span><span class="track"><i data-w="'+r.pct[k]+'" style="background:linear-gradient(90deg,'+tt.color+'88,'+tt.color+')"></i></span><span class="pc" style="color:'+tt.color+'">'+r.pct[k]+'</span></div>';}).join('')+bigBars;
   setTimeout(function(){var bars=mh.querySelectorAll('.track>i');for(var i=0;i<bars.length;i++){(function(bar,idx){setTimeout(function(){bar.style.width=bar.getAttribute('data-w')+'%';},idx*70);})(bars[i],i);}},140);
