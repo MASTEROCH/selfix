@@ -2765,8 +2765,8 @@ function track(event,props){
     if(typeof console!=='undefined'&&console.debug)console.debug('[track]',event,payload.props);
     if(!ANALYTICS_URL)return;
     var body=JSON.stringify(payload);
-    if(navigator.sendBeacon){navigator.sendBeacon(ANALYTICS_URL,new Blob([body],{type:'application/json'}));}
-    else{fetch(ANALYTICS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){});}
+    // NB: no sendBeacon — it forces credentials, which a wildcard-CORS worker rejects. Plain fetch (credentials omitted) works cross-origin.
+    fetch(ANALYTICS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});
   }catch(e){}
 }
 function inTelegram(){try{return !!(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData);}catch(e){return false;}}
@@ -2848,8 +2848,8 @@ function sendFeedback(){
   var delivered=false;
   if(FEEDBACK_URL){try{
     var body=JSON.stringify({text:txt||'(emotion shared)',type:type,typeName:typeName,aid:anonId(),lang:S.lang||'ru',tg:inTelegram(),t:Date.now()});
-    if(navigator.sendBeacon){delivered=navigator.sendBeacon(FEEDBACK_URL,new Blob([body],{type:'application/json'}));}
-    if(!delivered){fetch(FEEDBACK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){});delivered=true;}
+    // plain fetch (no sendBeacon → no forced credentials → passes wildcard CORS)
+    fetch(FEEDBACK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});delivered=true;
   }catch(e){}}
   // 2) fallback: copy + open Telegram share so the user can send it manually
   if(!delivered){
