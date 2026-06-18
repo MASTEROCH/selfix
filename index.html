@@ -226,7 +226,10 @@
   .seg button.on .gico{transform:scale(1.18)}
   .date-row{display:flex;gap:10px}
   .date-row .ob-input{text-align:center;letter-spacing:.05em}
-  .ob-reassure{display:flex;align-items:center;gap:8px;justify-content:center;font-size:11.5px;color:#8e87b5;margin:-4px 0 16px;text-align:center;line-height:1.4}
+  .ob-reassure{display:flex;align-items:center;gap:8px;justify-content:center;font-size:11.5px;color:#8e87b5;margin:-4px 0 10px;text-align:center;line-height:1.4}
+  /* sticky CTA footer: "Начать" is always reachable without scrolling through the wheel */
+  .ob-ctawrap{position:sticky;bottom:0;z-index:6;margin:6px calc(-1*clamp(14px,4.5vw,20px)) 0;padding:12px clamp(14px,4.5vw,20px) calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(8,6,16,0),#08060f 46%)}
+  .ob-ctawrap .btn{margin:0;width:100%}
 
   /* SWIPE SCENE QUIZ */
   .qhead{display:flex;align-items:center;justify-content:space-between;margin:10px 0 16px}
@@ -258,9 +261,23 @@
 
   /* gamified feedback toast between questions */
   /* === cheer between answers — premium glass, pulse in / reverse pulse out === */
-  .cheer-back{position:absolute;inset:0;z-index:64;background:rgba(5,4,12,0);transition:background .34s ease;pointer-events:none}
-  .cheer-back.show{background:rgba(5,4,12,.6);pointer-events:auto}
-  .cheer-back.show::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 43%,rgba(124,58,255,.18),rgba(0,224,199,.06) 40%,transparent 60%);pointer-events:none}
+  .cheer-back{position:absolute;inset:0;z-index:64;background:rgba(4,3,10,0);transition:background .4s ease;pointer-events:none}
+  .cheer-back.show{background:rgba(4,3,10,.88);pointer-events:auto}
+  .cheer-back.show::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 43%,rgba(124,58,255,.30),rgba(0,224,199,.09) 38%,transparent 62%);pointer-events:none;animation:cheerBackPulse 2.6s ease-in-out infinite}
+  @keyframes cheerBackPulse{0%,100%{opacity:.8}50%{opacity:1}}
+  /* expanding ring + sparkles for the "wow" */
+  .cheer-burst{position:absolute;left:50%;top:62px;width:12px;height:12px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid rgba(255,222,150,.9);opacity:0;z-index:0;pointer-events:none}
+  .cheer.show .cheer-burst{animation:cheerBurst .72s cubic-bezier(.2,.7,.3,1) .05s forwards}
+  @keyframes cheerBurst{0%{opacity:.95;width:14px;height:14px;border-width:3px}100%{opacity:0;width:168px;height:168px;border-width:1px}}
+  .cheer-spark{position:absolute;left:50%;top:62px;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(255,200,120,.7) 55%,transparent);opacity:0;z-index:4;pointer-events:none;transform:translate(-50%,-50%)}
+  .cheer.show .cheer-spark{animation:cheerSpark .9s ease-out .08s forwards}
+  @keyframes cheerSpark{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}22%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) scale(.7)}}
+  .cheer-spark:nth-child(2){--sx:-74px;--sy:-32px}
+  .cheer-spark:nth-child(3){--sx:78px;--sy:-26px}
+  .cheer-spark:nth-child(4){--sx:-60px;--sy:34px}
+  .cheer-spark:nth-child(5){--sx:66px;--sy:40px}
+  .cheer-spark:nth-child(6){--sx:2px;--sy:-70px}
+  .cheer-spark:nth-child(7){--sx:10px;--sy:58px}
   .cheer{position:absolute;top:50%;left:50%;z-index:65;text-align:center;opacity:0;pointer-events:none;overflow:hidden;
     transform:translate(-50%,-50%) scale(.86);
     padding:32px 34px 28px;border-radius:32px;min-width:228px;max-width:312px;
@@ -829,7 +846,7 @@
         <input type="hidden" id="obDay"><input type="hidden" id="obMonth"><input type="hidden" id="obYear">
       </div>
       <div class="ob-reassure" id="obReassure">🔒 Это останется только у тебя на устройстве</div>
-      <button class="btn" onclick="submitOnboard()">Начать</button>
+      <div class="ob-ctawrap"><button class="btn" onclick="submitOnboard()">Начать</button></div>
     </div>
 
     <!-- HOME -->
@@ -973,7 +990,7 @@
   <div class="lvlup" id="lvlup" onclick="this.classList.remove('show')"><div class="lvlup-bg"></div><div class="lvlup-card"><div class="lvlup-ray"></div><div class="lvlup-ic" id="lvlupIc">⬆️</div><div class="lvlup-t" id="lvlupT">LEVEL UP</div><div class="lvlup-n" id="lvlupN">ур. 2</div><div class="lvlup-s" id="lvlupS"></div></div></div>
   <div class="gift-welcome hidden" id="giftWelcome"><div class="gw-glow"></div><div class="gw-inner"><div class="gw-ribbon">🎁</div><div class="gw-from"></div><div class="gw-sub"></div><button class="btn gw-btn" onclick="acceptGift()">Принять подарок →</button><div class="gw-trust"></div></div></div>
   <div class="cheer-back" id="cheerBack"></div>
-  <div class="cheer" id="cheer"><div class="ce" id="cheerE">✨</div><div class="ct" id="cheerT">+10</div><div class="cs" id="cheerS"></div></div>
+  <div class="cheer" id="cheer"><span class="cheer-burst"></span><i class="cheer-spark"></i><i class="cheer-spark"></i><i class="cheer-spark"></i><i class="cheer-spark"></i><i class="cheer-spark"></i><i class="cheer-spark"></i><div class="ce" id="cheerE">✨</div><div class="ct" id="cheerT">+10</div><div class="cs" id="cheerS"></div></div>
   <div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
   <div class="toast-dim" id="toastDim"></div>
   <div class="toast" id="toast"></div>
@@ -1351,13 +1368,50 @@ var CHEER_MILESTONES_EN={
 };
 var _cheerBag={};
 function bagPop(key){var arr=(isEN()?CHEERS_EN:CHEERS)[key];var bk=(isEN()?'en_':'')+key;if(!_cheerBag[bk]||!_cheerBag[bk].length){_cheerBag[bk]=arr.slice();for(var i=_cheerBag[bk].length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=_cheerBag[bk][i];_cheerBag[bk][i]=_cheerBag[bk][j];_cheerBag[bk][j]=t;}}return _cheerBag[bk].pop();}
-function pickCheer(qIndex,answerVal){
+/* trait-aware reactions: on a decisive answer to a Big Five item, reflect the ACTUAL trait
+   the user just revealed (high/low pole) — so the cheer feels read, not random. */
+var TRAIT_CHEER={
+  E:{hi:[{e:'🎉',t:'Тебя заряжают люди',s:'Энергия приходит из общения — это видно'},{e:'⚡',t:'Ты живёшь среди людей',s:'Рядом с другими ты в своей стихии'}],
+     lo:[{e:'🤫',t:'Ты ценишь тишину',s:'Своё пространство восстанавливает тебя'},{e:'🌙',t:'Тебе хорошо наедине',s:'Глубина важнее шума — так отвечают немногие'}]},
+  C:{hi:[{e:'🎯',t:'Ты доводишь до конца',s:'На тебя можно положиться'},{e:'🗂️',t:'Порядок — твоя опора',s:'Держишь структуру там, где другие плывут'}],
+     lo:[{e:'🍃',t:'Ты гибкий',s:'Спонтанность — тоже сила'},{e:'🌀',t:'Ты не раб планов',s:'Импровизация даётся тебе легко'}]},
+  O:{hi:[{e:'🔭',t:'Тебя манит новое',s:'Идеи и необычное — твоя стихия'},{e:'🎨',t:'Ты мыслишь шире',s:'Видишь там, где другие не смотрят'}],
+     lo:[{e:'🪨',t:'Ты ценишь проверенное',s:'Твёрдая почва под ногами — это надёжно'},{e:'🏛️',t:'Ты за основательность',s:'Не гонишься за каждым новым ветром'}]},
+  A:{hi:[{e:'💚',t:'В тебе много тепла',s:'Ты правда чувствуешь людей'},{e:'🫶',t:'Ты заботишься',s:'С тобой людям тепло и безопасно'}],
+     lo:[{e:'⚔️',t:'Ты прямой',s:'Честность важнее удобства — это редко'},{e:'🗣️',t:'Ты не боишься спорить',s:'Говоришь как есть'}]},
+  N:{hi:[{e:'🌊',t:'Ты глубоко чувствуешь',s:'Твоя чувствительность — дар, не слабость'},{e:'💧',t:'Эмоции у тебя настоящие',s:'Ты живёшь на полную'}],
+     lo:[{e:'🧘',t:'Ты спокоен',s:'Тебя трудно выбить из колеи'},{e:'🛡️',t:'Ты устойчив',s:'Буря снаружи — а внутри штиль'}]}
+};
+var TRAIT_CHEER_EN={
+  E:{hi:[{e:'🎉',t:'People energize you',s:'Your spark comes from connection — it shows'},{e:'⚡',t:'You live among people',s:'You’re in your element around others'}],
+     lo:[{e:'🤫',t:'You value quiet',s:'Your own space restores you'},{e:'🌙',t:'You’re good on your own',s:'Depth over noise — few answer this way'}]},
+  C:{hi:[{e:'🎯',t:'You finish what you start',s:'You can be counted on'},{e:'🗂️',t:'Order is your anchor',s:'You hold structure where others drift'}],
+     lo:[{e:'🍃',t:'You’re flexible',s:'Spontaneity is a strength too'},{e:'🌀',t:'No slave to plans',s:'Improvising comes easy to you'}]},
+  O:{hi:[{e:'🔭',t:'The new pulls you',s:'Ideas and the unusual are your element'},{e:'🎨',t:'You think wider',s:'You see where others don’t look'}],
+     lo:[{e:'🪨',t:'You value the proven',s:'Solid ground under your feet'},{e:'🏛️',t:'You’re for substance',s:'You don’t chase every new wind'}]},
+  A:{hi:[{e:'💚',t:'There’s real warmth in you',s:'You truly feel people'},{e:'🫶',t:'You care',s:'People feel safe and warm with you'}],
+     lo:[{e:'⚔️',t:'You’re direct',s:'Honesty over comfort — that’s rare'},{e:'🗣️',t:'Not afraid to disagree',s:'You say it like it is'}]},
+  N:{hi:[{e:'🌊',t:'You feel deeply',s:'Your sensitivity is a gift, not a weakness'},{e:'💧',t:'Your emotions are real',s:'You live at full intensity'}],
+     lo:[{e:'🧘',t:'You stay calm',s:'Hard to knock you off balance'},{e:'🛡️',t:'You’re steady',s:'Storm outside — calm within'}]}
+};
+function traitCheerPop(f,pole){
+  var bank=isEN()?TRAIT_CHEER_EN:TRAIT_CHEER;var arr=bank[f]&&bank[f][pole];if(!arr||!arr.length)return null;
+  var bk=(isEN()?'en_':'')+'tr_'+f+'_'+pole;
+  if(!_cheerBag[bk]||!_cheerBag[bk].length){_cheerBag[bk]=arr.slice();for(var i=_cheerBag[bk].length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=_cheerBag[bk][i];_cheerBag[bk][i]=_cheerBag[bk][j];_cheerBag[bk][j]=t;}}
+  return _cheerBag[bk].pop();
+}
+function pickCheer(qIndex,answerVal,q){
   // milestone takes priority for a sense of progress
   var M=isEN()?CHEER_MILESTONES_EN:CHEER_MILESTONES;
   if(M[qIndex])return M[qIndex];
-  if(answerVal===0||answerVal===3)return bagPop('decisive');
+  // decisive answer on a tagged Big Five item → reflect the real trait
+  if(q&&q.f&&(answerVal===0||answerVal===3)){
+    var lean=(q.d||1)*(answerVal-1.5); // >0 → high pole, <0 → low pole
+    var tc=traitCheerPop(q.f,lean>0?'hi':'lo');
+    if(tc)return tc;
+  }
   if(answerVal===1||answerVal===2)return bagPop('nuanced');
-  return bagPop('generic');
+  return bagPop('decisive');
 }
 
 /* ===== 4 extra tests ===== */
@@ -1720,7 +1774,7 @@ function choose(i){
   var ci=Q.i;
   var done=function(){choose._lock=false;advance(last);};
   if(doCheer){
-    setTimeout(function(){showCheer(done,pickCheer(ci,aval));},220);
+    setTimeout(function(){showCheer(done,pickCheer(ci,aval,q));},220);
   }else{
     setTimeout(done,260);
   }
@@ -1744,7 +1798,7 @@ function showCheer(done,c){
     // reverse pulse on the way out (mirror of the entrance)
     el.classList.remove('show');el.classList.add('out');back.classList.remove('show');
     setTimeout(function(){el.classList.remove('out');if(done)done();},340);
-  },820); // short, calm hold so it never nags
+  },950); // calm hold — long enough to land the "wow", short enough to never nag
 }
 /* progress-aware encouragement after finishing a test (1..5 facets) */
 function progressCheer(){var en=isEN();var p=avatarProgress();
