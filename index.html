@@ -2948,7 +2948,7 @@ function reportState(stage){
     if(!STATE_URL||!inTelegram())return;
     var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
     var facets=(typeof avatarProgress==='function')?avatarProgress():0;
-    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',type:(S&&S.result)?S.result.primary:'',big:(S&&S.result)?S.result.big:null,initData:initData});
+    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',type:(S&&S.result)?S.result.primary:'',big:(S&&S.result)?S.result.big:null,name:(S&&S.name)||'',gender:(S&&S.gender)||'',day:(S&&S.day)||0,month:(S&&S.month)||0,year:(S&&S.year)||0,tests:(S&&S.tests)?Object.keys(S.tests):[],initData:initData});
     fetch(STATE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});
   }catch(e){}
 }

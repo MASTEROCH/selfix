@@ -38,6 +38,15 @@ export default {
       if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'bad secret' });
       return json(await setupBot(env, url.origin));
     }
+    // ---- private owner admin (gated by OWNER_CHAT_ID secret) ----
+    if (url.pathname === '/admin' && request.method === 'GET') {
+      if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return new Response('forbidden', { status: 403, headers: CORS });
+      return new Response(adminHTML(), { headers: { 'content-type': 'text/html;charset=utf-8', ...CORS } });
+    }
+    if (url.pathname === '/admin/data' && request.method === 'GET') {
+      if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
+      return json(await adminData(env));
+    }
     if (request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch (e) {}
@@ -51,6 +60,10 @@ export default {
       if (url.pathname === '/state')       return await onState(env, body);
       if (url.pathname === '/entitlements')return json(await onEntitlements(env, body));
       if (url.pathname === '/match')       return json(await onMatch(env, body));
+      if (url.pathname === '/admin/broadcast') {
+        if ((body.secret || '') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
+        return json(await adminBroadcast(env, body));
+      }
     }
     return new Response('not found', { status: 404, headers: CORS });
   },
@@ -253,6 +266,7 @@ async function onState(env, body) {
       facets: typeof body.facets === 'number' ? body.facets : undefined,
       hasResult: !!body.hasResult, avatarFull: !!body.avatarFull, touch: true,
       type: body.type, big: body.big, username: u.username || body.username,
+      name: body.name, gender: body.gender, day: body.day, month: body.month, year: body.year, tests: body.tests,
     });
   } catch (e) {}
   return new Response(null, { status: 204, headers: CORS });
@@ -266,7 +280,7 @@ async function upsertUser(env, from, patch) {
   try { rec = JSON.parse(await env.USERS.get(key)) || {}; } catch (e) {}
   const now = Date.now();
   rec.id = from.id;
-  rec.name = rec.name || from.first_name || patch.name || '';
+  rec.name = patch.name || rec.name || from.first_name || '';        // prefer the name the user typed in-app
   rec.lang = patch.lang || from.language_code || rec.lang || 'ru';
   rec.firstSeen = rec.firstSeen || now;
   rec.lastActive = now;
@@ -280,6 +294,11 @@ async function upsertUser(env, from, patch) {
   if (patch.type) rec.type = patch.type;
   if (patch.big) rec.big = patch.big;
   if (patch.username) rec.username = patch.username;
+  if (patch.gender) rec.gender = patch.gender;
+  if (patch.day) rec.day = patch.day;
+  if (patch.month) rec.month = patch.month;
+  if (patch.year) rec.year = patch.year;
+  if (patch.tests && patch.tests.length) rec.tests = patch.tests;
   await env.USERS.put(key, JSON.stringify(rec));
 }
 
@@ -328,6 +347,138 @@ function pickNudge(rec, idleH) {
   if ((rec.avatarFull || facets >= 5) && idleH >= 44)
     return { type: 'clone_matches', text: en ? 'Your clone met new people 💫 Come see who resonates with you — and why.' : 'Твой клон познакомился с новыми людьми 💫 Загляни — кто тебе резонирует и почему.' };
   return null;
+}
+
+/* ---------- private owner admin: users overview + funnel + targeted broadcast ---------- */
+async function adminData(env) {
+  if (!env.USERS) return { ok: true, users: [], funnel: {}, now: Date.now() };
+  const users = []; let cursor;
+  do {
+    const list = await env.USERS.list({ prefix: 'user:', cursor });
+    cursor = list.list_complete ? null : list.cursor;
+    for (const k of list.keys) {
+      let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
+      if (!rec || !rec.id) continue;
+      let ent = []; try { ent = JSON.parse(await env.USERS.get('ent:' + rec.id)) || []; } catch (e) {}
+      users.push({
+        id: rec.id, name: rec.name || '', username: rec.username || '', lang: rec.lang || '', gender: rec.gender || '',
+        day: rec.day || 0, month: rec.month || 0, year: rec.year || 0,
+        type: rec.type || '', big: rec.big || null, facets: rec.facets || 0, tests: rec.tests || [],
+        stage: rec.stage || '', hasResult: !!rec.hasResult, avatarFull: !!(rec.avatarFull || (rec.facets || 0) >= 5),
+        purchases: ent, reminders: (rec.reminders || []).length, optOut: !!rec.optOut,
+        firstSeen: rec.firstSeen || 0, lastActive: rec.lastActive || 0,
+      });
+    }
+  } while (cursor);
+  users.sort((a, b) => b.lastActive - a.lastActive);
+  const funnel = {
+    total: users.length,
+    result: users.filter(u => u.hasResult).length,
+    full: users.filter(u => u.avatarFull).length,
+    paid: users.filter(u => u.purchases && u.purchases.length).length,
+  };
+  return { ok: true, users, funnel, now: Date.now() };
+}
+function segMatch(seg, rec, paid, full) {
+  if (seg === 'all') return true;
+  if (seg === 'no_result') return !rec.hasResult;
+  if (seg === 'incomplete') return rec.hasResult && !full;
+  if (seg === 'no_purchase') return rec.hasResult && !paid;
+  if (seg === 'full_no_purchase') return full && !paid;
+  return false;
+}
+async function adminBroadcast(env, body) {
+  if (!env.USERS || !env.BOT_TOKEN) return { ok: false, err: 'no kv/token' };
+  const text = String(body.text || '').slice(0, 3000);
+  const seg = body.segment || 'all';
+  const dry = !!body.dry;
+  if (!dry && !text) return { ok: false, err: 'empty text' };
+  let cursor, targets = [];
+  do {
+    const list = await env.USERS.list({ prefix: 'user:', cursor });
+    cursor = list.list_complete ? null : list.cursor;
+    for (const k of list.keys) {
+      let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
+      if (!rec || !rec.id || rec.optOut) continue;
+      let ent = []; try { ent = JSON.parse(await env.USERS.get('ent:' + rec.id)) || []; } catch (e) {}
+      const full = rec.avatarFull || (rec.facets || 0) >= 5;
+      if (segMatch(seg, rec, ent.length > 0, full)) targets.push(rec);
+    }
+  } while (cursor);
+  if (dry) return { ok: true, count: targets.length, dry: true };
+  let sent = 0, failed = 0;
+  for (const rec of targets) {
+    try {
+      const r = await tg(env, 'sendMessage', { chat_id: rec.id, text, reply_markup: openKb(rec.lang) });
+      const j = await r.json(); if (j.ok) sent++; else failed++;
+    } catch (e) { failed++; }
+  }
+  return { ok: true, sent, failed, count: targets.length };
+}
+function adminHTML() {
+  // self-contained dashboard; reads ?secret= from its own URL to call /admin/data + /admin/broadcast.
+  // NOTE: kept free of backticks and ${...} so it survives inside the worker's template string.
+  return '<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SELF-FIX · admin</title>'
+  + '<style>'
+  + ':root{--vio:#7C3AFF;--cy:#00E0C7;--lime:#D4FF4F;--bg:#0a0814;--card:rgba(28,24,46,.6)}'
+  + '*{box-sizing:border-box}body{margin:0;background:radial-gradient(120% 80% at 50% 0,#19132e,#0a0814);color:#e9e6f7;font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif;padding:18px}'
+  + 'h1{font-size:18px;margin:0 0 14px;letter-spacing:2px}h1 b{color:var(--lime)}'
+  + '.funnel{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}'
+  + '.kpi{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 16px;min-width:96px}'
+  + '.kpi .n{font-size:22px;font-weight:800}.kpi .l{font-size:11px;color:#a39ccb;text-transform:uppercase;letter-spacing:.5px}'
+  + '.kpi .p{font-size:11px;color:var(--cy);font-weight:700}'
+  + '.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}'
+  + '.seg{background:rgba(124,58,255,.15);border:1px solid rgba(124,58,255,.4);color:#cbb8ff;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}'
+  + '.seg.on{background:var(--vio);color:#fff}'
+  + 'input,textarea,select{background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:8px 11px;font:inherit;outline:none}'
+  + 'table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:8px 9px;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}'
+  + 'th{color:#a39ccb;font-size:11px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;background:#120e22}'
+  + 'tr:hover td{background:rgba(124,58,255,.07)}'
+  + '.tag{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:800}'
+  + '.paid{background:rgba(82,230,164,.16);color:#52e6a4}.nopaid{color:#6b6690}'
+  + '.wrap{overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:14px;max-height:54vh}'
+  + '.bc{margin-top:18px;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px}'
+  + '.bc h2{font-size:14px;margin:0 0 10px}.bc textarea{width:100%;min-height:80px;resize:vertical}'
+  + '.btn{background:var(--lime);color:#10240a;border:none;border-radius:10px;padding:9px 16px;font-weight:800;cursor:pointer}'
+  + '.btn.ghost{background:rgba(255,255,255,.08);color:#cbb8ff}'
+  + '.muted{color:#a39ccb;font-size:12px}'
+  + '</style></head><body>'
+  + '<h1>SELF-FIX · <b>admin</b></h1>'
+  + '<div class="funnel" id="funnel"></div>'
+  + '<div class="bar"><span class="muted">сегмент:</span><span class="seg on" data-s="all">все</span><span class="seg" data-s="no_result">не прошли тест</span><span class="seg" data-s="incomplete">не собрали 5/5</span><span class="seg" data-s="no_purchase">не купили</span><span class="seg" data-s="full_no_purchase">5/5, но не купили</span><input id="q" placeholder="поиск по имени/типу" style="margin-left:auto;min-width:180px"></div>'
+  + '<div class="wrap"><table><thead><tr><th>Имя</th><th>@</th><th>Тип</th><th>Сильное</th><th>Слабое</th><th>ДР</th><th>Пол</th><th>Тесты</th><th>Стадия</th><th>Купил</th><th>Был</th><th>Яз</th></tr></thead><tbody id="rows"></tbody></table></div>'
+  + '<div class="bc"><h2>📣 Точечная рассылка <span class="muted" id="bcseg"></span></h2><textarea id="bctext" placeholder="Текст сообщения (уйдёт в бота этим юзерам; кто нажал /stop — пропускаются)"></textarea><div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn ghost" id="bcprev">Сколько получат?</button><button class="btn" id="bcsend">Отправить сегменту</button><span class="muted" id="bcres"></span></div></div>'
+  + '<script>'
+  + 'var SECRET=new URLSearchParams(location.search).get("secret")||"";'
+  + 'var TYPES={red:"Огонь",blue:"Лёд",orange:"Сталь",green:"Тепло",yellow:"Поток"};'
+  + 'var BIGN={O:"открытость",C:"собранность",E:"энергия",A:"мягкость",N:"чувствит."};'
+  + 'var DATA=[],SEG="all";'
+  + 'function rel(t){if(!t)return "—";var d=Date.now()-t,h=d/3600000;if(h<1)return Math.round(d/60000)+"м";if(h<24)return Math.round(h)+"ч";return Math.round(h/24)+"д";}'
+  + 'function strongWeak(big){if(!big)return["—","—"];var ks=Object.keys(BIGN),hi=ks[0],lo=ks[0];ks.forEach(function(k){if((big[k]||0)>(big[hi]||0))hi=k;if((big[k]||0)<(big[lo]==null?100:big[lo]||0))lo=k;});return[BIGN[hi],BIGN[lo]];}'
+  + 'function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}'
+  + 'function paidText(p){return (p&&p.length)?("<span class=\\"tag paid\\">"+p.length+" ⭐</span>"):"<span class=\\"nopaid\\">—</span>";}'
+  + 'function render(){'
+  + 'var f=window.FUN||{};document.getElementById("funnel").innerHTML='
+  + '"<div class=\\"kpi\\"><div class=\\"n\\">"+(f.total||0)+"</div><div class=\\"l\\">всего</div></div>"'
+  + '+"<div class=\\"kpi\\"><div class=\\"n\\">"+(f.result||0)+"</div><div class=\\"l\\">прошли тест</div><div class=\\"p\\">"+pct(f.result,f.total)+"</div></div>"'
+  + '+"<div class=\\"kpi\\"><div class=\\"n\\">"+(f.full||0)+"</div><div class=\\"l\\">5/5</div><div class=\\"p\\">"+pct(f.full,f.total)+"</div></div>"'
+  + '+"<div class=\\"kpi\\"><div class=\\"n\\">"+(f.paid||0)+"</div><div class=\\"l\\">купили</div><div class=\\"p\\">"+pct(f.paid,f.total)+"</div></div>";'
+  + 'var q=(document.getElementById("q").value||"").toLowerCase();'
+  + 'var rows=DATA.filter(function(u){if(q){var hay=((u.name||"")+" "+(TYPES[u.type]||u.type||"")+" "+(u.username||"")).toLowerCase();if(hay.indexOf(q)<0)return false;}return inSeg(u);});'
+  + 'document.getElementById("rows").innerHTML=rows.map(function(u){var sw=strongWeak(u.big);var dob=u.day?(u.day+"."+(u.month||"")+(u.year?"."+u.year:"")):"—";'
+  + 'return "<tr><td>"+esc(u.name||"—")+"</td><td>"+(u.username?("@"+esc(u.username)):"—")+"</td><td>"+esc(TYPES[u.type]||u.type||"—")+"</td><td>"+sw[0]+"</td><td>"+sw[1]+"</td><td>"+dob+"</td><td>"+(u.gender==="m"?"М":u.gender==="f"?"Ж":"—")+"</td><td>"+(u.facets||0)+"/5</td><td>"+esc(u.stage||"—")+"</td><td>"+paidText(u.purchases)+"</td><td>"+rel(u.lastActive)+"</td><td>"+esc(u.lang||"")+"</td></tr>";}).join("")||"<tr><td colspan=12 class=muted style=padding:20px>пусто</td></tr>";'
+  + 'document.getElementById("bcseg").textContent="— сегмент: "+SEG+" ("+rows.length+" видно)";}'
+  + 'function pct(a,b){if(!b)return"";return Math.round(100*(a||0)/b)+"%";}'
+  + 'function inSeg(u){var paid=u.purchases&&u.purchases.length>0,full=u.avatarFull;if(SEG==="all")return true;if(SEG==="no_result")return !u.hasResult;if(SEG==="incomplete")return u.hasResult&&!full;if(SEG==="no_purchase")return u.hasResult&&!paid;if(SEG==="full_no_purchase")return full&&!paid;return true;}'
+  + 'Array.prototype.forEach.call(document.querySelectorAll(".seg"),function(el){el.onclick=function(){SEG=el.dataset.s;Array.prototype.forEach.call(document.querySelectorAll(".seg"),function(e){e.classList.remove("on");});el.classList.add("on");render();};});'
+  + 'document.getElementById("q").oninput=render;'
+  + 'function load(){fetch("/admin/data?secret="+encodeURIComponent(SECRET)).then(function(r){return r.json();}).then(function(d){if(!d.ok){document.body.innerHTML="<h1>403 — bad secret</h1>";return;}DATA=d.users||[];window.FUN=d.funnel||{};render();});}'
+  + 'document.getElementById("bcprev").onclick=function(){bc(true);};document.getElementById("bcsend").onclick=function(){if(confirm("Отправить сообщение сегменту \\""+SEG+"\\"?"))bc(false);};'
+  + 'function bc(dry){var t=document.getElementById("bctext").value;var res=document.getElementById("bcres");res.textContent="…";'
+  + 'fetch("/admin/broadcast",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({secret:SECRET,segment:SEG,text:t,dry:dry})}).then(function(r){return r.json();}).then(function(d){'
+  + 'if(!d.ok){res.textContent="ошибка: "+(d.err||"?");return;}if(d.dry){res.textContent="получат: "+d.count;}else{res.textContent="отправлено: "+d.sent+" / "+d.count+(d.failed?(" · ошибок "+d.failed):"");load();}});}'
+  + 'load();'
+  + '</scr'+'ipt></body></html>';
 }
 
 /* ---------- bot self-setup (menu button, commands, description) ---------- */
