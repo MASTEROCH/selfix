@@ -471,8 +471,10 @@
   .cl-msg.peer .cl-bub{border-bottom-left-radius:5px}
   .cl-msg.me .cl-bub{border-bottom-right-radius:5px;background:linear-gradient(160deg,rgba(124,58,255,.36),rgba(0,224,199,.16));border-color:rgba(124,58,255,.4);color:#fff}
   /* interactive clone chat input */
-  /* chat fills the viewport: header pinned top, thread scrolls, input pinned bottom */
-  #sTalk{display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+  /* chat fills the viewport: header pinned top, thread scrolls, input pinned bottom.
+     NB: scope display to :not(.hidden) so the id selector doesn't beat .hidden{display:none} */
+  #sTalk{flex-direction:column;overflow:hidden;padding-bottom:0}
+  #sTalk:not(.hidden){display:flex}
   #sTalk #talkBody{display:flex;flex-direction:column;flex:1;min-height:0}
   #sTalk .cl-thread{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:2px 0 0;padding-bottom:6px;min-height:0}
   #sTalk .cl-back{flex:0 0 auto}#sTalk .cl-head{flex:0 0 auto}
@@ -936,7 +938,13 @@
       <div id="achList"></div>
       <div class="section-h"><h2 id="hPrem">Полные разборы</h2></div>
       <div id="storeList"></div>
-      <div style="text-align:center;margin-top:24px"><span id="resetLink" onclick="resetApp()" style="font-size:12px;color:#a39ccb;cursor:pointer;border-bottom:1px dashed #3a3550;padding-bottom:2px">Начать заново</span></div>
+      <div class="section-h"><h2 id="hPriv">Приватность</h2></div>
+      <div id="privRow" style="display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(28,24,46,.5);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px">
+        <div style="min-width:0"><div id="privLbl" style="font-size:13.5px;color:#e7e2fb;font-weight:600">Разрешить людям писать мне в Telegram</div><div id="privSub" style="font-size:11.5px;color:#8e87b5;margin-top:3px">Другие увидят твой @username в матчах. По умолчанию выключено.</div></div>
+        <span id="privToggle" onclick="toggleContact()" style="cursor:pointer;flex:none"></span>
+      </div>
+      <div style="text-align:center;margin-top:14px"><span style="font-size:12px;color:#7fe9ff;cursor:pointer" onclick="privacyInfo()" id="privLink">Как мы храним данные</span></div>
+      <div style="text-align:center;margin-top:18px"><span id="resetLink" onclick="resetApp()" style="font-size:12px;color:#a39ccb;cursor:pointer;border-bottom:1px dashed #3a3550;padding-bottom:2px">Начать заново</span></div>
     </div>
 
     <!-- AVATAR -->
@@ -1047,6 +1055,8 @@ function resetApp(){
       ? 'This fully wipes your profile: type, completed tests, avatar, rating, achievements and history. The app will launch as if you opened it for the first time.<br><br><b>About purchases.</b> Previously paid tests and breakdowns <b>are not refunded or carried over</b> — they’re one-time purchases with Telegram Stars. After a reset, you’ll need to pay again to unlock them.<br><br>This action is irreversible. Continue?'
       : 'Это полностью обнулит твой профиль: тип, пройденные тесты, аватар, рейтинг, достижения и историю. Приложение запустится так, будто ты открыл его впервые.<br><br><b>Важно про покупки.</b> Ранее оплаченные тесты и разборы <b>не возвращаются и не переносятся</b> — это разовые покупки за Telegram Stars. После сброса, чтобы открыть их снова, потребуется оплатить заново.<br><br>Действие необратимо. Продолжить?'),
     function(){
+      // erase server-side profile too (right to be forgotten) — best-effort, validated by initData
+      try{var idt=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(DELETE_URL&&idt){fetch(DELETE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:idt}),keepalive:true,credentials:'omit'}).catch(function(){});}}catch(e){}
       try{localStorage.removeItem(SAVE_KEY);}catch(e){}St.mem={};
       closeModal();
       S={stars:120,rating:1000,onboarded:false,name:'',gender:'',day:0,month:0,year:0,result:null,fullOwned:false,duelsToday:0,lastDuelDay:null,history:[],tests:{},testResults:{},ownedTests:{},ownedProducts:{}};
@@ -1998,8 +2008,8 @@ function methodologyInfo(){
   modal('Как работает SELF-FIX','<b>Научное ядро.</b> Твой профиль строится на модели <b>Big Five (OCEAN)</b> — пять черт личности, которые десятилетиями проверяются психологами. Вопросы взяты из открытого банка IPIP.<br><br><b>Спиральный тип</b> — образное имя (Пламя, Опора и т.д.), которое выводится из твоего профиля Big Five, чтобы было нагляднее и интереснее.<br><br><b>Слои-приправа.</b> Нумерология и «тип энергии» добавлены для развлечения и саморефлексии — это не наука, и мы честно об этом говорим.<br><br>SELF-FIX — просветительско-развлекательный продукт. Это не клиническая диагностика и не заменяет консультацию специалиста.');
 }
 function privacyInfo(){
-  if(isEN()){modal('Privacy & your data','<b>Your answers stay on your device.</b> Your name, birth date and test answers are saved locally (in this browser/Telegram) — we don’t upload them to a server.<br><br><b>Anonymous usage stats.</b> We may collect anonymous events (e.g. “test started/finished”) to improve the product — without your name or answers.<br><br><b>Feedback.</b> If you tap “Send feedback”, only the text you wrote and your type are sent — nothing else.<br><br><b>Sharing.</b> A gift/challenge link encodes only your type so a friend sees your result. You choose when to share.<br><br>Made by ROCH · roch-audit.com');return;}
-  modal('Приватность и твои данные','<b>Твои ответы остаются на устройстве.</b> Имя, дата рождения и ответы тестов хранятся локально (в этом браузере/Telegram) — мы не загружаем их на сервер.<br><br><b>Анонимная статистика.</b> Мы можем собирать обезличенные события (например, «тест начат/завершён»), чтобы улучшать продукт — без твоего имени и без ответов.<br><br><b>Обратная связь.</b> Если нажмёшь «Отправить отзыв», уходит только написанный тобой текст и твой тип — больше ничего.<br><br><b>Шеринг.</b> Ссылка-подарок/вызов кодирует только твой тип, чтобы друг увидел результат. Делишься только когда сам захочешь.<br><br>Сделано ROCH · roch-audit.com');
+  if(isEN()){modal('Privacy & your data','<b>What we store.</b> So your clone can find you real people and give personal guidance, we save your profile: name, birth date, gender, type and test results. Purchases (Stars) are tied to your Telegram account.<br><br><b>We don’t sell your data.</b> It’s used only inside SELF-FIX — for matching, your double and personalization. Never shared or made public.<br><br><b>Contacts.</b> Another person sees your @username and can message you only if you allow it in settings. Off by default.<br><br><b>Deletion.</b> “Start over” wipes your profile — from the server too.<br><br><b>Stars purchases are one-time and non-refundable.</b><br><br>16+. SELF-FIX is an educational & entertainment product (Big Five), not a diagnosis.<br><br>Made by ROCH · roch-audit.com');return;}
+  modal('Приватность и твои данные','<b>Что мы храним.</b> Чтобы клон находил тебе реальных людей и давал персональные подсказки, мы сохраняем твой профиль: имя, дату рождения, пол, тип и результаты тестов. Покупки (Stars) привязаны к твоему Telegram-аккаунту.<br><br><b>Мы не продаём данные.</b> Они используются только внутри SELF-FIX — для подбора людей, твоего двойника и персонализации. Никому не передаём и не публикуем.<br><br><b>Контакты.</b> Другой человек увидит твой @username и сможет написать, только если ты сам разрешишь это в настройках. По умолчанию — выключено.<br><br><b>Удаление.</b> «Начать заново» стирает твой профиль — и с сервера тоже.<br><br><b>Покупки Stars разовые и невозвратные.</b><br><br>16+. SELF-FIX — просветительско-развлекательный продукт (Big Five), не диагностика.<br><br>Сделано ROCH · roch-audit.com');
 }
 function rareSubtype(r){var top=r.sorted,sc=r.sc;
   if(sc[top[0]]>0){var spread=(sc[top[0]]-sc[top[2]])/sc[top[0]];
@@ -2362,6 +2372,13 @@ var ACH_TEXT_EN={
 function achName(a){return (isEN()&&ACH_TEXT_EN[a.id])?ACH_TEXT_EN[a.id].n:a.n;}
 function achDesc(a){return (isEN()&&ACH_TEXT_EN[a.id])?ACH_TEXT_EN[a.id].desc:a.desc;}
 function achById(id){for(var i=0;i<ACHIEVEMENTS.length;i++)if(ACHIEVEMENTS[i].id===id)return ACHIEVEMENTS[i];return null;}
+function toggleContact(){var en=isEN();S.allowContact=!S.allowContact;save();renderPrivRow();reportState('settings');pop(S.allowContact?(en?'People can message you now ✓':'Теперь тебе смогут писать ✓'):(en?'Hidden — no one can message you':'Скрыто — тебе писать не смогут'));}
+function renderPrivRow(){var en=isEN();var t=document.getElementById('privToggle');if(!t)return;var on=!!S.allowContact;
+  var lbl=document.getElementById('privLbl');if(lbl)lbl.textContent=en?'Let people message me on Telegram':'Разрешить людям писать мне в Telegram';
+  var sub=document.getElementById('privSub');if(sub)sub.textContent=en?'Others will see your @username in matches. Off by default.':'Другие увидят твой @username в матчах. По умолчанию выключено.';
+  var hp=document.getElementById('hPriv');if(hp)hp.textContent=en?'Privacy':'Приватность';
+  var pl=document.getElementById('privLink');if(pl)pl.textContent=en?'How we store data':'Как мы храним данные';
+  t.innerHTML='<span style="display:inline-block;width:46px;height:27px;border-radius:20px;background:'+(on?'linear-gradient(135deg,#52e6a4,#00E0C7)':'rgba(255,255,255,.14)')+';position:relative;transition:background .2s;vertical-align:middle"><span style="position:absolute;top:3px;left:'+(on?'22px':'3px')+';width:21px;height:21px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span></span>';}
 function renderStore(){
   var en=isEN();
   var testsHtml=(en?TESTS_EN:TESTS).map(function(t){
@@ -2390,6 +2407,7 @@ function renderStore(){
   }).join('')+'</div>';
   document.getElementById('storeList').innerHTML=(en?PRODUCTS_EN:PRODUCTS).map(function(p,i){var owned=productOwned(p);
     return '<div class="product '+(p.feat?'feat':'')+'" onclick="buy('+i+')">'+(p.feat&&!owned?'<span class="tagbest">'+(en?'TOP':'ХИТ')+'</span>':'')+'<div class="pic">'+p.ic+'</div><div class="meta"><div class="nm">'+p.n+'</div><div class="s"'+(owned?' style="color:#52e6a4"':'')+'>'+(owned?('✓ '+(en?'owned':'куплено')):p.d)+'</div></div><div class="price"'+(owned?' style="color:#52e6a4"':'')+'>'+(owned?(en?'open →':'открыть →'):'⭐ '+p.p)+'</div></div>';}).join('');
+  renderPrivRow();
 }
 function tapAch(id){
   var a=achById(id);if(!a)return;
@@ -2997,6 +3015,7 @@ var STATE_URL='https://selfix.rc-c7b.workers.dev/state';  // reports lifecycle s
 var ENT_URL='https://selfix.rc-c7b.workers.dev/entitlements'; // server-truth purchases (restored on launch)
 var TALK_URL='https://selfix.rc-c7b.workers.dev/clone/talk';  // interactive clone chat (Claude)
 var MATCH_URL='https://selfix.rc-c7b.workers.dev/match';      // real users to match against (fallback to PEER_POOL)
+var DELETE_URL='https://selfix.rc-c7b.workers.dev/delete';    // server-side erase of the user's profile on reset
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
 /* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
@@ -3017,7 +3036,7 @@ function reportState(stage){
     if(!STATE_URL||!inTelegram())return;
     var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
     var facets=(typeof avatarProgress==='function')?avatarProgress():0;
-    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',type:(S&&S.result)?S.result.primary:'',big:(S&&S.result)?S.result.big:null,name:(S&&S.name)||'',gender:(S&&S.gender)||'',day:(S&&S.day)||0,month:(S&&S.month)||0,year:(S&&S.year)||0,tests:(S&&S.tests)?Object.keys(S.tests):[],initData:initData});
+    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',type:(S&&S.result)?S.result.primary:'',big:(S&&S.result)?S.result.big:null,name:(S&&S.name)||'',gender:(S&&S.gender)||'',day:(S&&S.day)||0,month:(S&&S.month)||0,year:(S&&S.year)||0,tests:(S&&S.tests)?Object.keys(S.tests):[],allowContact:!!(S&&S.allowContact),initData:initData});
     fetch(STATE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});
   }catch(e){}
 }
@@ -3028,7 +3047,7 @@ function cloneChat(m){
     var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
     var pbig=null;try{pbig=peerBig(m.peer);}catch(e){try{pbig=TYPE_BIG[m.peer.type];}catch(e2){}}
     var peer={name:m.peer.name,type:m.peer.type,big:pbig};
-    return fetch(CLONE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({me:me,peer:peer,score:m.score,lang:isEN()?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''}),credentials:'omit'})
+    return fetchTimeout(CLONE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({me:me,peer:peer,score:m.score,lang:isEN()?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''}),credentials:'omit'},22000)
       .then(function(r){return r.json();}).then(function(d){
         if(d&&!d.fallback&&d.lines&&d.lines.length){if(d.verdict)m._liveVerdict=d.verdict;return d.lines.map(function(l){return {s:(l.s==='peer'?'peer':'me'),t:String(l.t||'')};});}
         return null;
@@ -3114,6 +3133,8 @@ function renderTalkShell(){
     chips+
     '<div class="talk-input"><textarea id="talkText" rows="1" maxlength="300" placeholder="'+(en?'Type a message…':'Напиши сообщение…')+'" oninput="talkGrow(this)" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();talkSend();}"></textarea><button class="talk-send" onclick="talkSend()" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>';
 }
+/* fetch that never hangs: aborts after ms so the chat can't get stuck on "typing…" forever */
+function fetchTimeout(url,opts,ms){opts=opts||{};var ctl=(typeof AbortController!=='undefined')?new AbortController():null;if(ctl)opts.signal=ctl.signal;var to=setTimeout(function(){try{if(ctl)ctl.abort();}catch(e){}},ms||20000);var clr=function(){clearTimeout(to);};return fetch(url,opts).then(function(r){clr();return r;},function(e){clr();throw e;});}
 function talkGrow(el){el.style.height='auto';el.style.height=Math.min(96,el.scrollHeight)+'px';}
 function renderTalk(){
   var th=document.getElementById('talkThread');if(!th||!TALK)return;
@@ -3127,7 +3148,7 @@ function talkSend(){
   var payload={mode:TALK.mode,me:me,peer:TALK.peer?{name:TALK.peer.name,type:TALK.peer.type,big:peerBig(TALK.peer)}:null,history:TALK.history.slice(-12),lang:en?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''};
   var done=function(reply){TALK._typing=false;TALK._busy=false;TALK.history.push({role:'clone',content:reply||(en?'…(couldn’t reach the clone, try again)':'…(не дозвонился до клона, попробуй ещё)')});renderTalk();};
   if(!TALK_URL){done(en?'I’m offline right now — the live clone needs a connection.':'Я сейчас офлайн — живому клону нужно соединение.');return;}
-  fetch(TALK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){
+  fetchTimeout(TALK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),credentials:'omit'},20000).then(function(r){return r.json();}).then(function(d){
     if(d&&d.err==='rate_limited'){done(en?'We’ve talked a lot today — let’s pick this up tomorrow.':'Мы сегодня уже много пообщались — давай продолжим завтра.');return;}
     done(d&&d.reply?d.reply:'');
   }).catch(function(){done('');});

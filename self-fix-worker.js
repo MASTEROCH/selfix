@@ -48,6 +48,10 @@ export default {
       if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
       return json(await adminData(env));
     }
+    if (url.pathname === '/admin/reengage' && request.method === 'GET') {
+      if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
+      return json(await adminReengageDry(env));
+    }
     if (request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch (e) {}
@@ -61,6 +65,7 @@ export default {
       if (url.pathname === '/state')       return await onState(env, body);
       if (url.pathname === '/entitlements')return json(await onEntitlements(env, body));
       if (url.pathname === '/match')       return json(await onMatch(env, body));
+      if (url.pathname === '/delete')      return json(await onDelete(env, body));
       if (url.pathname === '/admin/broadcast') {
         if ((body.secret || '') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
         return json(await adminBroadcast(env, body));
@@ -195,7 +200,8 @@ async function onMatch(env, body) {
       if (k.name === 'user:' + u.id) continue;
       let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
       if (!rec || !rec.type || !rec.big || rec.optOutMatch) continue;
-      out.push({ id: rec.id, name: rec.name || '', type: rec.type, big: rec.big, username: rec.username || '' });
+      // expose @username only if the user opted in to being contacted (consent)
+      out.push({ id: rec.id, name: rec.name || '', type: rec.type, big: rec.big, username: rec.allowContact ? (rec.username || '') : '' });
     }
   } while (cursor && out.length < 20);
   return { users: out };
@@ -268,6 +274,7 @@ async function onState(env, body) {
       hasResult: !!body.hasResult, avatarFull: !!body.avatarFull, touch: true,
       type: body.type, big: body.big, username: u.username || body.username,
       name: body.name, gender: body.gender, day: body.day, month: body.month, year: body.year, tests: body.tests,
+      allowContact: typeof body.allowContact === 'boolean' ? body.allowContact : undefined,
     });
   } catch (e) {}
   return new Response(null, { status: 204, headers: CORS });
@@ -300,6 +307,8 @@ async function upsertUser(env, from, patch) {
   if (patch.month) rec.month = patch.month;
   if (patch.year) rec.year = patch.year;
   if (patch.tests && patch.tests.length) rec.tests = patch.tests;
+  if (patch.allowContact === true) rec.allowContact = true;
+  if (patch.allowContact === false) rec.allowContact = false;
   await env.USERS.put(key, JSON.stringify(rec));
 }
 
@@ -424,6 +433,40 @@ async function adminBroadcast(env, body) {
     } catch (e) { failed++; }
   }
   return { ok: true, sent, failed, count: targets.length };
+}
+
+/* ---------- right to be forgotten: wipe a user's server profile (validated by initData) ---------- */
+async function onDelete(env, body) {
+  if (!env.USERS) return { ok: false, err: 'no kv' };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { ok: false, err: 'unverified' };
+  try { await env.USERS.delete('user:' + u.id); await env.USERS.delete('ent:' + u.id); } catch (e) {}
+  return { ok: true };
+}
+
+/* ---------- owner: preview who the re-engagement cron WOULD ping right now (dry, no send) ---------- */
+async function adminReengageDry(env) {
+  if (!env.USERS) return { ok: true, candidates: [] };
+  const now = Date.now(), H = 3600e3;
+  const localH = (new Date().getUTCHours() + 4) % 24;     // Batumi UTC+4
+  const out = []; let cursor;
+  do {
+    const list = await env.USERS.list({ prefix: 'user:', cursor });
+    cursor = list.list_complete ? null : list.cursor;
+    for (const k of list.keys) {
+      let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
+      if (!rec || !rec.id || rec.optOut) continue;
+      const reminders = rec.reminders || [];
+      const idleH = (now - (rec.lastActive || 0)) / H;
+      const n = pickNudge(rec, idleH);
+      if (!n) continue;
+      const capped = reminders.length >= 4;
+      const tooSoon = reminders.length && (now - reminders[reminders.length - 1].t) < 40 * H;
+      const typeCap = reminders.filter(r => r.type === n.type).length >= 2;
+      out.push({ id: rec.id, name: rec.name || '', type: rec.type || '', idleH: Math.round(idleH), nudge: n.type, text: n.text, wouldSend: !capped && !tooSoon && !typeCap, reason: capped ? 'lifetime cap' : tooSoon ? 'too soon (<40h)' : typeCap ? 'type cap' : 'ok' });
+    }
+  } while (cursor);
+  return { ok: true, quietHoursNow: (localH >= 22 || localH < 9), localHour: localH, willSend: out.filter(x => x.wouldSend).length, candidates: out };
 }
 
 /* ---------- bot self-setup (menu button, commands, description) ---------- */
