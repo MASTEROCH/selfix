@@ -1566,7 +1566,7 @@ function submitOnboard(){
   if(!S.gender)return modal(enO?'Pick your gender':'Укажи пол',enO?'It’s needed for the wording to be precise.':'Это нужно для точности формулировок.');
   if(!day||!month||day<1||day>31||month<1||month>12)return modal(enO?'Check the date':'Проверь дату',enO?'Enter your day and month of birth as numbers (e.g. 15 and 07).':'Введи день и месяц рождения числами (например 15 и 07).');
   S.name=name;S.day=day;S.month=month;S.year=year||0;S.onboarded=true;save();
-  track('onboard_done',{gender:S.gender});
+  track('onboard_done',{gender:S.gender});reportState('onboarded');
   go('home');
   // welcome gift: first test free, framed as a present
   setTimeout(function(){
@@ -1639,6 +1639,7 @@ function showCheer(done,c){
 }
 /* progress-aware encouragement after finishing a test (1..5 facets) */
 function progressCheer(){var en=isEN();var p=avatarProgress();
+  reportState('progress');
   if(p>=5){showCheer(null,{e:'🎉',t:(en?'Passport complete!':'Паспорт собран!'),s:(en?'All 5 facets assembled — this is the full you':'Все 5 граней собраны — это полный ты')});return;}
   var left=5-p;
   if(en)showCheer(null,{e:'🧩',t:(left===1?'One facet left!':'Facet '+p+' of 5'),s:(left===1?'One more test and your passport is complete':left+' more to a full passport')});
@@ -2616,7 +2617,7 @@ function normalizeMeet(m){
 }
 function sendAvatarOut(){
   if(avatarProgress()<5)return;
-  S._sent=true;save();
+  S._sent=true;save();reportState('clone_sent');
   var pool=PEER_POOL.slice();for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=pool[i];pool[i]=pool[j];pool[j]=t;}
   var met=pool.slice(0,3).map(function(p){var br=matchBreakdown(p);return {peer:p,score:br.score,br:br,dialogue:cloneDialogue(p,br),why:whyTalk(p,br)};});
   met.sort(function(a,b){return b.score-a.score;});
@@ -2756,6 +2757,7 @@ var ANALYTICS_URL='https://selfix.rc-c7b.workers.dev/track';
 var FEEDBACK_URL='https://selfix.rc-c7b.workers.dev/feedback';
 var CLONE_URL='https://selfix.rc-c7b.workers.dev/clone/chat';
 var PAY_URL='https://selfix.rc-c7b.workers.dev/pay/invoice';
+var STATE_URL='https://selfix.rc-c7b.workers.dev/state';  // reports lifecycle stage (for smart re-engagement push). No-op outside Telegram.
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
 /* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
@@ -2770,6 +2772,16 @@ function track(event,props){
   }catch(e){}
 }
 function inTelegram(){try{return !!(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData);}catch(e){return false;}}
+/* report lifecycle stage to backend (validated server-side via initData) so the bot can send smart, capped re-engagement pushes. No-op outside Telegram. */
+function reportState(stage){
+  try{
+    if(!STATE_URL||!inTelegram())return;
+    var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
+    var facets=(typeof avatarProgress==='function')?avatarProgress():0;
+    var body=JSON.stringify({stage:stage,facets:facets,hasResult:!!(S&&S.result),avatarFull:facets>=5,lang:(S&&S.lang)||'ru',initData:initData});
+    fetch(STATE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true,credentials:'omit'}).catch(function(){});
+  }catch(e){}
+}
 /* live AI clone dialogue via backend (Claude). Resolves to lines [{s,t}] or null → caller falls back to heuristic. */
 function cloneChat(m){
   if(!CLONE_URL||!m||!m.peer)return Promise.resolve(null);
@@ -3557,6 +3569,7 @@ function boot(){tgInit();
   var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
   load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();
   track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
+  reportState('open');
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('zoom');},1800); // spiral expands to fill screen
   setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('gone');},2950); // app fully revealed
