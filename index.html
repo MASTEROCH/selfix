@@ -2465,8 +2465,9 @@ function shareAch(a){
 function openTest(key){
   if(S.ownedTests&&S.ownedTests[key]){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
-  modal(en?'Unlock this test?':'Открыть тест?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><br>'+(en?'It opens a new facet of your portrait and an avatar feature.<br><br>Paid with ⭐ 250 Telegram Stars.':'Откроет новую грань твоего портрета и черту аватара.<br><br>Оплата ⭐ 250 звёздами Telegram.'),function(){
-    closeModal();buyStars('test_'+key,testTitle(key),250,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
+  var pr=testPriceOf(key);
+  modal(en?'Unlock this test?':'Открыть тест?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><br>'+(en?('It opens a new facet of your portrait and an avatar feature.<br><br>Paid with ⭐ '+pr+' Telegram Stars.'):('Откроет новую грань твоего портрета и черту аватара.<br><br>Оплата ⭐ '+pr+' звёздами Telegram.')),function(){
+    closeModal();buyStars('test_'+key,testTitle(key),pr,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
   // already owned -> open directly
@@ -2543,6 +2544,7 @@ function finishMT(){
   },1400);
 }
 function remainingTests(){var order=['love','work','fears','shadow'],r=[];for(var i=0;i<order.length;i++){var k=order[i];if(!(S.ownedTests&&S.ownedTests[k]))r.push(k);}return r;}
+function testPriceOf(k){for(var i=0;i<TESTS.length;i++)if(TESTS[i].key===k)return TESTS[i].price;return 125;}
 function bundlePrice(){var rem=remainingTests().length;var full=rem*125;return Math.round(full*0.7/10)*10;} // 30% off
 function nextTestCTA(){
   var nk=nextTest();
@@ -2552,7 +2554,7 @@ function nextTestCTA(){
   var html='<div class="card-soft upsell">'+
     '<div class="ch" style="color:#ffcf5c;justify-content:center">🔓 '+(en?'NEXT FACET':'СЛЕДУЮЩАЯ ГРАНЬ')+'</div>'+
     '<div class="cb" style="text-align:center">'+(en?('Each test reveals part of your avatar. Next — “'+testTitle(nk)+'” '+testGlyph(nk,16)):('Каждый тест раскрывает часть твоего аватара. Дальше — «'+testTitle(nk)+'» '+testGlyph(nk,16)))+'</div>'+
-    '<button class="btn '+(owned?'':'gold')+'" style="margin-top:14px" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'">'+(owned?(en?('Take “'+testTitle(nk)+'”'):('Пройти «'+testTitle(nk)+'»')):(en?'Unlock for ⭐ 250':'Открыть за ⭐ 250'))+'</button>';
+    '<button class="btn '+(owned?'':'gold')+'" style="margin-top:14px" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'">'+(owned?(en?('Take “'+testTitle(nk)+'”'):('Пройти «'+testTitle(nk)+'»')):(en?('Unlock for ⭐ '+testPriceOf(nk)):('Открыть за ⭐ '+testPriceOf(nk))))+'</button>';
   // one-time discounted bundle — compact link, not a second big button
   if(rem.length>=2 && !S._bundleDeclined && !S._bundleBought){
     var bp=bundlePrice();var full=rem.length*125;
@@ -3438,7 +3440,7 @@ function renderHome(){
   if(S.result){
     var nk=nextTest();
     if(nk){var tb=TEST_BANKS[nk];var owned=S.ownedTests&&S.ownedTests[nk];
-      nh.innerHTML='<div class="section-h"><h2>'+(en?'Next step':'Следующий шаг')+'</h2></div><div class="product feat" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'"><div class="pic">'+testGlyph(nk,24)+'</div><div class="meta"><div class="nm">'+testTitle(nk)+'</div><div class="s">'+(en?'Adds a facet to your portrait & avatar':'Добавит грань портрета и черту аватара')+'</div></div><div class="price">'+(owned?(en?'start →':'пройти →'):'⭐ 250')+'</div></div>';}
+      nh.innerHTML='<div class="section-h"><h2>'+(en?'Next step':'Следующий шаг')+'</h2></div><div class="product feat" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'"><div class="pic">'+testGlyph(nk,24)+'</div><div class="meta"><div class="nm">'+testTitle(nk)+'</div><div class="s">'+(en?'Adds a facet to your portrait & avatar':'Добавит грань портрета и черту аватара')+'</div></div><div class="price">'+(owned?(en?'start →':'пройти →'):('⭐ '+testPriceOf(nk)))+'</div></div>';}
     else{var prog=avatarProgress();
       nh.innerHTML='<div class="section-h"><h2>'+(en?'Your avatar':'Твой аватар')+'</h2></div><div class="product feat" onclick="go(\'avatar\')"><div class="pic">🎭</div><div class="meta"><div class="nm">'+(en?'Avatar assembled '+prog+'/5':'Аватар собран '+prog+'/5')+'</div><div class="s">'+(prog>=5?(en?'Send it to meet others':'Отправь его знакомиться с другими'):(en?'Unlock the full avatar':'Открой полный аватар'))+'</div></div><div class="price">'+(en?'open →':'открыть →')+'</div></div>';}
   }else nh.innerHTML='';
