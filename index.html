@@ -3802,6 +3802,12 @@ function tgInit(){try{var tg=window.Telegram&&Telegram.WebApp;if(!tg)return;tg.r
   if(tg.disableVerticalSwipes)tg.disableVerticalSwipes();
 }catch(e){}}
 function boot(){tgInit();
+  // tap anywhere outside a text field dismisses the keyboard (blur active input)
+  document.addEventListener('pointerdown',function(e){
+    var a=document.activeElement;if(!a||(a.tagName!=='INPUT'&&a.tagName!=='TEXTAREA'))return;
+    if(e.target===a||(e.target.closest&&e.target.closest('input,textarea,[contenteditable]')))return;
+    try{a.blur();}catch(_){}
+  },true);
   // ensure the insight FAB is a direct <body> child so position:fixed resolves against the viewport (not #app)
   var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
   load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();

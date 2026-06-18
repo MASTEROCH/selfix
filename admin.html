@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>SELF-FIX · admin</title>
+<style>
+:root{
+  --vio:#7C3AFF;--cy:#00E0C7;--lime:#D4FF4F;--bg:#0a0814;
+  --card:rgba(28,24,46,.55);--line:rgba(255,255,255,.09);--mut:#9b94c0;--mut2:#6f6a95;
+  --red:#ff5d6c;--blue:#5d8cff;--orange:#ffae42;--green:#52dd92;--yellow:#ffd93d;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:radial-gradient(130% 90% at 50% -10%,#1a1336 0%,#0d0a1c 50%,#070510 100%);
+  color:#ece9f9;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:16px 16px calc(40px + env(safe-area-inset-bottom));min-height:100vh}
+a{color:var(--cy);text-decoration:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+/* header */
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:2px;font-size:16px}
+.brand .sp{width:26px;height:26px;border-radius:50%;
+  background:conic-gradient(from 210deg,var(--red),var(--orange),var(--green),var(--blue),var(--red));
+  -webkit-mask:radial-gradient(circle 5px at 50% 50%,transparent 96%,#000) ,
+  conic-gradient(#000 0 0);mask-composite:intersect;box-shadow:0 0 16px rgba(124,58,255,.5)}
+.brand b{color:var(--lime)}
+.btn{background:var(--lime);color:#12260a;border:none;border-radius:11px;padding:9px 15px;font-weight:800;font-size:13px;cursor:pointer;transition:filter .15s,transform .05s}
+.btn:active{transform:scale(.97)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:rgba(255,255,255,.07);color:#cfc6ff;border:1px solid var(--line)}
+.btn.vio{background:var(--vio);color:#fff}
+.btn.sm{padding:6px 11px;font-size:12px;border-radius:9px}
+.upd{color:var(--mut2);font-size:12px}
+.toggle{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-size:12px;cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--vio)}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 15px;position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:2px;background:linear-gradient(90deg,var(--vio),var(--cy))}
+.kpi .n{font-size:26px;font-weight:800;line-height:1}
+.kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+.kpi .p{font-size:12px;color:var(--cy);font-weight:800;margin-top:3px}
+.kpi.good .n{color:var(--lime)}
+/* type distribution */
+.types{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-bottom:14px}
+.types h3,.bc h3{margin:0 0 11px;font-size:12px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase}
+.tbar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tbar .tn{width:64px;font-size:12.5px;font-weight:700;flex:none}
+.tbar .track{flex:1;height:9px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+.tbar .fill{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.tbar .tv{width:54px;text-align:right;font-size:12px;color:var(--mut);flex:none}
+/* toolbar */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.seg{background:rgba(124,58,255,.13);border:1px solid rgba(124,58,255,.34);color:#cbb8ff;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+.seg .c{opacity:.7;margin-left:5px;font-weight:800}
+.seg.on{background:var(--vio);color:#fff;border-color:var(--vio)}
+input,textarea,select{background:rgba(8,6,18,.7);border:1px solid var(--line);color:#fff;border-radius:10px;padding:9px 12px;font:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--vio)}
+.search{min-width:170px}
+/* table */
+.wrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:rgba(15,12,28,.5)}
+table{width:100%;border-collapse:collapse;font-size:12.6px;min-width:760px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;background:#140f26;cursor:pointer;user-select:none;z-index:1}
+th .ar{opacity:.5;font-size:9px}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover td{background:rgba(124,58,255,.08)}
+td.name{font-weight:700}
+.chip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.8px;font-weight:800;line-height:1.5}
+.paid{background:rgba(82,230,164,.16);color:var(--green)}
+.no{color:var(--mut2)}
+.bars{display:inline-flex;gap:2px;vertical-align:-1px}
+.bars i{width:5px;border-radius:2px;background:var(--vio);display:inline-block}
+.empty{padding:34px;text-align:center;color:var(--mut2)}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,4,12,.6);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);background:linear-gradient(180deg,#15102b,#0c0a1c);
+  border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.5);
+  transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);z-index:50;
+  overflow-y:auto;padding:18px 18px calc(28px + env(safe-area-inset-bottom))}
+.drawer.on{transform:translateX(0)}
+.dx{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#fff;font-size:18px;cursor:pointer}
+.dhead{display:flex;align-items:center;gap:13px;margin:6px 0 16px}
+.dav{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#0c0a1c;flex:none}
+.dname{font-size:18px;font-weight:800}
+.dsub{font-size:12.5px;color:var(--mut)}
+.section{margin:16px 0}
+.section .h{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);margin-bottom:9px}
+.big5 .r{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.big5 .bn{width:118px;font-size:12.5px;color:#d7d2f0;flex:none}
+.big5 .tk{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}
+.big5 .fl{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--vio),var(--cy))}
+.big5 .bv{width:34px;text-align:right;font-size:12px;color:var(--mut);flex:none}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.kv .k{color:var(--mut)}
+.kv .v{font-weight:600;text-align:right}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tg{background:rgba(124,58,255,.15);border:1px solid rgba(124,58,255,.3);color:#cbb8ff;border-radius:8px;padding:3px 9px;font-size:11.5px;font-weight:700}
+.dm textarea{width:100%;min-height:72px;resize:vertical}
+.note{color:var(--mut2);font-size:11.5px}
+/* broadcast */
+.bc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:18px}
+.bc textarea{width:100%;min-height:84px;resize:vertical;margin-top:4px}
+.tpl{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.tpl span{background:rgba(0,224,199,.1);border:1px solid rgba(0,224,199,.3);color:#9ff;border-radius:8px;padding:5px 10px;font-size:11.5px;cursor:pointer}
+.res{color:var(--mut);font-size:12.5px}
+.gate{max-width:340px;margin:18vh auto;text-align:center}
+.gate input{width:100%;margin:14px 0;text-align:center;letter-spacing:1px}
+@media(max-width:560px){
+  body{padding:12px 10px}
+  .kpi .n{font-size:22px}
+  .drawer{width:100vw;border-left:none}
+}
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate" style="display:none">
+  <div class="brand" style="justify-content:center"><span class="sp"></span>SELF-FIX · <b>admin</b></div>
+  <p class="note" style="margin-top:18px">Введи секрет доступа (твой OWNER_CHAT_ID)</p>
+  <input id="gateInput" placeholder="секрет" inputmode="numeric">
+  <button class="btn" style="width:100%" onclick="enterSecret()">Войти</button>
+</div>
+
+<div id="app" style="display:none">
+  <div class="top">
+    <div class="brand"><span class="sp"></span>SELF-FIX · <b>admin</b></div>
+    <div class="row" style="margin-left:auto">
+      <label class="toggle"><input type="checkbox" id="autoref"> авто-обновление</label>
+      <span class="upd" id="upd">—</span>
+      <button class="btn ghost sm" onclick="load()">↻ Обновить</button>
+      <button class="btn ghost sm" onclick="exportCSV()">⤓ CSV</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+  <div class="types" id="types"><h3>Распределение по типам</h3><div id="typebars"></div></div>
+
+  <div class="toolbar">
+    <div class="row" id="segs"></div>
+    <input class="search" id="q" placeholder="🔍 имя / @ / тип" oninput="render()">
+    <select id="sort" onchange="render()" style="font-size:12.5px">
+      <option value="lastActive">сорт: активность</option>
+      <option value="firstSeen">сорт: дата прихода</option>
+      <option value="facets">сорт: тесты</option>
+      <option value="name">сорт: имя</option>
+    </select>
+  </div>
+
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th data-s="name">Имя</th><th>@</th><th data-s="type">Тип</th>
+        <th>Сильное</th><th>Слабое</th><th>ДР</th><th>Пол</th>
+        <th data-s="facets">Тесты</th><th>Стадия</th><th>Купил</th>
+        <th data-s="lastActive">Был</th><th>Яз</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="bc">
+    <h3>📣 Рассылка по сегменту <span class="res" id="bcSegLbl"></span></h3>
+    <div class="tpl" id="tpl"></div>
+    <textarea id="bcText" placeholder="Текст сообщения. Уйдёт выбранному сегменту в бота. Кто нажал /stop — пропускается."></textarea>
+    <div class="row" style="margin-top:11px">
+      <button class="btn ghost" onclick="bc(true)">Сколько получат?</button>
+      <button class="btn" onclick="sendBroadcast()">Отправить сегменту →</button>
+      <span class="res" id="bcRes"></span>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"></div>
+
+<script>
+const API='https://selfix.rc-c7b.workers.dev';
+const TYPES={red:{n:'Огонь',c:'var(--red)'},blue:{n:'Лёд',c:'var(--blue)'},orange:{n:'Сталь',c:'var(--orange)'},green:{n:'Тепло',c:'var(--green)'},yellow:{n:'Поток',c:'var(--yellow)'}};
+const BIG={O:'Открытость',C:'Собранность',E:'Энергия',A:'Мягкость',N:'Чувствит.'};
+const STAGE={open:'Открыл',onboarded:'Профиль',clone_sent:'Клон ушёл',result:'Результат'};
+const SEGS=[
+  {k:'all',n:'все'},{k:'no_result',n:'не прошли тест'},{k:'incomplete',n:'не собрали 5/5'},
+  {k:'no_purchase',n:'не купили'},{k:'full_no_purchase',n:'5/5 без покупки'}
+];
+const TPL=[
+  {n:'Допройти тест',t:'Ты в шаге от своего портрета 🌀 Ответь на пару вопросов — и узнаешь свой тип.'},
+  {n:'Собрать 5/5',t:'Твой паспорт почти собран ✨ Открой следующую грань — клон станет точнее находить твоих людей.'},
+  {n:'Клон нашёл людей',t:'Твой клон познакомился с новыми людьми 💫 Загляни — кто тебе резонирует и почему.'},
+  {n:'Оффер на разбор',t:'Полный разбор себя со скидкой — пойми свои сильные стороны и тени глубже. Открой приложение 👀'}
+];
+let SECRET=new URLSearchParams(location.search).get('secret')||'';
+let DATA=[],FUN={},NOW=Date.now(),SEG='all',SORT='lastActive',autoT=null;
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);}
+function rel(t){if(!t)return '—';const d=NOW-t,h=d/3.6e6;if(h<1)return Math.max(1,Math.round(d/6e4))+'м';if(h<24)return Math.round(h)+'ч';const dd=Math.round(h/24);return dd+'д';}
+function dateStr(t){if(!t)return '—';const x=new Date(t);return x.getDate()+'.'+(x.getMonth()+1)+'.'+String(x.getFullYear()).slice(2);}
+function typeChip(t){const T=TYPES[t];if(!T)return '<span class="no">—</span>';return '<span class="chip" style="background:'+T.c.replace(')',',.16)').replace('var(','rgba-')+';color:'+T.c+'">'+T.n+'</span>';}
+function tcolor(t){return TYPES[t]?TYPES[t].c:'var(--mut)';}
+function sw(big){if(!big)return['—','—'];let hi='O',lo='O';for(const k in BIG){if((big[k]||0)>(big[hi]||0))hi=k;if((big[k]||0)<(big[lo]==null?101:(big[lo]||0)+1))lo=k;}
+  // recompute lo cleanly
+  lo='O';for(const k in BIG){if((big[k]||0)<(big[lo]||0))lo=k;}
+  return[BIG[hi],BIG[lo]];}
+function pct(a,b){return b?Math.round(100*(a||0)/b)+'%':'';}
+function isFull(u){return u.avatarFull||(u.facets||0)>=5;}
+function isPaid(u){return u.purchases&&u.purchases.length>0;}
+function inSeg(u,seg){seg=seg||SEG;if(seg==='all')return true;if(seg==='no_result')return !u.hasResult;if(seg==='incomplete')return u.hasResult&&!isFull(u);if(seg==='no_purchase')return u.hasResult&&!isPaid(u);if(seg==='full_no_purchase')return isFull(u)&&!isPaid(u);return true;}
+
+function enterSecret(){const v=document.getElementById('gateInput').value.trim();if(!v)return;location.search='?secret='+encodeURIComponent(v);}
+
+function load(){
+  if(!SECRET){document.getElementById('gate').style.display='block';return;}
+  fetch(API+'/admin/data?secret='+encodeURIComponent(SECRET)).then(r=>r.json()).then(d=>{
+    if(!d.ok){document.getElementById('gate').style.display='block';document.getElementById('app').style.display='none';return;}
+    document.getElementById('gate').style.display='none';document.getElementById('app').style.display='block';
+    DATA=d.users||[];FUN=d.funnel||{};NOW=d.now||Date.now();
+    buildStatics();render();
+    document.getElementById('upd').textContent='обновлено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }).catch(()=>{document.getElementById('upd').textContent='ошибка сети';});
+}
+
+function buildStatics(){
+  // segment chips with counts
+  document.getElementById('segs').innerHTML=SEGS.map(s=>{
+    const c=DATA.filter(u=>inSeg(u,s.k)).length;
+    return '<span class="seg'+(s.k===SEG?' on':'')+'" data-k="'+s.k+'">'+s.n+'<span class="c">'+c+'</span></span>';
+  }).join('');
+  Array.from(document.querySelectorAll('.seg')).forEach(el=>el.onclick=()=>{SEG=el.dataset.k;buildStatics();render();});
+  // templates
+  document.getElementById('tpl').innerHTML=TPL.map((t,i)=>'<span data-i="'+i+'">'+t.n+'</span>').join('');
+  Array.from(document.querySelectorAll('#tpl span')).forEach(el=>el.onclick=()=>{document.getElementById('bcText').value=TPL[el.dataset.i].t;});
+  // sort header clicks
+  Array.from(document.querySelectorAll('th[data-s]')).forEach(el=>el.onclick=()=>{SORT=el.dataset.s;document.getElementById('sort').value=(['lastActive','firstSeen','facets','name'].indexOf(SORT)>=0?SORT:'lastActive');render();});
+  document.getElementById('sort').onchange=function(){SORT=this.value;render();};
+}
+
+function render(){
+  // KPIs
+  const today=NOW-86400000;
+  const newToday=DATA.filter(u=>u.firstSeen>today).length;
+  const actToday=DATA.filter(u=>u.lastActive>today).length;
+  document.getElementById('kpis').innerHTML=
+    kpi(FUN.total||0,'всего юзеров')+
+    kpi(FUN.result||0,'прошли тест',pct(FUN.result,FUN.total))+
+    kpi(FUN.full||0,'собрали 5/5',pct(FUN.full,FUN.total))+
+    kpi(FUN.paid||0,'купили',pct(FUN.paid,FUN.total),true)+
+    kpi(newToday,'новые сегодня')+
+    kpi(actToday,'активны сегодня');
+  // type distribution
+  const counts={};let max=1;Object.keys(TYPES).forEach(k=>counts[k]=0);
+  DATA.forEach(u=>{if(counts[u.type]!=null)counts[u.type]++;});
+  Object.keys(TYPES).forEach(k=>{if(counts[k]>max)max=counts[k];});
+  document.getElementById('typebars').innerHTML=Object.keys(TYPES).map(k=>
+    '<div class="tbar"><div class="tn" style="color:'+TYPES[k].c+'">'+TYPES[k].n+'</div>'+
+    '<div class="track"><div class="fill" style="width:'+(100*counts[k]/max)+'%;background:'+TYPES[k].c+'"></div></div>'+
+    '<div class="tv">'+counts[k]+'</div></div>').join('');
+  // table
+  SORT=document.getElementById('sort').value||SORT;
+  const q=(document.getElementById('q').value||'').toLowerCase().trim();
+  let rows=DATA.filter(u=>inSeg(u)).filter(u=>{
+    if(!q)return true;
+    return ((u.name||'')+' '+(u.username||'')+' '+((TYPES[u.type]||{}).n||'')).toLowerCase().indexOf(q)>=0;
+  });
+  rows.sort((a,b)=>{
+    if(SORT==='name')return (a.name||'').localeCompare(b.name||'');
+    if(SORT==='facets')return (b.facets||0)-(a.facets||0);
+    if(SORT==='firstSeen')return (b.firstSeen||0)-(a.firstSeen||0);
+    return (b.lastActive||0)-(a.lastActive||0);
+  });
+  document.getElementById('rows').innerHTML=rows.length?rows.map((u,i)=>{
+    const s=sw(u.big);
+    return '<tr onclick="openDrawer('+DATA.indexOf(u)+')">'+
+      '<td class="name">'+esc(u.name||'—')+'</td>'+
+      '<td>'+(u.username?('<a href="https://t.me/'+esc(u.username)+'" target="_blank" onclick="event.stopPropagation()">@'+esc(u.username)+'</a>'):'<span class="no">—</span>')+'</td>'+
+      '<td>'+typeChip(u.type)+'</td>'+
+      '<td>'+s[0]+'</td><td>'+s[1]+'</td>'+
+      '<td>'+(u.day?(u.day+'.'+(u.month||'')+(u.year?'.'+String(u.year).slice(2):'')):'—')+'</td>'+
+      '<td>'+(u.gender==='m'?'М':u.gender==='f'?'Ж':'—')+'</td>'+
+      '<td>'+facetDots(u.facets||0)+'</td>'+
+      '<td>'+(STAGE[u.stage]||esc(u.stage)||'—')+'</td>'+
+      '<td>'+(isPaid(u)?'<span class="chip paid">'+u.purchases.length+' ⭐</span>':'<span class="no">—</span>')+'</td>'+
+      '<td>'+rel(u.lastActive)+'</td>'+
+      '<td>'+esc(u.lang||'')+'</td></tr>';
+  }).join(''):'<tr><td colspan="12" class="empty">Пусто в этом сегменте</td></tr>';
+  document.getElementById('bcSegLbl').textContent='· сегмент: '+(SEGS.find(s=>s.k===SEG)||{}).n+' ('+DATA.filter(u=>inSeg(u)).length+' чел.)';
+}
+function kpi(n,l,p,good){return '<div class="kpi'+(good?' good':'')+'"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(p?'<div class="p">'+p+'</div>':'')+'</div>';}
+function facetDots(n){let s='<span class="bars">';for(let i=0;i<5;i++)s+='<i style="height:'+(i<n?14:7)+'px;opacity:'+(i<n?1:.3)+'"></i>';return s+'</span> '+n+'/5';}
+
+function openDrawer(idx){
+  const u=DATA[idx];if(!u)return;
+  const T=TYPES[u.type]||{n:'—',c:'var(--mut)'};
+  const initials=(u.name||'?').trim().slice(0,1).toUpperCase();
+  let big5='';if(u.big){for(const k in BIG){const v=u.big[k]||0;big5+='<div class="r"><div class="bn">'+BIG[k]+'</div><div class="tk"><div class="fl" style="width:'+v+'%"></div></div><div class="bv">'+v+'</div></div>';}}
+  const tests=(u.tests&&u.tests.length)?u.tests.map(t=>'<span class="tg">'+esc(t)+'</span>').join(''):'<span class="no">—</span>';
+  const buys=(u.purchases&&u.purchases.length)?u.purchases.map(p=>'<span class="tg">'+esc(p)+'</span>').join(''):'<span class="no">нет покупок</span>';
+  const d=document.getElementById('drawer');
+  d.innerHTML='<button class="dx" onclick="closeDrawer()">×</button>'+
+    '<div class="dhead"><div class="dav" style="background:'+T.c+'">'+esc(initials)+'</div>'+
+    '<div><div class="dname">'+esc(u.name||'Без имени')+'</div>'+
+    '<div class="dsub">'+T.n+' · '+(u.gender==='m'?'муж':u.gender==='f'?'жен':'—')+' · '+(u.lang||'')+'</div></div></div>'+
+    (u.username?'<a class="btn vio sm" style="display:inline-block;margin-bottom:6px" href="https://t.me/'+esc(u.username)+'" target="_blank">Открыть @'+esc(u.username)+' в Telegram →</a>':'<div class="note" style="margin-bottom:6px">username не указан — личное сообщение уйдёт через бота ниже</div>')+
+    (big5?'<div class="section"><div class="h">Big Five</div><div class="big5">'+big5+'</div></div>':'')+
+    '<div class="section"><div class="h">Тесты ('+(u.facets||0)+'/5)</div><div class="tags">'+tests+'</div></div>'+
+    '<div class="section"><div class="h">Покупки</div><div class="tags">'+buys+'</div></div>'+
+    '<div class="section"><div class="h">Профиль</div>'+
+      kv('Дата рождения',u.day?(u.day+'.'+(u.month||'')+(u.year?'.'+u.year:'')):'—')+
+      kv('Стадия',STAGE[u.stage]||u.stage||'—')+
+      kv('Пришёл',dateStr(u.firstSeen))+
+      kv('Был активен',rel(u.lastActive)+' назад')+
+      kv('Напоминаний отправлено',(u.reminders||0)+' / 4')+
+      kv('Отписан от пушей',u.optOut?'да':'нет')+
+      kv('ID',u.id)+
+    '</div>'+
+    '<div class="section dm"><div class="h">✍️ Написать лично</div>'+
+      '<textarea id="dmText" placeholder="Персональное сообщение этому человеку в бота"></textarea>'+
+      '<div class="row" style="margin-top:9px"><button class="btn" onclick="sendDM('+u.id+',\''+(u.lang||'ru')+'\')">Отправить</button><span class="res" id="dmRes"></span></div>'+
+    '</div>';
+  d.classList.add('on');document.getElementById('scrim').classList.add('on');
+}
+function kv(k,v){return '<div class="kv"><div class="k">'+k+'</div><div class="v">'+esc(v)+'</div></div>';}
+function closeDrawer(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+
+function sendDM(id,lang){
+  const t=document.getElementById('dmText').value.trim();const res=document.getElementById('dmRes');
+  if(!t){res.textContent='пусто';return;}
+  res.textContent='…';
+  fetch(API+'/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:SECRET,userId:id,lang:lang,text:t})})
+    .then(r=>r.json()).then(d=>{res.textContent=d.ok?'отправлено ✓':('ошибка: '+(d.err||'?'));if(d.ok)document.getElementById('dmText').value='';})
+    .catch(()=>res.textContent='ошибка сети');
+}
+
+function bc(dry){
+  const t=document.getElementById('bcText').value;const res=document.getElementById('bcRes');res.textContent='…';
+  fetch(API+'/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:SECRET,segment:SEG,text:t,dry:dry})})
+    .then(r=>r.json()).then(d=>{
+      if(!d.ok){res.textContent='ошибка: '+(d.err||'?');return;}
+      if(d.dry){res.textContent='получат: '+d.count+' чел.';}
+      else{res.textContent='отправлено '+d.sent+' / '+d.count+(d.failed?(' · ошибок '+d.failed):'');load();}
+    }).catch(()=>res.textContent='ошибка сети');
+}
+function sendBroadcast(){
+  const n=DATA.filter(u=>inSeg(u)).length;
+  if(!document.getElementById('bcText').value.trim()){document.getElementById('bcRes').textContent='введи текст';return;}
+  if(confirm('Отправить сообщение сегменту "'+(SEGS.find(s=>s.k===SEG)||{}).n+'"? Примерно '+n+' получателей.'))bc(false);
+}
+
+function exportCSV(){
+  const cols=['id','name','username','type','gender','day','month','year','facets','stage','hasResult','avatarFull','purchases','lang','reminders','optOut','firstSeen','lastActive'];
+  const head=cols.join(',');
+  const lines=DATA.map(u=>cols.map(c=>{let v=u[c];if(Array.isArray(v))v=v.join('|');if(v==null)v='';v=String(v).replace(/"/g,'""');return /[",\n]/.test(v)?('"'+v+'"'):v;}).join(','));
+  const blob=new Blob([head+'\n'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='selfix-users.csv';a.click();
+}
+
+document.getElementById('autoref').onchange=function(){if(this.checked){autoT=setInterval(load,30000);}else{clearInterval(autoT);autoT=null;}};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+if(SECRET)load();else document.getElementById('gate').style.display='block';
+</script>
+</body>
+</html>
