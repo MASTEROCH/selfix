@@ -153,7 +153,7 @@
   .nh-tx{flex:1;min-width:0}
   .nh-t{font-weight:800;font-size:16px;line-height:1.2}
   .nh-s{font-size:12.5px;color:#b6b0d6;margin-top:3px;line-height:1.32}
-  .nh-cta{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--ac,#7C3AFF);color:#0b0a16;font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:12px;position:relative}
+  .nh-cta{margin-top:14px;display:flex;width:100%;align-items:center;justify-content:center;gap:7px;background:var(--ac,#7C3AFF);color:#0b0a16;font-weight:800;font-size:15px;padding:13px;border-radius:14px;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:filter .15s}
 
   /* progress-path strip + first-run coachmark */
   .prog-strip{cursor:pointer;margin-bottom:13px;padding:12px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
@@ -2925,8 +2925,9 @@ function normalizeMeet(m){
 function openTeaserMeet(){
   if(!S.result)return;
   fetchMatchPeers(function(pool){
+    var reals=pool.filter(function(p){return p.real;});var search=(reals.length?reals:pool).slice(0,12);
     var best=null,bestBr=null;
-    pool.slice(0,12).forEach(function(pp){var br=matchBreakdown(pp);if(!best||br.score>bestBr.score){best=pp;bestBr=br;}});
+    search.forEach(function(pp){var br=matchBreakdown(pp);if(!best||br.score>bestBr.score){best=pp;bestBr=br;}});
     if(!best){best=PEER_POOL[0];bestBr=matchBreakdown(best);}
     var meet={peer:best,score:bestBr.score,br:bestBr,dialogue:cloneDialogue(best,bestBr),why:whyTalk(best,bestBr)};
     S._lastMeet=[meet];S._teaserSeen=true;save();
@@ -2944,9 +2945,10 @@ function sendAvatarOut(){
     // real users first, then shuffled fallback for variety; rank all by match, keep top 3
     var reals=pool.filter(function(p){return p.real;});var fakes=pool.filter(function(p){return !p.real;});
     for(var i=fakes.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=fakes[i];fakes[i]=fakes[j];fakes[j]=t;}
-    var cand=reals.concat(fakes).slice(0,12);
-    var met=cand.map(function(p){var br=matchBreakdown(p);return {peer:p,score:br.score,br:br,dialogue:cloneDialogue(p,br),why:whyTalk(p,br)};});
-    met.sort(function(a,b){return b.score-a.score;});met=met.slice(0,3);
+    function scored(arr){return arr.map(function(p){return {p:p,br:matchBreakdown(p)};}).sort(function(a,b){return b.br.score-a.br.score;});}
+    // REAL compatible people first (ranked by compatibility), demo only fills the rest
+    var pick=scored(reals).concat(scored(fakes)).slice(0,3);
+    var met=pick.map(function(x){return {peer:x.p,score:x.br.score,br:x.br,dialogue:cloneDialogue(x.p,x.br),why:whyTalk(x.p,x.br)};});
     S._lastMeet=met;save();
     setTimeout(function(){renderMeetings(met);},1500);
   });
