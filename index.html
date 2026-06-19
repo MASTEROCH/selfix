@@ -2071,6 +2071,17 @@ function playReveal(r){var t=TYPES[r.primary];var rv=document.getElementById('re
   },2600);
 }
 function goResult(){if(!S.result)return go('home');renderResult();go('result');}
+function maybePromptContact(){
+  if(S._contactPrompted||S.allowContact||!S.result)return;
+  S._contactPrompted=true;save();var en=isEN();
+  setTimeout(function(){
+    modal(en?'Let your people reach you?':'Чтобы твои люди тебя нашли',
+      en?('SELF-FIX matches you with people who fit you — and shows why you’d click. To let a match message you on Telegram, turn this on.<br><br>It’s <b>off by default</b> for your privacy — change it anytime in settings.'):('SELF-FIX подбирает тебе людей по духу — и объясняет, чем вы полезны друг другу. Чтобы совпавший человек мог написать тебе в Telegram, включи доступ.<br><br>По умолчанию он <b>выключен</b> ради приватности — поменять можно в любой момент в настройках.'),
+      function(){S.allowContact=true;save();try{reportState('settings');}catch(e){}closeModal();pop(en?'On — your matches can reach you ✨':'Включено — совпавшие смогут тебе написать ✨');},
+      '<div class="cb" style="margin-top:10px;color:#9a93c2;font-size:12.5px">'+(en?'No spam — only people your clone actually matched with.':'Без спама — только те, с кем реально совпал твой клон.')+'</div>');
+    setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Allow':'Разрешить');var n=document.getElementById('mNo');if(n)n.textContent=(en?'Not now':'Не сейчас');},0);
+  },1600);
+}
 function renderResult(){
   var r=S.result;var t=TYPES[r.primary];var te=Tt(r.primary);var en=isEN();
   ['personalHost','subtypeHost','spMeters','cardLight','growthHost','rolesHost'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
@@ -2123,6 +2134,7 @@ function renderResult(){
     if(!S._fbSent)fb+='<div class="card-soft" style="border-left:3px solid #7C3AFF"><div class="ch" style="color:#c9b3ff">💬 '+(en?'One question':'Один вопрос')+'</div><div class="cb">'+(en?'What did you feel when you read your result?':'Что ты почувствовал, когда прочитал свой результат?')+'</div><textarea id="fbText" rows="2" maxlength="300" placeholder="'+(en?'a line is enough…':'хватит одной строки…')+'" style="width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14px;resize:none;outline:none"></textarea><button class="btn ghost" style="margin-top:10px" onclick="sendFeedback()">'+(en?'Send feedback':'Отправить отзыв')+'</button></div>';
     fb+='<div class="disclaimer">'+(en?'SELF-FIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.':'SELF-FIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.')+' <span style="color:#7fe9ff;cursor:pointer" onclick="methodologyInfo()">'+(en?'how it works':'как это работает')+'</span> · <span style="color:#7fe9ff;cursor:pointer" onclick="privacyInfo()">'+(en?'privacy':'приватность')+'</span></div>';
     fh.innerHTML=fb;}
+  maybePromptContact();
   // staggered entrance for the cards below the hero (restart cleanly on every render)
   setTimeout(function(){
     var host=document.getElementById('sResult');if(!host)return;
@@ -2958,9 +2970,15 @@ function openConversation(idx){
   host.innerHTML=header+'<div class="cl-thread" id="clThread"></div><div id="clVerdict"></div>';
   var thread=document.getElementById('clThread');
   var onDone=function(){
-    var foot='<button class="btn go" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'💬 Chat with '+m.peer.name+'’s clone':'💬 Поговорить с клоном '+m.peer.name)+'</button>';
-    if(m.peer.real&&m.peer.username)foot+='<button class="btn lime" onclick="contactPeer('+idx+')">'+(en?'Message '+m.peer.name+' on Telegram →':'Написать '+m.peer.name+' в Telegram →')+'</button>';
-    else if(m.peer.real)foot+='<button class="btn cold" onclick="connectPeer(\''+m.peer.name+'\')">'+(en?'Send a connect request':'Отправить запрос на знакомство')+'</button>';
+    var foot='';
+    if(m.peer.real&&m.peer.username){
+      // peer opened contact -> real connection is the hero action
+      foot+='<button class="btn go" onclick="contactPeer('+idx+')">'+(en?'💬 Message '+m.peer.name+' on Telegram':'💬 Написать '+m.peer.name+' в Telegram')+'</button>';
+      foot+='<button class="btn ghost" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'Or chat with their clone first':'Или сперва поговорить с клоном')+'</button>';
+    }else{
+      // demo persona or contact closed -> the AI clone chat is the way to interact
+      foot+='<button class="btn go" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'💬 Chat with '+m.peer.name+'’s clone':'💬 Поговорить с клоном '+m.peer.name)+'</button>';
+    }
     foot+='<button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>';
     renderVerdict(m,sc,foot);
   };
