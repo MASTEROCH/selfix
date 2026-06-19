@@ -154,6 +154,19 @@
   .nh-t{font-weight:800;font-size:16px;line-height:1.2}
   .nh-s{font-size:12.5px;color:#b6b0d6;margin-top:3px;line-height:1.32}
   .nh-cta{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--ac,#7C3AFF);color:#0b0a16;font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:12px;position:relative}
+
+  /* progress-path strip + first-run coachmark */
+  .prog-strip{cursor:pointer;margin-bottom:13px;padding:12px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .ps-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:9px}
+  .ps-lbl{font-weight:800;font-size:13px}
+  .ps-sub{font-size:11.5px;color:#9a93c2;text-align:right;flex:1}
+  .ps-bar{display:flex;gap:5px}
+  .ps-bar i{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.1);transition:background .5s}
+  .ps-bar i.on{background:linear-gradient(90deg,#7C3AFF,#00E0C7)}
+  .coach-pulse{animation:coachPulse 1.7s ease-in-out infinite}
+  @keyframes coachPulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(0,0,0,.3),0 0 0 0 rgba(124,58,255,.55)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(0,0,0,.3),0 0 0 9px rgba(124,58,255,0)}}
+  .coach-tip{text-align:center;font-size:12.5px;font-weight:700;color:#cbb8ff;margin:-6px 0 14px;animation:coachTipIn .4s ease-out both}
+  @keyframes coachTipIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .btn-row{display:flex;gap:10px}.btn-row .btn{margin:0}
   .action-stack{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
   .upsell{margin-top:18px;border:1px solid rgba(255,207,92,.3);background:radial-gradient(circle at 50% 0,rgba(255,207,92,.12),transparent 70%),linear-gradient(160deg,rgba(44,40,68,.55),rgba(20,17,38,.42))}
@@ -3456,6 +3469,18 @@ function nextStepBest(){
 function nextStepHero(){var n=nextStepBest();_nextAct=n.act;var t=TYPES[S.result.primary];var en=isEN();
   return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta">'+n.cta+'</div></div>';
 }
+function progressStrip(){var en=isEN();var pr=avatarProgress();var left=5-pr;var segs='';for(var i=0;i<5;i++)segs+='<i class="'+(i<pr?'on':'')+'"></i>';
+  var label=pr>=5?(en?'Full picture complete \u2728':'\u041f\u043e\u043b\u043d\u0430\u044f \u043a\u0430\u0440\u0442\u0438\u043d\u0430 \u0441\u043e\u0431\u0440\u0430\u043d\u0430 \u2728'):(en?(left+' to your full picture'):('\u0435\u0449\u0451 '+left+' '+ppPlural(left)+' \u0434\u043e \u043f\u043e\u043b\u043d\u043e\u0439 \u043a\u0430\u0440\u0442\u0438\u043d\u044b'));
+  return '<div class="prog-strip" onclick="go(\'passport\')"><div class="ps-top"><span class="ps-lbl">\uD83E\uDDEC '+(en?'Passport':'\u041f\u0430\u0441\u043f\u043e\u0440\u0442')+' '+pr+'/5</span><span class="ps-sub">'+label+'</span></div><div class="ps-bar">'+segs+'</div></div>';}
+function maybeCoach(){if(S._coached||!S.result)return;
+  setTimeout(function(){var h=document.querySelector('.next-hero');if(!h){return;}
+    h.classList.add('coach-pulse');var en=isEN();
+    var c=document.createElement('div');c.className='coach-tip';c.textContent=(en?'\u2191 Start here \u2014 one clear step at a time':'\u2191 \u041d\u0430\u0447\u043d\u0438 \u043e\u0442\u0441\u044e\u0434\u0430 \u2014 \u043e\u0434\u0438\u043d \u043f\u043e\u043d\u044f\u0442\u043d\u044b\u0439 \u0448\u0430\u0433 \u0437\u0430 \u0440\u0430\u0437');
+    if(h.parentNode)h.parentNode.insertBefore(c,h.nextSibling);
+    var done=function(){if(S._coached)return;S._coached=true;save();try{h.classList.remove('coach-pulse');}catch(e){}if(c&&c.parentNode)c.parentNode.removeChild(c);document.removeEventListener('pointerdown',done,true);};
+    setTimeout(function(){document.addEventListener('pointerdown',done,true);},500);
+    setTimeout(done,8000);
+  },700);}
 function renderHome(){
   var g=document.getElementById('homeGreet');
   var en=(S.lang==='en');var LL=I18N[S.lang||'ru'];
@@ -3485,7 +3510,7 @@ function renderHome(){
       '<div class="card-soft steps-card">'+steps+'</div>'+
       '<div class="trust-badge" onclick="methodologyInfo()">🔬 '+(en?'Built on Big Five (OCEAN) — real personality science':'На основе Big Five (OCEAN) — настоящая наука о личности')+' <span style="color:#7fe9ff">ⓘ</span></div>';
   }else{
-    cta.innerHTML=nextStepHero()+dailyCard();
+    cta.innerHTML=progressStrip()+nextStepHero()+dailyCard();maybeCoach();
   }
   var ih=document.getElementById('homeInsight');
   if(S.result){
