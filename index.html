@@ -3839,18 +3839,21 @@ function copyFriendInvite(){var link=referralLink();try{if(navigator.clipboard)n
 function shareFriendInvite(){var link=referralLink();try{var tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.openTelegramLink){tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(inviteText()));closeModal();return;}}catch(e){}if(navigator.share){navigator.share({text:inviteText()+' '+link}).catch(function(){});closeModal();return;}copyFriendInvite();}
 function inviteFriend(){var en=isEN();modal(en?'Invite a friend':'\u041f\u043e\u0437\u0432\u0430\u0442\u044c \u0434\u0440\u0443\u0433\u0430',en?'Add friends to your ranking \u2014 see who reads people better.':'\u0414\u043e\u0431\u0430\u0432\u044c \u0434\u0440\u0443\u0437\u0435\u0439 \u0432 \u0441\u0432\u043e\u0439 \u0440\u0435\u0439\u0442\u0438\u043d\u0433 \u2014 \u043f\u043e\u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439.',null,'<div class="action-stack" style="margin-top:6px"><button class="btn go" onclick="shareFriendInvite()">'+(en?'Send via Telegram':'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0432 Telegram')+'</button><button class="btn ghost" onclick="copyFriendInvite()">'+(en?'Copy link':'\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443')+'</button></div>');}
 function buildBoard(kind){
-  // deterministic pseudo-list so it's stable across renders
-  var en=isEN();var NAMES=en?LB_NAMES_EN:LB_NAMES;
-  var arr=[];var seedBase=(kind==='global')?7000:1100;
-  var count=(kind==='global')?80:14;
-  for(var i=0;i<count;i++){
-    var nm=NAMES[i%NAMES.length]+(i>=NAMES.length?(' '+String.fromCharCode(65+(i%26))):'');
-    var ty=ORDER[(i*3+2)%ORDER.length];
-    var r=seedBase - i*((kind==='global')?45:28) + ((i*37)%23);
-    var gi=i%LB_NAMES.length;var g=(LB_GENDER[gi]==='f')?'women':'men';var pid=(gi*7+(kind==='global'?13:41))%100;
-    arr.push({n:nm,r:r,ty:ty,photo:'https://randomuser.me/api/portraits/'+g+'/'+pid+'.jpg'});
+  var en=isEN();var arr=[];
+  if(kind==='global'){
+    // GLOBAL: массовка (mock) for now; real users join here later (needs server ratings)
+    var NAMES=en?LB_NAMES_EN:LB_NAMES;var seedBase=7000,count=80;
+    for(var i=0;i<count;i++){
+      var nm=NAMES[i%NAMES.length]+(i>=NAMES.length?(' '+String.fromCharCode(65+(i%26))):'');
+      var ty=ORDER[(i*3+2)%ORDER.length];
+      var r=seedBase - i*45 + ((i*37)%23);
+      var gi=i%LB_NAMES.length;var g=(LB_GENDER[gi]==='f')?'women':'men';var pid=(gi*7+13)%100;
+      arr.push({n:nm,r:r,ty:ty,photo:'https://randomuser.me/api/portraits/'+g+'/'+pid+'.jpg'});
+    }
+  }else{
+    // FRIENDS: real only — никакой массовки. Наполняется по мере приглашений.
+    (S.friends||[]).forEach(function(f){arr.push({n:f.name||'',r:f.rating||1000,ty:f.type||'green',photo:f.photo||'',username:f.username||''});});
   }
-  // insert the user at a position based on rating — placeholder face by gender (real TG avatar at launch)
   arr.push({n:myDisplayName(),r:S.rating,ty:S.result.primary,me:true,photo:myPhoto()});
   arr.sort(function(a,b){return b.r-a.r;});
   return arr;
@@ -3870,12 +3873,14 @@ function renderLeaderboard(){
     var pcol=f.me?t.color:ft.color;
     var pic='<div class="pic lb-pic" style="background:'+pcol+'18;border-color:'+pcol+(f.me?'88':'40')+';width:38px;height:38px">'+typeGlyph(f.ty,18)+'<img class="lb-face" src="'+f.photo+'" loading="lazy" alt="" onerror="this.remove()"></div>';
     return '<div class="product lb-row"'+(f.me?' data-me="1"':'')+' style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+Tt(f.ty).name+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
+  var onlyMe=(_lbTab==='friends'&&list.filter(function(x){return !x.me;}).length===0);
+  var emptyHint=onlyMe?'<div class="card-soft" style="text-align:center;margin-top:6px;border:1px dashed rgba(255,255,255,.14)"><div style="font-size:30px">\uD83D\uDC65</div><div class="cb" style="margin-top:6px">'+(en?'No friends yet. Invite people — and see who reads others better. Real friends only here.':'Пока никого. Позови друзей — и посмотрите, кто лучше читает людей. Здесь только настоящие.')+'</div></div>':'';
   var addBtn=(_lbTab==='friends')?'<button class="btn go" style="margin:0 0 12px" onclick="inviteFriend()">'+(en?'+ Add a friend':'+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0434\u0440\u0443\u0433\u0430')+'</button>':'';
   lh.innerHTML='<div class="section-h"><h2>'+L.lb_title+'</h2><span style="font-size:11px;color:#7fe9ff;cursor:pointer" onclick="inviteFriend()">'+L.lb_invite+'</span></div>'+
     tabs+
     '<div class="lb-mine">'+L.lb_youare+' <b style="color:'+t.color+'">#'+myRank+'</b> '+(_lbTab==='global'?L.lb_global.toLowerCase():L.lb_friends.toLowerCase())+'</div>'+
     addBtn+
-    '<div class="lb-scroll">'+rows+'</div>';
+    '<div class="lb-scroll">'+rows+emptyHint+'</div>';
   setTimeout(function(){var me=lh.querySelector('.lb-row[data-me]');var sc=document.getElementById('sBoard');if(me&&sc){var mr=me.getBoundingClientRect(),sr=sc.getBoundingClientRect();sc.scrollTop+=(mr.top-sr.top)-sc.clientHeight/2+mr.height/2;}},120);
 }
 /* ===== language toggle (core UI strings) ===== */
