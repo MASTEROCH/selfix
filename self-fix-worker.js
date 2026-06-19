@@ -66,6 +66,9 @@ export default {
       if (url.pathname === '/entitlements')return json(await onEntitlements(env, body));
       if (url.pathname === '/match')       return json(await onMatch(env, body));
       if (url.pathname === '/delete')      return json(await onDelete(env, body));
+      if (url.pathname === '/ref')         return json(await onRef(env, body));
+      if (url.pathname === '/friends')     return json(await onFriends(env, body));
+      if (url.pathname === '/leaderboard') return json(await onLeaderboard(env, body));
       if (url.pathname === '/admin/broadcast') {
         if ((body.secret || '') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
         return json(await adminBroadcast(env, body));
@@ -275,6 +278,7 @@ async function onState(env, body) {
       type: body.type, big: body.big, username: u.username || body.username,
       name: body.name, gender: body.gender, day: body.day, month: body.month, year: body.year, tests: body.tests,
       allowContact: typeof body.allowContact === 'boolean' ? body.allowContact : undefined,
+      rating: typeof body.rating === 'number' ? body.rating : undefined,
     });
   } catch (e) {}
   return new Response(null, { status: 204, headers: CORS });
@@ -309,6 +313,7 @@ async function upsertUser(env, from, patch) {
   if (patch.tests && patch.tests.length) rec.tests = patch.tests;
   if (patch.allowContact === true) rec.allowContact = true;
   if (patch.allowContact === false) rec.allowContact = false;
+  if (typeof patch.rating === 'number' && patch.rating > 0) rec.rating = patch.rating;
   await env.USERS.put(key, JSON.stringify(rec));
 }
 
@@ -433,6 +438,58 @@ async function adminBroadcast(env, body) {
     } catch (e) { failed++; }
   }
   return { ok: true, sent, failed, count: targets.length };
+}
+
+/* ---------- real friend graph (referrals) + leaderboard ---------- */
+async function addFriendEdge(env, a, b) {
+  if (!env.USERS || !a || !b || a === b) return;
+  for (const pair of [[a, b], [b, a]]) {
+    const x = pair[0], y = pair[1];
+    let list = []; try { list = JSON.parse(await env.USERS.get('fr:' + x)) || []; } catch (e) {}
+    if (list.indexOf(y) < 0) { list.push(y); await env.USERS.put('fr:' + x, JSON.stringify(list)); }
+  }
+}
+function pubFromRec(rec) {
+  return { id: rec.id, name: rec.name || '', type: rec.type || '', rating: rec.rating || 1000, username: rec.allowContact ? (rec.username || '') : '' };
+}
+async function onRef(env, body) {
+  if (!env.USERS) return { ok: false };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { ok: false, err: 'unverified' };
+  await upsertUser(env, u, { username: u.username, touch: true });
+  const inviter = parseInt(body.ref, 10);
+  if (!inviter || inviter === u.id) return { ok: true, self: true };
+  // only link if inviter actually exists
+  let ir; try { ir = JSON.parse(await env.USERS.get('user:' + inviter)); } catch (e) {}
+  if (!ir) return { ok: true, unknown: true };
+  await addFriendEdge(env, u.id, inviter);
+  return { ok: true, linked: true };
+}
+async function onFriends(env, body) {
+  if (!env.USERS) return { friends: [] };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { friends: [] };
+  let ids = []; try { ids = JSON.parse(await env.USERS.get('fr:' + u.id)) || []; } catch (e) {}
+  const out = [];
+  for (const id of ids.slice(0, 100)) {
+    let rec; try { rec = JSON.parse(await env.USERS.get('user:' + id)); } catch (e) { continue; }
+    if (rec && rec.type) out.push(pubFromRec(rec));
+  }
+  return { friends: out };
+}
+async function onLeaderboard(env, body) {
+  if (!env.USERS) return { top: [] };
+  const all = []; let cursor;
+  do {
+    const list = await env.USERS.list({ prefix: 'user:', cursor });
+    cursor = list.list_complete ? null : list.cursor;
+    for (const k of list.keys) {
+      let rec; try { rec = JSON.parse(await env.USERS.get(k.name)); } catch (e) { continue; }
+      if (rec && rec.id && rec.type) all.push(pubFromRec(rec));
+    }
+  } while (cursor && all.length < 500);
+  all.sort((a, b) => b.rating - a.rating);
+  return { top: all.slice(0, 60) };
 }
 
 /* ---------- right to be forgotten: wipe a user's server profile (validated by initData) ---------- */
