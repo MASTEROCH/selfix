@@ -167,6 +167,14 @@
   @keyframes coachPulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(0,0,0,.3),0 0 0 0 rgba(124,58,255,.55)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(0,0,0,.3),0 0 0 9px rgba(124,58,255,0)}}
   .coach-tip{text-align:center;font-size:12.5px;font-weight:700;color:#cbb8ff;margin:-6px 0 14px;animation:coachTipIn .4s ease-out both}
   @keyframes coachTipIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+  /* polish: consistent tap feedback on the last interactive bits + smooth avatar reveal */
+  .prog-strip,.ach,.lb-tab{transition:transform .15s var(--ease-spring)}
+  .prog-strip:active,.ach:active{transform:scale(.97)}
+  .lb-tab:active{transform:scale(.95)}
+  .lb-face{animation:lbFaceIn .5s var(--ease-out) both}
+  @keyframes lbFaceIn{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
+  .product:active .lb-pic{transform:scale(.94);transition:transform .15s var(--ease-spring)}
   .btn-row{display:flex;gap:10px}.btn-row .btn{margin:0}
   .action-stack{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
   .upsell{margin-top:18px;border:1px solid rgba(255,207,92,.3);background:radial-gradient(circle at 50% 0,rgba(255,207,92,.12),transparent 70%),linear-gradient(160deg,rgba(44,40,68,.55),rgba(20,17,38,.42))}
