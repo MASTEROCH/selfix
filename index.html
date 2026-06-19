@@ -175,6 +175,24 @@
   .lb-face{animation:lbFaceIn .5s var(--ease-out) both}
   @keyframes lbFaceIn{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
   .product:active .lb-pic{transform:scale(.94);transition:transform .15s var(--ease-spring)}
+
+  /* ===== Liquid Glass (iOS 26/27) — real backdrop blur where supported, graceful gradient base elsewhere.
+     Applied to prominent surfaces only (NOT long scroll lists) to avoid GPU jank. ===== */
+  @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){
+    .card-soft,.fold,.next-hero,.prog-strip,.modal,.nav,.chip,.btn.ghost,.btn.block,.cl-bub,.modal-bg{
+      -webkit-backdrop-filter:blur(22px) saturate(185%);backdrop-filter:blur(22px) saturate(185%);}
+    /* translucent material so the blur reads as liquid glass */
+    .card-soft{background:linear-gradient(160deg,rgba(72,66,112,.34),rgba(28,24,46,.20));border-color:rgba(255,255,255,.20);box-shadow:inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(0,0,0,.16),0 16px 44px rgba(0,0,0,.34)}
+    .fold{background:linear-gradient(160deg,rgba(72,66,112,.30),rgba(24,20,40,.18));border-color:rgba(255,255,255,.17)}
+    .next-hero{background:linear-gradient(160deg,rgba(124,58,255,.26),rgba(28,24,46,.26));border-color:rgba(255,255,255,.2)}
+    .prog-strip{background:linear-gradient(160deg,rgba(64,58,102,.32),rgba(24,20,40,.2));border-color:rgba(255,255,255,.16)}
+    .chip{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.22)}
+    .btn.ghost,.btn.block{background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.045));border-color:rgba(255,255,255,.2)}
+    .cl-bub{background:linear-gradient(160deg,rgba(74,68,112,.44),rgba(28,24,46,.30))}
+    .nav{background:linear-gradient(180deg,rgba(12,10,24,.52),rgba(8,6,16,.64))}
+    .modal{background:linear-gradient(180deg,rgba(36,30,68,.60),rgba(20,16,44,.64))}
+    .modal-bg{background:rgba(4,3,8,.55)}
+  }
   .btn-row{display:flex;gap:10px}.btn-row .btn{margin:0}
   .action-stack{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
   .upsell{margin-top:18px;border:1px solid rgba(255,207,92,.3);background:radial-gradient(circle at 50% 0,rgba(255,207,92,.12),transparent 70%),linear-gradient(160deg,rgba(44,40,68,.55),rgba(20,17,38,.42))}
