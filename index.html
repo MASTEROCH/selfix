@@ -3075,6 +3075,7 @@ var DELETE_URL='https://selfix.rc-c7b.workers.dev/delete';    // server-side era
 var REF_URL='https://selfix.rc-c7b.workers.dev/ref';        // register referral friend edge
 var FRIENDS_URL='https://selfix.rc-c7b.workers.dev/friends';  // real friends (referral graph)
 var LB_URL='https://selfix.rc-c7b.workers.dev/leaderboard';   // global ranking (real users by rating)
+var AVATAR_URL='https://selfix.rc-c7b.workers.dev/avatar'; // proxied real Telegram profile photo (cached); onerror falls back to glyph
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
 /* lightweight, privacy-light event tracking. No-ops cleanly until ANALYTICS_URL is set. */
@@ -3497,6 +3498,7 @@ function renderHome(){
 }
 function renderBoardScreen(){
   if(!S.result){var en=isEN();document.getElementById('boardBody').innerHTML='<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'Take the test first to enter the ranking.':'Сначала пройди тест, чтобы попасть в рейтинг.')+'</div><button class="btn" style="margin-top:12px" onclick="startQuiz()">'+(en?'Take the test':'Пройти тест')+'</button></div>';return;}
+  try{reportState('board');}catch(e){}
   renderLeaderboard();fetchBoardData();
 }
 /* ===== chats (people found via avatar matching) ===== */
@@ -3835,7 +3837,7 @@ var LB_GENDER=['f','m','m','f','m','f','m','f','f','m','f','m','f','m','f','m','
 var _lbTab='friends';
 function tgUser(){try{return (window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.user)||null;}catch(e){return null;}}
 function myDisplayName(){var u=tgUser();var en=isEN();if(u)return u.first_name||u.username||(en?'You':'Ты');return S.name||(en?'You':'Ты');}
-function myPhoto(){var u=tgUser();if(u&&u.photo_url)return u.photo_url;return 'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg';}
+function myPhoto(){var u=tgUser();if(u&&u.id)return AVATAR_URL+'?id='+u.id;if(u&&u.photo_url)return u.photo_url;return 'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg';}
 function referralLink(){var u=tgUser();return deepLink('ref_'+((u&&u.id)||b64urlEnc(S.name||'x')));}
 function inviteText(){var en=isEN();return en?('I built my personality double in SELF-FIX \uD83C\uDF00 Find out your type \u2014 and let\u2019s compare who reads people better.'):('\u0421\u043e\u0431\u0440\u0430\u043b \u0441\u0432\u043e\u0435\u0433\u043e \u0434\u0432\u043e\u0439\u043d\u0438\u043a\u0430-\u043b\u0438\u0447\u043d\u043e\u0441\u0442\u044c \u0432 SELF-FIX \uD83C\uDF00 \u0423\u0437\u043d\u0430\u0439 \u0441\u0432\u043e\u0439 \u0442\u0438\u043f \u2014 \u0438 \u0441\u0440\u0430\u0432\u043d\u0438\u043c, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439.');}
 function copyFriendInvite(){var link=referralLink();try{if(navigator.clipboard)navigator.clipboard.writeText(link);}catch(e){}S._shared=true;save();closeModal();pop(isEN()?'Link copied \uD83D\uDD17':'\u0421\u0441\u044b\u043b\u043a\u0430 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0430 \uD83D\uDD17');}
@@ -3857,12 +3859,12 @@ function fetchBoardData(){
 function buildBoard(kind){
   var en=isEN();var arr=[];var myId=(tgUser()||{}).id;
   if(kind==='global'){
-    (S._global||[]).forEach(function(g){if(g.id&&g.id!==myId)arr.push({id:g.id,n:g.name||'',r:g.rating||1000,ty:g.type||'green',username:g.username||'',photo:''});});
+    (S._global||[]).forEach(function(g){if(g.id&&g.id!==myId)arr.push({id:g.id,n:g.name||'',r:g.rating||1000,ty:g.type||'green',username:g.username||'',photo:AVATAR_URL+'?id='+g.id});});
     // массовка filler with realistic ratings so real players interleave naturally
     var NAMES=en?LB_NAMES_EN:LB_NAMES;var need=Math.max(0,60-arr.length);
     for(var i=0;i<need;i++){var nm=NAMES[i%NAMES.length]+(i>=NAMES.length?(' '+String.fromCharCode(65+(i%26))):'');var ty=ORDER[(i*3+2)%ORDER.length];var r=1500-i*11+((i*37)%23);var gi=i%LB_NAMES.length;var g=(LB_GENDER[gi]==='f')?'women':'men';var pid=(gi*7+13)%100;arr.push({n:nm,r:r,ty:ty,photo:'https://randomuser.me/api/portraits/'+g+'/'+pid+'.jpg'});}
   }else{
-    (S._friends||[]).forEach(function(g){if(g.id&&g.id!==myId)arr.push({id:g.id,n:g.name||'',r:g.rating||1000,ty:g.type||'green',username:g.username||'',photo:''});});
+    (S._friends||[]).forEach(function(g){if(g.id&&g.id!==myId)arr.push({id:g.id,n:g.name||'',r:g.rating||1000,ty:g.type||'green',username:g.username||'',photo:AVATAR_URL+'?id='+g.id});});
   }
   arr.push({n:myDisplayName(),r:S.rating,ty:S.result.primary,me:true,photo:myPhoto()});
   arr.sort(function(a,b){return b.r-a.r;});

@@ -52,6 +52,7 @@ export default {
       if (url.searchParams.get('secret') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
       return json(await adminReengageDry(env));
     }
+    if (url.pathname === '/avatar' && request.method === 'GET') return await onAvatar(env, url);
     if (request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch (e) {}
@@ -497,7 +498,15 @@ async function onDelete(env, body) {
   if (!env.USERS) return { ok: false, err: 'no kv' };
   const u = await validateInit(body.initData || '', env.BOT_TOKEN);
   if (!u || !u.id) return { ok: false, err: 'unverified' };
-  try { await env.USERS.delete('user:' + u.id); await env.USERS.delete('ent:' + u.id); } catch (e) {}
+  try {
+    // remove me from every friend's list (full right-to-be-forgotten)
+    let ids = []; try { ids = JSON.parse(await env.USERS.get('fr:' + u.id)) || []; } catch (e) {}
+    for (const fid of ids) {
+      try { const l = JSON.parse(await env.USERS.get('fr:' + fid)) || []; const n = l.filter(x => x !== u.id); if (n.length !== l.length) await env.USERS.put('fr:' + fid, JSON.stringify(n)); } catch (e) {}
+    }
+    await env.USERS.delete('user:' + u.id); await env.USERS.delete('ent:' + u.id);
+    await env.USERS.delete('fr:' + u.id); await env.USERS.delete('ph:' + u.id);
+  } catch (e) {}
   return { ok: true };
 }
 
@@ -577,6 +586,31 @@ async function validateInit(initData, botToken) {
 }
 
 /* ---------- helpers ---------- */
+/* ---------- real profile avatars: proxy Telegram getUserProfilePhotos (KV-cached) ---------- */
+async function onAvatar(env, url) {
+  const id = parseInt(url.searchParams.get('id'), 10);
+  if (!id || !env.BOT_TOKEN) return new Response(null, { status: 404, headers: CORS });
+  let fp = null; try { if (env.USERS) fp = await env.USERS.get('ph:' + id); } catch (e) {}
+  if (!fp) {
+    try {
+      const r = await tg(env, 'getUserProfilePhotos', { user_id: id, limit: 1 });
+      const j = await r.json();
+      const photo = j && j.ok && j.result && j.result.photos && j.result.photos[0];
+      if (!photo || !photo.length) { try { if (env.USERS) await env.USERS.put('ph:' + id, 'none', { expirationTtl: 43200 }); } catch (e) {} return new Response(null, { status: 404, headers: CORS }); }
+      const fr = await tg(env, 'getFile', { file_id: photo[0].file_id });
+      const fj = await fr.json();
+      if (!fj || !fj.ok) return new Response(null, { status: 404, headers: CORS });
+      fp = fj.result.file_path; try { if (env.USERS) await env.USERS.put('ph:' + id, fp, { expirationTtl: 86400 }); } catch (e) {}
+    } catch (e) { return new Response(null, { status: 404, headers: CORS }); }
+  }
+  if (fp === 'none') return new Response(null, { status: 404, headers: CORS });
+  try {
+    const img = await fetch(`https://api.telegram.org/file/bot${env.BOT_TOKEN}/${fp}`);
+    if (!img.ok) return new Response(null, { status: 404, headers: CORS });
+    return new Response(img.body, { headers: { ...CORS, 'Content-Type': img.headers.get('content-type') || 'image/jpeg', 'Cache-Control': 'public, max-age=86400' } });
+  } catch (e) { return new Response(null, { status: 404, headers: CORS }); }
+}
+
 function tg(env, method, payload) {
   return fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
