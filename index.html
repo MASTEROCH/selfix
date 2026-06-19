@@ -3227,7 +3227,7 @@ function talkSend(){
   }).catch(function(){done('');});
 }
 /* deep-link that works in Telegram (t.me/bot) AND on a plain web host (for custdev) */
-function deepLink(startParam){return inTelegram()?('t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
+function deepLink(startParam){return inTelegram()?('https://t.me/'+BOT_USER+'?startapp='+startParam):(location.origin+location.pathname+'?startapp='+startParam);}
 function giftLink(){return deepLink('gift_'+b64urlEnc(S.name||'')+'_'+(S.result?S.result.primary:'orange'));}
 function checkGiftLink(){
   var g=parseGift(getStartParam());if(!g)return false;
