@@ -126,7 +126,7 @@
   .btn.ghost::after,.btn.block::after{opacity:.45}
   .btn.gold::after{background:conic-gradient(from var(--bd-angle),transparent 0deg,transparent 230deg,rgba(255,240,200,.95) 300deg,rgba(255,220,140,.25) 335deg,transparent 360deg)}
   .btn:disabled::after{display:none}
-  @media (prefers-reduced-motion:reduce){.btn::after{animation:none;opacity:.3}}
+  @media (prefers-reduced-motion:reduce){.btn::after,.nh-cta::after{animation:none;opacity:.3}}
   /* PRIMARY aliases (.violet, .lime kept for existing markup) */
   .btn.violet,.btn.lime{color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(0,0,0,.26),0 8px 20px rgba(124,58,255,.28),inset 0 1px 0 rgba(255,255,255,.4)}
   /* SHARE / INVITE = green */
@@ -153,7 +153,11 @@
   .nh-tx{flex:1;min-width:0}
   .nh-t{font-weight:800;font-size:16px;line-height:1.2}
   .nh-s{font-size:12.5px;color:#b6b0d6;margin-top:3px;line-height:1.32}
-  .nh-cta{margin-top:14px;display:flex;width:100%;align-items:center;justify-content:center;gap:7px;background:var(--ac,#7C3AFF);color:#0b0a16;font-weight:800;font-size:15px;padding:13px;border-radius:14px;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:filter .15s}
+  .nh-cta{margin-top:14px;display:flex;width:100%;align-items:center;justify-content:center;gap:7px;background:linear-gradient(100deg,color-mix(in srgb,var(--ac,#7C3AFF) 86%,#000) 0%,var(--ac,#7C3AFF) 42%,color-mix(in srgb,var(--ac,#7C3AFF) 70%,#fff) 100%);color:#0b0a16;font-weight:800;font-size:15px;padding:13px;border-radius:14px;position:relative;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.5);transition:filter .15s,transform .15s var(--ease-spring)}
+  .nh-cta:active{transform:scale(.97)}
+  .nh-cta>*{position:relative;z-index:2}
+  .nh-cta::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.6) 50%,transparent 62%);background-size:230% 100%;animation:nhShine 3.4s ease-in-out infinite}
+  @keyframes nhShine{0%{background-position:160% 0}58%,100%{background-position:-100% 0}}
 
   /* progress-path strip + first-run coachmark */
   .prog-strip{cursor:pointer;margin-bottom:13px;padding:12px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
@@ -3495,7 +3499,7 @@ function nextStepBest(){
   return {ic:'\uD83E\uDD1D',title:en?'Invite a friend':'\u041f\u043e\u0437\u043e\u0432\u0438 \u0434\u0440\u0443\u0433\u0430',sub:en?'Compare who reads people better':'\u0421\u0440\u0430\u0432\u043d\u0438\u0442\u0435, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439',cta:en?'Invite \u2192':'\u041f\u043e\u0437\u0432\u0430\u0442\u044c \u2192',act:function(){inviteFriend();}};
 }
 function nextStepHero(){var n=nextStepBest();_nextAct=n.act;var t=TYPES[S.result.primary];var en=isEN();
-  return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta">'+n.cta+'</div></div>';
+  return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta"><span>'+n.cta+'</span></div></div>';
 }
 function progressStrip(){var en=isEN();var pr=avatarProgress();var left=5-pr;var segs='';for(var i=0;i<5;i++)segs+='<i class="'+(i<pr?'on':'')+'"></i>';
   var label=pr>=5?(en?'Full picture complete \u2728':'\u041f\u043e\u043b\u043d\u0430\u044f \u043a\u0430\u0440\u0442\u0438\u043d\u0430 \u0441\u043e\u0431\u0440\u0430\u043d\u0430 \u2728'):(en?(left+' to your full picture'):('\u0435\u0449\u0451 '+left+' '+ppPlural(left)+' \u0434\u043e \u043f\u043e\u043b\u043d\u043e\u0439 \u043a\u0430\u0440\u0442\u0438\u043d\u044b'));
