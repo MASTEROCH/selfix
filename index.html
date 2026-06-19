@@ -141,6 +141,19 @@
   .btn.ghost,.btn.block{background:linear-gradient(180deg,rgba(70,64,108,.5),rgba(28,24,48,.42));color:#efeaff;border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 20px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)}
   .btn.ghost::before,.btn.block::before{background:linear-gradient(180deg,rgba(255,255,255,.12),transparent)}
   .btn.sm{padding:13px;font-size:14.5px;border-radius:13px}
+
+  /* smart single 'next step' hero — always one obvious action */
+  .next-hero{position:relative;overflow:hidden;border-radius:20px;padding:15px 16px;margin-bottom:14px;cursor:pointer;background:linear-gradient(160deg,rgba(124,58,255,.20),rgba(28,24,46,.62));border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px rgba(0,0,0,.3);transition:transform .15s var(--ease-spring)}
+  .next-hero:active{transform:scale(.985)}
+  .next-hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac,#7C3AFF)}
+  .next-hero::after{content:'';position:absolute;top:-40%;right:-20%;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,var(--ac,#7C3AFF),transparent 70%);opacity:.16;pointer-events:none}
+  .nh-eyebrow{font-size:10.5px;letter-spacing:.12em;font-weight:800;color:var(--ac,#cbb8ff);text-transform:uppercase;margin-bottom:9px;position:relative}
+  .nh-row{display:flex;align-items:center;gap:13px;position:relative}
+  .nh-ic{font-size:30px;flex:none;width:42px;text-align:center;filter:drop-shadow(0 4px 12px rgba(0,0,0,.45))}
+  .nh-tx{flex:1;min-width:0}
+  .nh-t{font-weight:800;font-size:16px;line-height:1.2}
+  .nh-s{font-size:12.5px;color:#b6b0d6;margin-top:3px;line-height:1.32}
+  .nh-cta{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--ac,#7C3AFF);color:#0b0a16;font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:12px;position:relative}
   .btn-row{display:flex;gap:10px}.btn-row .btn{margin:0}
   .action-stack{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
   .upsell{margin-top:18px;border:1px solid rgba(255,207,92,.3);background:radial-gradient(circle at 50% 0,rgba(255,207,92,.12),transparent 70%),linear-gradient(160deg,rgba(44,40,68,.55),rgba(20,17,38,.42))}
@@ -3428,6 +3441,21 @@ function dailyCard(){
       '<button class="daily-chip'+(duelDone?' done':'')+'" onclick="startDuelFlow()">'+(duelDone?'✓ ':uic('swords','#7fe9ff',17)+' ')+(en?'Daily duel':'Дуэль дня')+'</button>'+
     '</div></div>';
 }
+function testIcon(k){for(var i=0;i<TESTS.length;i++)if(TESTS[i].key===k)return TESTS[i].ic;return '\uD83E\uDDE9';}
+var _nextAct=null;
+function runNextStep(){if(_nextAct){try{_nextAct();}catch(e){}}}
+function nextStepBest(){
+  var en=isEN();var meets=S._lastMeet||[];
+  for(var i=0;i<meets.length;i++){var m=meets[i];if(m&&m.peer&&m.peer.real&&m.peer.username){return {ic:'\uD83D\uDCAC',title:en?('Message '+m.peer.name):('\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c '+m.peer.name),sub:en?'Your clone matched you \u2014 meet for real':'\u041a\u043b\u043e\u043d \u0441\u0432\u0451\u043b \u0432\u0430\u0441 \u2014 \u043f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u0435 \u0432\u0436\u0438\u0432\u0443\u044e',cta:en?'Open Telegram \u2192':'\u041e\u0442\u043a\u0440\u044b\u0442\u044c Telegram \u2192',act:(function(idx){return function(){contactPeer(idx);};})(i)};}}
+  if(!meets.length)return {ic:'\uD83C\uDF00',title:en?'Send your clone to meet people':'\u041f\u043e\u0437\u043d\u0430\u043a\u043e\u043c\u044c \u0434\u0432\u043e\u0439\u043d\u0438\u043a\u0430 \u0441 \u043b\u044e\u0434\u044c\u043c\u0438',sub:en?'It talks to others\u2019 clones and finds your people':'\u041e\u043d \u043f\u043e\u0433\u043e\u0432\u043e\u0440\u0438\u0442 \u0441 \u043a\u043b\u043e\u043d\u0430\u043c\u0438 \u0434\u0440\u0443\u0433\u0438\u0445 \u0438 \u043d\u0430\u0439\u0434\u0451\u0442 \u0442\u0432\u043e\u0438\u0445',cta:en?'Send clone \u2192':'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043a\u043b\u043e\u043d\u0430 \u2192',act:function(){go('avatar');setTimeout(function(){try{sendAvatarOut();}catch(e){}},220);}};
+  var nk=nextTest();
+  if(nk){var owned=S.ownedTests&&S.ownedTests[nk];return {ic:testIcon(nk),title:en?('Open \u201c'+testTitle(nk)+'\u201d'):('\u041e\u0442\u043a\u0440\u043e\u0439 \u00ab'+testTitle(nk)+'\u00bb'),sub:en?'A new facet \u2014 sharper matches':'\u041d\u043e\u0432\u0430\u044f \u0433\u0440\u0430\u043d\u044c \u2014 \u0442\u043e\u0447\u043d\u0435\u0435 \u043c\u0430\u0442\u0447\u0438',cta:owned?(en?'Take \u2192':'\u041f\u0440\u043e\u0439\u0442\u0438 \u2192'):('\u2b50 '+testPriceOf(nk)),act:(function(k,o){return function(){o?runTest(k):openTest(k);};})(nk,owned)};}
+  if(!S.fullOwned)return {ic:'\uD83C\uDF11',title:en?'Unlock the full breakdown':'\u041e\u0442\u043a\u0440\u043e\u0439 \u043f\u043e\u043b\u043d\u044b\u0439 \u0440\u0430\u0437\u0431\u043e\u0440',sub:en?'Your dark side + you in 4 roles':'\u0422\u0451\u043c\u043d\u0430\u044f \u0441\u0442\u043e\u0440\u043e\u043d\u0430 + \u0442\u044b \u0432 4 \u0440\u043e\u043b\u044f\u0445',cta:'\u2b50 200',act:function(){buyFull();}};
+  return {ic:'\uD83E\uDD1D',title:en?'Invite a friend':'\u041f\u043e\u0437\u043e\u0432\u0438 \u0434\u0440\u0443\u0433\u0430',sub:en?'Compare who reads people better':'\u0421\u0440\u0430\u0432\u043d\u0438\u0442\u0435, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439',cta:en?'Invite \u2192':'\u041f\u043e\u0437\u0432\u0430\u0442\u044c \u2192',act:function(){inviteFriend();}};
+}
+function nextStepHero(){var n=nextStepBest();_nextAct=n.act;var t=TYPES[S.result.primary];var en=isEN();
+  return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta">'+n.cta+'</div></div>';
+}
 function renderHome(){
   var g=document.getElementById('homeGreet');
   var en=(S.lang==='en');var LL=I18N[S.lang||'ru'];
@@ -3457,7 +3485,7 @@ function renderHome(){
       '<div class="card-soft steps-card">'+steps+'</div>'+
       '<div class="trust-badge" onclick="methodologyInfo()">🔬 '+(en?'Built on Big Five (OCEAN) — real personality science':'На основе Big Five (OCEAN) — настоящая наука о личности')+' <span style="color:#7fe9ff">ⓘ</span></div>';
   }else{
-    cta.innerHTML=dailyCard();
+    cta.innerHTML=nextStepHero()+dailyCard();
   }
   var ih=document.getElementById('homeInsight');
   if(S.result){
@@ -3471,14 +3499,7 @@ function renderHome(){
       ih.innerHTML+='<div class="card-soft" style="border:1px solid rgba(212,255,79,.35);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.10),transparent 70%),rgba(28,24,46,.5);margin-top:10px"><div class="ch" style="color:#D4FF4F">✨ '+(en?'Someone already resonates with you':'Кто-то уже резонирует с тобой')+'</div><div class="cb">'+(en?'Your clone made the first move. See how your clones talked — then open your avatar to send it meeting everyone, and complete more tests to sharpen the match.':'Твой клон сделал первый шаг. Посмотри, как поговорили ваши клоны — а потом открой аватар и отправь его знакомиться со всеми; проходи тесты, чтобы матч был точнее.')+'</div><button class="btn lime" style="margin-top:12px" onclick="openTeaserMeet()">'+(en?'Watch the clones talk →':'Смотреть диалог клонов →')+'</button></div>';
     }
   }else ih.innerHTML='';
-  var nh=document.getElementById('homeNext');
-  if(S.result){
-    var nk=nextTest();
-    if(nk){var tb=TEST_BANKS[nk];var owned=S.ownedTests&&S.ownedTests[nk];
-      nh.innerHTML='<div class="section-h"><h2>'+(en?'Next step':'Следующий шаг')+'</h2></div><div class="product feat" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'"><div class="pic">'+testGlyph(nk,24)+'</div><div class="meta"><div class="nm">'+testTitle(nk)+'</div><div class="s">'+(en?'Adds a facet to your portrait & avatar':'Добавит грань портрета и черту аватара')+'</div></div><div class="price">'+(owned?(en?'start →':'пройти →'):('⭐ '+testPriceOf(nk)))+'</div></div>';}
-    else{var prog=avatarProgress();
-      nh.innerHTML='<div class="section-h"><h2>'+(en?'Your avatar':'Твой аватар')+'</h2></div><div class="product feat" onclick="go(\'avatar\')"><div class="pic">🎭</div><div class="meta"><div class="nm">'+(en?'Avatar assembled '+prog+'/5':'Аватар собран '+prog+'/5')+'</div><div class="s">'+(prog>=5?(en?'Send it to meet others':'Отправь его знакомиться с другими'):(en?'Unlock the full avatar':'Открой полный аватар'))+'</div></div><div class="price">'+(en?'open →':'открыть →')+'</div></div>';}
-  }else nh.innerHTML='';
+  var nh=document.getElementById('homeNext');if(nh)nh.innerHTML='';  // next step now lives in the hero card above
   var hr=document.getElementById('homeResult');
   if(S.result){
     var t=TYPES[S.result.primary];
