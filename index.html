@@ -114,6 +114,19 @@
   .btn:active{transform:scale(.97);filter:brightness(.97)}
   .btn:disabled{opacity:.4}
   .btn .shine{display:none}
+  /* premium animated gradient-border beam (AllTrustME/CityHUB/AppHUB canon). Graceful: no @property -> static ring */
+  @property --bd-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+  .btn{--bd-angle:0deg}
+  .btn::after{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;z-index:3;
+    background:conic-gradient(from var(--bd-angle),transparent 0deg,transparent 230deg,rgba(255,255,255,.9) 300deg,rgba(255,255,255,.2) 335deg,transparent 360deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+    animation:bdSpin 3.6s linear infinite;opacity:.85}
+  @keyframes bdSpin{to{--bd-angle:360deg}}
+  .btn.ghost::after,.btn.block::after{opacity:.45}
+  .btn.gold::after{background:conic-gradient(from var(--bd-angle),transparent 0deg,transparent 230deg,rgba(255,240,200,.95) 300deg,rgba(255,220,140,.25) 335deg,transparent 360deg)}
+  .btn:disabled::after{display:none}
+  @media (prefers-reduced-motion:reduce){.btn::after{animation:none;opacity:.3}}
   /* PRIMARY aliases (.violet, .lime kept for existing markup) */
   .btn.violet,.btn.lime{color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(0,0,0,.26),0 8px 20px rgba(124,58,255,.28),inset 0 1px 0 rgba(255,255,255,.4)}
   /* SHARE / INVITE = green */
@@ -3799,6 +3812,14 @@ var LB_NAMES_EN=['Anna','Max','Leo','Kira','Dima','Sonia','Timur','Vera','Nika',
 /* placeholder genders per name — at launch these become real Telegram profile photos */
 var LB_GENDER=['f','m','m','f','m','f','m','f','f','m','f','m','f','m','f','m','f','m','f','m','f','m','f','f'];
 var _lbTab='friends';
+function tgUser(){try{return (window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.user)||null;}catch(e){return null;}}
+function myDisplayName(){var u=tgUser();var en=isEN();if(u)return u.first_name||u.username||(en?'You':'Ты');return S.name||(en?'You':'Ты');}
+function myPhoto(){var u=tgUser();if(u&&u.photo_url)return u.photo_url;return 'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg';}
+function referralLink(){var u=tgUser();return deepLink('ref_'+((u&&u.id)||b64urlEnc(S.name||'x')));}
+function inviteText(){var en=isEN();return en?('I built my personality double in SELF-FIX \uD83C\uDF00 Find out your type \u2014 and let\u2019s compare who reads people better.'):('\u0421\u043e\u0431\u0440\u0430\u043b \u0441\u0432\u043e\u0435\u0433\u043e \u0434\u0432\u043e\u0439\u043d\u0438\u043a\u0430-\u043b\u0438\u0447\u043d\u043e\u0441\u0442\u044c \u0432 SELF-FIX \uD83C\uDF00 \u0423\u0437\u043d\u0430\u0439 \u0441\u0432\u043e\u0439 \u0442\u0438\u043f \u2014 \u0438 \u0441\u0440\u0430\u0432\u043d\u0438\u043c, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439.');}
+function copyFriendInvite(){var link=referralLink();try{if(navigator.clipboard)navigator.clipboard.writeText(link);}catch(e){}S._shared=true;save();closeModal();pop(isEN()?'Link copied \uD83D\uDD17':'\u0421\u0441\u044b\u043b\u043a\u0430 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0430 \uD83D\uDD17');}
+function shareFriendInvite(){var link=referralLink();try{var tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.openTelegramLink){tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(inviteText()));closeModal();return;}}catch(e){}if(navigator.share){navigator.share({text:inviteText()+' '+link}).catch(function(){});closeModal();return;}copyFriendInvite();}
+function inviteFriend(){var en=isEN();modal(en?'Invite a friend':'\u041f\u043e\u0437\u0432\u0430\u0442\u044c \u0434\u0440\u0443\u0433\u0430',en?'Add friends to your ranking \u2014 see who reads people better.':'\u0414\u043e\u0431\u0430\u0432\u044c \u0434\u0440\u0443\u0437\u0435\u0439 \u0432 \u0441\u0432\u043e\u0439 \u0440\u0435\u0439\u0442\u0438\u043d\u0433 \u2014 \u043f\u043e\u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439.',null,'<div class="action-stack" style="margin-top:6px"><button class="btn go" onclick="shareFriendInvite()">'+(en?'Send via Telegram':'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0432 Telegram')+'</button><button class="btn ghost" onclick="copyFriendInvite()">'+(en?'Copy link':'\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443')+'</button></div>');}
 function buildBoard(kind){
   // deterministic pseudo-list so it's stable across renders
   var en=isEN();var NAMES=en?LB_NAMES_EN:LB_NAMES;
@@ -3812,7 +3833,7 @@ function buildBoard(kind){
     arr.push({n:nm,r:r,ty:ty,photo:'https://randomuser.me/api/portraits/'+g+'/'+pid+'.jpg'});
   }
   // insert the user at a position based on rating — placeholder face by gender (real TG avatar at launch)
-  arr.push({n:(en?'You':'Ты'),r:S.rating,ty:S.result.primary,me:true,photo:'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg'});
+  arr.push({n:myDisplayName(),r:S.rating,ty:S.result.primary,me:true,photo:myPhoto()});
   arr.sort(function(a,b){return b.r-a.r;});
   return arr;
 }
@@ -3821,6 +3842,7 @@ function renderLeaderboard(){
   var lh=document.getElementById('boardBody');if(!lh)return;
   if(!S.result){lh.innerHTML='';return;}
   var t=TYPES[S.result.primary];
+  var en=isEN();
   var list=buildBoard(_lbTab);
   var myRank=0;for(var i=0;i<list.length;i++){if(list[i].me){myRank=i+1;break;}}
   var L=I18N[S.lang||'ru'];
@@ -3829,11 +3851,14 @@ function renderLeaderboard(){
     var medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
     var pcol=f.me?t.color:ft.color;
     var pic='<div class="pic lb-pic" style="background:'+pcol+'18;border-color:'+pcol+(f.me?'88':'40')+';width:38px;height:38px">'+typeGlyph(f.ty,18)+'<img class="lb-face" src="'+f.photo+'" loading="lazy" alt="" onerror="this.remove()"></div>';
-    return '<div class="product lb-row" style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+Tt(f.ty).name+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
-  lh.innerHTML='<div class="section-h"><h2>'+L.lb_title+'</h2><span style="font-size:11px;color:#7fe9ff;cursor:pointer" onclick="openShareHub()">'+L.lb_invite+'</span></div>'+
+    return '<div class="product lb-row"'+(f.me?' data-me="1"':'')+' style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+Tt(f.ty).name+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
+  var addBtn=(_lbTab==='friends')?'<button class="btn go" style="margin:0 0 12px" onclick="inviteFriend()">'+(en?'+ Add a friend':'+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0434\u0440\u0443\u0433\u0430')+'</button>':'';
+  lh.innerHTML='<div class="section-h"><h2>'+L.lb_title+'</h2><span style="font-size:11px;color:#7fe9ff;cursor:pointer" onclick="inviteFriend()">'+L.lb_invite+'</span></div>'+
     tabs+
     '<div class="lb-mine">'+L.lb_youare+' <b style="color:'+t.color+'">#'+myRank+'</b> '+(_lbTab==='global'?L.lb_global.toLowerCase():L.lb_friends.toLowerCase())+'</div>'+
+    addBtn+
     '<div class="lb-scroll">'+rows+'</div>';
+  setTimeout(function(){var me=lh.querySelector('.lb-row[data-me]');var sc=document.getElementById('sBoard');if(me&&sc){var mr=me.getBoundingClientRect(),sr=sc.getBoundingClientRect();sc.scrollTop+=(mr.top-sr.top)-sc.clientHeight/2+mr.height/2;}},120);
 }
 /* ===== language toggle (core UI strings) ===== */
 var I18N={
