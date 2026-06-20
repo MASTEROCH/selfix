@@ -23,6 +23,7 @@
  */
 
 const APP_URL = 'https://masteroch.github.io/selfix/';
+const BOT_USER = 'selffix_bot';   // for t.me deep links in duel notifications
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
@@ -70,6 +71,9 @@ export default {
       if (url.pathname === '/ref')         return json(await onRef(env, body));
       if (url.pathname === '/friends')     return json(await onFriends(env, body));
       if (url.pathname === '/leaderboard') return json(await onLeaderboard(env, body));
+      if (url.pathname === '/duel/create') return json(await onDuelCreate(env, body));
+      if (url.pathname === '/duel/answer') return json(await onDuelAnswer(env, body));
+      if (url.pathname === '/duel/list')   return json(await onDuelList(env, body));
       if (url.pathname === '/admin/broadcast') {
         if ((body.secret || '') !== String(env.OWNER_CHAT_ID)) return json({ ok: false, err: 'forbidden' });
         return json(await adminBroadcast(env, body));
@@ -493,6 +497,109 @@ async function onLeaderboard(env, body) {
   return { top: all.slice(0, 60) };
 }
 
+/* ---------- async friend duels: challenge → notify → both read each other → resolve ---------- */
+async function duelPush(env, uid, id) {
+  let l = []; try { l = JSON.parse(await env.USERS.get('dl:' + uid)) || []; } catch (e) {}
+  l = l.filter(x => x !== id); l.unshift(id); if (l.length > 40) l = l.slice(0, 40);
+  await env.USERS.put('dl:' + uid, JSON.stringify(l));
+}
+function duelView(rec, uid) {
+  const isA = rec.a === uid;
+  let outcome = null;
+  if (rec.status === 'done') outcome = rec.winner === 0 ? 'tie' : (rec.winner === uid ? 'win' : 'lose');
+  return {
+    id: rec.id, status: rec.status, role: isA ? 'a' : 'b', qi: rec.qi,
+    oppId: isA ? rec.b : rec.a, oppName: isA ? rec.bName : rec.aName, oppType: isA ? rec.bType : rec.aType,
+    myScore: isA ? rec.aScore : rec.bScore, myHits: isA ? rec.aHits : rec.bHits,
+    oppScore: isA ? rec.bScore : rec.aScore, oppHits: isA ? rec.bHits : rec.aHits,
+    outcome, yourTurn: (isA ? rec.aScore : rec.bScore) == null, created: rec.created, done: rec.done || 0,
+  };
+}
+async function onDuelCreate(env, body) {
+  if (!env.USERS || !env.BOT_TOKEN) return { ok: false, err: 'no kv' };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { ok: false, err: 'unverified' };
+  const opp = parseInt(body.opponent, 10);
+  if (!opp || opp === u.id) return { ok: false, err: 'bad opponent' };
+  let fr = []; try { fr = JSON.parse(await env.USERS.get('fr:' + u.id)) || []; } catch (e) {}
+  if (fr.indexOf(opp) < 0) return { ok: false, err: 'not friends' };
+  let me, ot;
+  try { me = JSON.parse(await env.USERS.get('user:' + u.id)); } catch (e) {}
+  try { ot = JSON.parse(await env.USERS.get('user:' + opp)); } catch (e) {}
+  if (!me || !me.type) return { ok: false, err: 'no profile' };
+  if (!ot || !ot.type) return { ok: false, err: 'opp no profile' };
+  const qi = Array.isArray(body.qi) ? body.qi.slice(0, 8).map(x => parseInt(x, 10)).filter(x => x >= 0) : [];
+  if (qi.length < 3) return { ok: false, err: 'bad qi' };
+  const id = 'd' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+  const rec = {
+    id, a: u.id, b: opp, aName: me.name || '', bName: ot.name || '', aType: me.type, bType: ot.type, qi,
+    aScore: null, aHits: null, bScore: null, bHits: null, status: 'pending', winner: null, created: Date.now(),
+  };
+  await env.USERS.put('duel:' + id, JSON.stringify(rec));
+  await duelPush(env, u.id, id); await duelPush(env, opp, id);
+  try {
+    const lang = ot.lang || 'ru';
+    const txt = lang === 'en'
+      ? `⚔️ ${me.name || 'A friend'} challenged you to a duel in SELF-FIX — who reads people better? Tap to accept 👇`
+      : `⚔️ ${me.name || 'Друг'} вызвал тебя на дуэль в SELF-FIX — кто лучше читает людей? Прими вызов 👇`;
+    await tg(env, 'sendMessage', {
+      chat_id: opp, text: txt,
+      reply_markup: { inline_keyboard: [[{ text: lang === 'en' ? '⚔️ Accept duel' : '⚔️ Принять дуэль', url: 'https://t.me/' + BOT_USER + '?startapp=duel_' + id }]] },
+    });
+  } catch (e) {}
+  return { ok: true, id, opp: { id: opp, name: ot.name || '', type: ot.type } };
+}
+async function onDuelAnswer(env, body) {
+  if (!env.USERS || !env.BOT_TOKEN) return { ok: false, err: 'no kv' };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { ok: false, err: 'unverified' };
+  const id = ('' + (body.id || '')).slice(0, 40);
+  let rec; try { rec = JSON.parse(await env.USERS.get('duel:' + id)); } catch (e) {}
+  if (!rec) return { ok: false, err: 'no duel' };
+  const isA = rec.a === u.id, isB = rec.b === u.id;
+  if (!isA && !isB) return { ok: false, err: 'not yours' };
+  const score = Math.max(0, Math.min(100, parseInt(body.score, 10) || 0));
+  const hits = Math.max(0, parseInt(body.hits, 10) || 0);
+  if (isA && rec.aScore == null) { rec.aScore = score; rec.aHits = hits; }
+  if (isB && rec.bScore == null) { rec.bScore = score; rec.bHits = hits; }
+  let justResolved = false;
+  if (rec.status !== 'done' && rec.aScore != null && rec.bScore != null) {
+    rec.status = 'done'; rec.done = Date.now();
+    rec.winner = rec.aScore > rec.bScore ? rec.a : (rec.bScore > rec.aScore ? rec.b : 0);
+    justResolved = true;
+  }
+  await env.USERS.put('duel:' + id, JSON.stringify(rec));
+  if (justResolved) {
+    const other = isA ? rec.b : rec.a;                       // the player who submitted earlier and is away
+    try {
+      let orec; try { orec = JSON.parse(await env.USERS.get('user:' + other)); } catch (e) {}
+      const lang = (orec && orec.lang) || 'ru';
+      const oIsA = other === rec.a;
+      const myS = oIsA ? rec.aScore : rec.bScore, oppS = oIsA ? rec.bScore : rec.aScore;
+      const oppName = oIsA ? rec.bName : rec.aName;
+      const r = myS > oppS ? 'win' : (myS === oppS ? 'tie' : 'lose');
+      const word = lang === 'en' ? { win: 'You won! 🏆', tie: 'A draw.', lose: 'You lost.' }[r] : { win: 'Ты победил! 🏆', tie: 'Ничья.', lose: 'Ты проиграл.' }[r];
+      const txt = lang === 'en'
+        ? `🏁 Duel with ${oppName || 'a friend'} is over. You: ${myS}%, ${oppName || 'them'}: ${oppS}%. ${word}`
+        : `🏁 Дуэль с ${oppName || 'другом'} завершена. Ты: ${myS}%, ${oppName || 'соперник'}: ${oppS}%. ${word}`;
+      await tg(env, 'sendMessage', { chat_id: other, text: txt, reply_markup: openKb(lang) });
+    } catch (e) {}
+  }
+  return { ok: true, duel: duelView(rec, u.id) };
+}
+async function onDuelList(env, body) {
+  if (!env.USERS || !env.BOT_TOKEN) return { duels: [] };
+  const u = await validateInit(body.initData || '', env.BOT_TOKEN);
+  if (!u || !u.id) return { duels: [] };
+  let ids = []; try { ids = JSON.parse(await env.USERS.get('dl:' + u.id)) || []; } catch (e) {}
+  const out = [];
+  for (const id of ids.slice(0, 40)) {
+    let rec; try { rec = JSON.parse(await env.USERS.get('duel:' + id)); } catch (e) { continue; }
+    if (rec) out.push(duelView(rec, u.id));
+  }
+  return { duels: out };
+}
+
 /* ---------- right to be forgotten: wipe a user's server profile (validated by initData) ---------- */
 async function onDelete(env, body) {
   if (!env.USERS) return { ok: false, err: 'no kv' };
@@ -506,6 +613,7 @@ async function onDelete(env, body) {
     }
     await env.USERS.delete('user:' + u.id); await env.USERS.delete('ent:' + u.id);
     await env.USERS.delete('fr:' + u.id); await env.USERS.delete('ph:' + u.id);
+    await env.USERS.delete('dl:' + u.id);
   } catch (e) {}
   return { ok: true };
 }
