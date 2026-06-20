@@ -515,6 +515,8 @@
   .lb-pic{position:relative;overflow:hidden;padding:0}
   .lb-pic .lb-face{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}
   .lb-ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;border-radius:inherit;text-shadow:0 1px 2px rgba(0,0,0,.28);letter-spacing:.01em}
+  .lb-chal{cursor:pointer;transition:transform .15s var(--ease-spring)}
+  .lb-chal:active{transform:scale(.975)}
   .lb-pic>svg{position:relative;width:100%;height:100%}
   .section-h h2{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#a39ccb;font-weight:700}
 
@@ -2296,6 +2298,7 @@ function friendPickFor(q){
   return best;
 }
 function finishDuel(){
+  if(D&&D.real)return finishRealDuel();
   clearTimeout(D._to);
   S._duelEver=true;S._duelCount=(S._duelCount||0)+1;
   track('duel_finish',{n:S._duelCount});
@@ -3134,6 +3137,9 @@ var DELETE_URL='https://selfix.rc-c7b.workers.dev/delete';    // server-side era
 var REF_URL='https://selfix.rc-c7b.workers.dev/ref';        // register referral friend edge
 var FRIENDS_URL='https://selfix.rc-c7b.workers.dev/friends';  // real friends (referral graph)
 var LB_URL='https://selfix.rc-c7b.workers.dev/leaderboard';   // global ranking (real users by rating)
+var DUEL_CREATE='https://selfix.rc-c7b.workers.dev/duel/create'; // challenge a real friend
+var DUEL_ANSWER='https://selfix.rc-c7b.workers.dev/duel/answer'; // submit my guessing round
+var DUEL_LIST='https://selfix.rc-c7b.workers.dev/duel/list';     // my duels (incoming + resolved)
 var AVATAR_URL='https://selfix.rc-c7b.workers.dev/avatar'; // proxied real Telegram profile photo (cached); onerror falls back to glyph
 /* anonymous, stable-per-device id — no name, no answers */
 function anonId(){try{var k='sfx_aid',v=localStorage.getItem(k);if(!v){v=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));localStorage.setItem(k,v);}return v;}catch(e){return '0';}}
@@ -3581,7 +3587,7 @@ function renderHome(){
   }
   else hr.innerHTML='';
   var hd=document.getElementById('homeDuel');
-  if(S.result){var soulCard='<div class="section-h"><h2>'+(en?'Your hero':'Твой герой')+'</h2></div><div class="product" onclick="go(\'soul\')"><div class="pic" style="background:#D4FF4F22;color:#D4FF4F;border-color:#D4FF4F55">'+uic('gem','#D4FF4F',24)+'</div><div class="meta"><div class="nm">'+(en?'Soul Sheet · lvl ':'Лист Души · ур. ')+soulLevel(soulXP())+'</div><div class="s">'+(en?'stats, quests & your story':'статы, квесты и твоя история')+'</div></div><div class="price" style="color:#D4FF4F">'+(en?'open →':'открыть →')+'</div></div>';hd.innerHTML=soulCard+'<div class="section-h"><h2>'+(en?'Play with a friend':'Игра с другом')+'</h2><span style="font-size:11px;color:#c6c0e4" class="attempts"><span class="heart">'+uic('swords','#7fe9ff',12)+'</span> '+(en?'free':'бесплатно')+'</span></div><div class="product" onclick="startDuelFlow()"><div class="pic" style="background:#7fe9ff22;color:#7fe9ff;border-color:#7fe9ff55">'+uic('swords','#7fe9ff',24)+'</div><div class="meta"><div class="nm">'+(en?'PvP duel — guess a friend':'PvP-дуэль — угадай друга')+'</div><div class="s">'+(en?'rating ':'рейтинг ')+S.rating+' '+uic('trophy','#ffce6b',12)+'</div></div><div class="price" style="color:#7fe9ff">'+(en?'play →':'играть →')+'</div></div>';}
+  if(S.result){var soulCard='<div class="section-h"><h2>'+(en?'Your hero':'Твой герой')+'</h2></div><div class="product" onclick="go(\'soul\')"><div class="pic" style="background:#D4FF4F22;color:#D4FF4F;border-color:#D4FF4F55">'+uic('gem','#D4FF4F',24)+'</div><div class="meta"><div class="nm">'+(en?'Soul Sheet · lvl ':'Лист Души · ур. ')+soulLevel(soulXP())+'</div><div class="s">'+(en?'stats, quests & your story':'статы, квесты и твоя история')+'</div></div><div class="price" style="color:#D4FF4F">'+(en?'open →':'открыть →')+'</div></div>';hd.innerHTML=duelIncomingCard()+soulCard+'<div class="section-h"><h2>'+(en?'Play with a friend':'Игра с другом')+'</h2><span style="font-size:11px;color:#c6c0e4" class="attempts"><span class="heart">'+uic('swords','#7fe9ff',12)+'</span> '+(en?'free':'бесплатно')+'</span></div><div class="product" onclick="startDuelFlow()"><div class="pic" style="background:#7fe9ff22;color:#7fe9ff;border-color:#7fe9ff55">'+uic('swords','#7fe9ff',24)+'</div><div class="meta"><div class="nm">'+(en?'PvP duel — guess a friend':'PvP-дуэль — угадай друга')+'</div><div class="s">'+(en?'rating ':'рейтинг ')+S.rating+' '+uic('trophy','#ffce6b',12)+'</div></div><div class="price" style="color:#7fe9ff">'+(en?'play →':'играть →')+'</div></div>';}
   else hd.innerHTML='';
 }
 function renderBoardScreen(){
@@ -3924,6 +3930,7 @@ var LB_NAMES_EN=['Anna','Max','Leo','Kira','Dima','Sonia','Timur','Vera','Nika',
 var LB_GENDER=['f','m','m','f','m','f','m','f','f','m','f','m','f','m','f','m','f','m','f','m','f','m','f','f'];
 var _lbTab='friends';
 function lbInitials(n){n=(''+(n||'')).trim();if(!n)return '?';var p=n.split(/\s+/);var a=p[0].charAt(0);var b=p.length>1?p[p.length-1].charAt(0):'';return (a+b).toUpperCase();}
+function tgInitData(){try{return (window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';}catch(e){return '';}}
 function tgUser(){try{return (window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initDataUnsafe&&Telegram.WebApp.initDataUnsafe.user)||null;}catch(e){return null;}}
 function myDisplayName(){var u=tgUser();var en=isEN();if(u)return u.first_name||u.username||(en?'You':'Ты');return S.name||(en?'You':'Ты');}
 function myPhoto(){var u=tgUser();if(u&&u.id)return AVATAR_URL+'?id='+u.id;if(u&&u.photo_url)return u.photo_url;return 'https://randomuser.me/api/portraits/'+(S.gender==='f'?'women':'men')+'/'+(((S.day||7)+(S.month||3)*3)%100)+'.jpg';}
@@ -3944,6 +3951,119 @@ function fetchBoardData(){
   }else{
     fetch(LB_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){S._global=(d&&d.top)||[];if(go._cur==='board'&&_lbTab==='global')renderLeaderboard();}).catch(function(){});
   }
+}
+/* ===== real async duels between friends (challenge → notify → both read each other → resolve) ===== */
+function duelErr(code){var en=isEN();var m={'not friends':en?'Add each other as friends first':'Сначала добавьте друг друга в друзья','opp no profile':en?'They haven’t finished the test yet':'Он ещё не прошёл тест','no profile':en?'Finish your own test first':'Сначала пройди свой тест','bad opponent':en?'Pick a real friend':'Выбери реального друга'};return m[code]||(en?'Couldn’t start the duel':'Не удалось начать дуэль');}
+function findFriend(id){var fl=S._friends||[];for(var i=0;i<fl.length;i++){if(fl[i].id===id)return fl[i];}return null;}
+function challengeFriend(id){
+  var en=isEN();var f=findFriend(id);if(!f)return;
+  if(!S.result)return modal(en?'Your type first':'Сначала твой тип',en?'Take the test — a duel needs your type.':'Пройди тест — без своего типа дуэль невозможна.');
+  var nm=f.name||(en?'Friend':'Друг');
+  modal(en?'Challenge to a duel':'Вызвать на дуэль',
+    (en?('Send '+nm+' a duel — your clones face off and you’ll see who reads people better. They get a notification and play their round.'):('Отправь '+nm+' вызов — ваши клоны сразятся, и вы увидите, кто лучше читает людей. Ему придёт уведомление, и он сыграет свой раунд.')),
+    null,
+    '<div class="action-stack" style="margin-top:6px;padding-top:0;border-top:none"><button class="btn cold" onclick="createRealDuel('+id+')">⚔️ '+(en?'Challenge':'Бросить вызов')+'</button><button class="btn ghost" onclick="closeModal()">'+(en?'Cancel':'Отмена')+'</button></div>');
+}
+function createRealDuel(oppId){
+  closeModal();var en=isEN();var initData=tgInitData();
+  if(!inTelegram()||!initData)return pop(en?'Duels work inside Telegram':'Дуэли доступны в Telegram');
+  var f=findFriend(oppId);if(!f)return;
+  var bank=questionsBank();var n=Math.min(5,bank.length);
+  var idx=[];for(var j=0;j<bank.length;j++)idx.push(j);
+  for(var s=idx.length-1;s>0;s--){var r=Math.floor(Math.random()*(s+1));var tm=idx[s];idx[s]=idx[r];idx[r]=tm;}
+  var qi=idx.slice(0,n);
+  pop(en?'Sending challenge…':'Отправляю вызов…');
+  fetch(DUEL_CREATE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData,opponent:oppId,qi:qi}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.ok)return pop(duelErr(d&&d.err));
+    startRealDuel(d.id,qi,f.type,f.name||'');
+  }).catch(function(){pop(en?'Network error':'Ошибка сети');});
+}
+function startRealDuel(id,qi,oppType,oppName){
+  var bank=questionsBank();var qs=(qi||[]).map(function(k){return bank[k];}).filter(Boolean);
+  if(!qs.length)return pop(isEN()?'Couldn’t load the duel':'Не удалось загрузить дуэль');
+  D={oppType:oppType||'green',oppName:oppName||(isEN()?'Friend':'Друг'),i:0,hits:0,rounds:[],qs:qs,combo:0,maxCombo:0,real:true,duelId:id};
+  go('duel');renderDuel();
+}
+function claimDuelRating(outcome){var delta=outcome==='win'?24:(outcome==='tie'?4:-16);S.rating=Math.max(0,S.rating+delta);if(outcome==='win')S._winCount=(S._winCount||0)+1;var g=gameState();g.duelXP=(g.duelXP||0)+(outcome==='win'?40:(outcome==='tie'?20:8));return delta;}
+function finishRealDuel(){
+  clearTimeout(D._to);var en=isEN();
+  var pct=Math.round(D.hits/D.qs.length*100);
+  S._duelEver=true;S._duelCount=(S._duelCount||0)+1;track('duel_finish',{n:S._duelCount,real:1});
+  var did=D.duelId,oppName=D.oppName,hits=D.hits,qn=D.qs.length;save();
+  go('duelResult');
+  var hero=document.getElementById('duelCompatHero');
+  hero.className='compat-hero';
+  hero.innerHTML='<div class="duel-badge">'+uic('swords','#7fe9ff',15)+(en?'Sending…':'Отправляю…')+'</div><div class="lbl">'+(en?'You read your friend':'Ты угадал друга на')+'</div><div class="bigpct" id="dpct">0%</div>';
+  animatePct('dpct',pct);
+  document.getElementById('duelNote').innerHTML='';
+  var ab=document.getElementById('duelAgainBtn');if(ab){ab.textContent=en?'Back':'Назад';ab.onclick=function(){go('home');};}
+  fetch(DUEL_ANSWER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tgInitData(),id:did,score:pct,hits:hits}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){
+    renderRealDuelResult((d&&d.duel)||null,pct,hits,qn,oppName);
+  }).catch(function(){renderRealDuelResult(null,pct,hits,qn,oppName);});
+}
+function renderRealDuelResult(v,pct,hits,qn,oppName){
+  var en=isEN();var hero=document.getElementById('duelCompatHero');var ab=document.getElementById('duelAgainBtn');
+  if(v&&v.status==='done'){
+    var outcome=v.outcome;var delta=0;
+    if(v.id&&!(S._duelClaimed&&S._duelClaimed[v.id])){S._duelClaimed=S._duelClaimed||{};delta=claimDuelRating(outcome);S._duelClaimed[v.id]=1;save();syncWallet();reportState('duel');}
+    var accent=outcome==='win'?'#52e6a4':(outcome==='tie'?'#ffce6b':'#ff7d92');
+    var stLabel=outcome==='win'?(en?'Victory':'Победа'):(outcome==='tie'?(en?'Draw':'Ничья'):(en?'Defeat':'Поражение'));
+    var stIcon=outcome==='win'?'trophy':'swords';
+    hero.className='compat-hero '+(outcome==='win'?'win':outcome==='tie'?'tie':'lose');
+    hero.innerHTML='<div class="duel-badge">'+uic(stIcon,accent,15)+stLabel+'</div>'
+      +'<div class="lbl">'+(en?('You vs '+(oppName||'friend')):('Ты против '+(oppName||'друга')))+'</div>'
+      +'<div class="bigpct" id="dpct">0%</div>'
+      +'<div class="verdict">'+(en?('You '+pct+'% · '+(oppName||'Friend')+' '+(v.oppScore||0)+'%'):('Ты '+pct+'% · '+(oppName||'друг')+' '+(v.oppScore||0)+'%'))+'</div>'
+      +'<div class="rating-delta '+(delta>=0?'up':'down')+'">'+uic('trophy','#ffce6b',14)+(delta>=0?'+':'')+delta+' '+(en?'rating · now ':'рейтинга · теперь ')+S.rating+'</div>';
+    animatePct('dpct',pct);
+    document.getElementById('duelNote').innerHTML='<div class="ch">'+uic('swords','#7fe9ff',14)+' '+(en?'Duel':'Дуэль')+'</div><div class="cb">'+(en?('You guessed '+hits+'/'+qn+'. '+(oppName||'Friend')+' guessed '+(v.oppHits!=null?v.oppHits:'—')+'/'+qn+'.'):('Ты угадал '+hits+'/'+qn+'. '+(oppName||'Друг')+' угадал '+(v.oppHits!=null?v.oppHits:'—')+'/'+qn+'.'))+'</div>';
+  }else{
+    hero.className='compat-hero';
+    hero.innerHTML='<div class="duel-badge">'+uic('swords','#7fe9ff',15)+(en?'Sent':'Отправлено')+'</div>'
+      +'<div class="lbl">'+(en?'You read your friend':'Ты угадал друга на')+'</div>'
+      +'<div class="bigpct" id="dpct">0%</div>'
+      +'<div class="verdict">'+(en?('Waiting for '+(oppName||'your friend')+' to play. Rating updates when they finish — we’ll ping you.'):('Ждём, пока '+(oppName||'друг')+' сыграет. Рейтинг обновится, когда он закончит — пришлём уведомление.'))+'</div>';
+    animatePct('dpct',pct);
+    document.getElementById('duelNote').innerHTML='<div class="ch">⏳ '+(en?'Pending':'В ожидании')+'</div><div class="cb">'+(en?('You guessed '+hits+'/'+qn+'.'):('Ты угадал '+hits+'/'+qn+'.'))+'</div>';
+  }
+  if(ab){ab.textContent=en?'Done':'Готово';ab.onclick=function(){go('home');};}
+}
+function pendingIncomingDuels(){return (S._duels||[]).filter(function(v){return v.yourTurn&&v.status!=='done';});}
+function duelIncomingCard(){
+  var en=isEN();var inc=pendingIncomingDuels();if(!inc.length)return '';
+  var v=inc[0];var extra=inc.length>1?(' +'+(inc.length-1)):'';
+  return '<div class="section-h"><h2>'+(en?'Duel challenges':'Вызовы на дуэль')+'</h2></div><div class="product lb-chal" onclick="openIncomingDuel(\''+v.id+'\')" style="border-color:#7fe9ff66;background:#7fe9ff14"><div class="pic" style="background:#7fe9ff22;color:#7fe9ff;border-color:#7fe9ff77">'+uic('swords','#7fe9ff',24)+'</div><div class="meta"><div class="nm">⚔️ '+((v.oppName||(en?'A friend':'Друг'))+(en?' challenged you':' зовёт на дуэль'))+extra+'</div><div class="s">'+(en?'tap to play your round':'нажми, чтобы сыграть свой раунд')+'</div></div><div class="price" style="color:#7fe9ff">'+(en?'play →':'играть →')+'</div></div>';
+}
+function checkDuelLink(){
+  if(!inTelegram())return false;var sp=getStartParam();if(!sp||sp.indexOf('duel_')!==0)return false;
+  var id=sp.slice(5);if(!id)return false;
+  if(!S.result){setTimeout(function(){modal(isEN()?'Take the test first':'Сначала пройди тест',isEN()?'A duel needs your type — take the 2-min test, then accept the challenge.':'Для дуэли нужен твой тип — пройди тест за 2 минуты и прими вызов.');},900);return true;}
+  setTimeout(function(){openIncomingDuel(id);},700);return true;
+}
+function openIncomingDuel(id){
+  var initData=tgInitData();if(!initData)return;
+  fetch(DUEL_LIST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){
+    var duels=(d&&d.duels)||[];S._duels=duels;claimResolvedDuels(duels);if(go._cur==='home')renderHome();
+    var v=null;for(var i=0;i<duels.length;i++){if(duels[i].id===id){v=duels[i];break;}}
+    var en=isEN();if(!v)return;
+    if(!v.yourTurn){pop(en?'You already played this duel':'Этот раунд ты уже сыграл');return;}
+    modal(en?'You’re challenged!':'Тебя вызвали на дуэль!',
+      ((v.oppName||(en?'A friend':'Друг'))+(en?' wants to duel — guess how they answer, beat their read of you.':' зовёт на дуэль — угадай, как он ответит, и обгони его в чтении тебя.')),
+      null,
+      '<div class="action-stack" style="margin-top:6px;padding-top:0;border-top:none"><button class="btn cold" onclick="acceptDuel(\''+v.id+'\')">⚔️ '+(en?'Accept & play':'Принять и играть')+'</button><button class="btn ghost" onclick="closeModal()">'+(en?'Later':'Позже')+'</button></div>');
+  }).catch(function(){});
+}
+function acceptDuel(id){closeModal();var duels=S._duels||[];var v=null;for(var i=0;i<duels.length;i++){if(duels[i].id===id){v=duels[i];break;}}if(!v)return;startRealDuel(v.id,v.qi,v.oppType,v.oppName||'');}
+function claimResolvedDuels(duels){
+  if(!duels||!duels.length)return;var changed=false;S._duelClaimed=S._duelClaimed||{};
+  for(var i=0;i<duels.length;i++){var v=duels[i];
+    if(v.status==='done'&&!v.yourTurn&&v.outcome&&!S._duelClaimed[v.id]){claimDuelRating(v.outcome);S._duelClaimed[v.id]=1;changed=true;}
+  }
+  if(changed){save();syncWallet();reportState('duel');}
+}
+function syncDuels(){
+  if(!inTelegram())return;var initData=tgInitData();if(!initData)return;
+  fetch(DUEL_LIST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){S._duels=(d&&d.duels)||[];claimResolvedDuels(S._duels);if(go._cur==='home')renderHome();}).catch(function(){});
 }
 function buildBoard(kind){
   var en=isEN();var arr=[];var myId=(tgUser()||{}).id;
@@ -3978,7 +4098,11 @@ function renderLeaderboard(){
     // Telegram-style fallback: initials on a type-coloured gradient until/unless a real photo loads
     var ini='<span class="lb-ini" style="background:linear-gradient(150deg,'+pcol+'ee,'+pcol+'99)">'+lbInitials(f.n)+'</span>';
     var pic='<div class="pic lb-pic" style="background:'+pcol+'18;border-color:'+pcol+(f.me?'88':'40')+';width:38px;height:38px">'+ini+'<img class="lb-face" src="'+f.photo+'" loading="lazy" alt="" onerror="this.remove()"></div>';
-    return '<div class="product lb-row"'+(f.me?' data-me="1"':'')+' style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+Tt(f.ty).name+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
+    // friends are real people you can challenge to a live duel right from the list
+    var canDuel=(_lbTab==='friends'&&!f.me&&f.id&&!!S.result);
+    var sub=Tt(f.ty).name+(canDuel?' · <span style="color:#7fe9ff">'+(en?'⚔ duel':'⚔ дуэль')+'</span>':'');
+    var rowAttr=(f.me?' data-me="1"':'')+(canDuel?' onclick="challengeFriend('+f.id+')"':'');
+    return '<div class="product lb-row'+(canDuel?' lb-chal':'')+'"'+rowAttr+' style="'+(f.me?'border-color:'+t.color+'88;background:'+t.color+'14':'')+'"><div class="lb-rank" style="color:'+(rank<=3?'#ffcf5c':'#a39ccb')+'">'+medal+'</div>'+pic+'<div class="meta"><div class="nm"'+(f.me?' style="color:'+t.color+'"':'')+'>'+f.n+(f.me?' ('+L.you+')':'')+'</div><div class="s">'+sub+'</div></div><div class="price" style="color:#c6c0e4">'+f.r+' '+uic('trophy','#ffce6b',14)+'</div></div>';}).join('');
   var onlyMe=(_lbTab==='friends'&&list.filter(function(x){return !x.me;}).length===0);
   var emptyHint=onlyMe?'<div class="card-soft" style="text-align:center;margin-top:6px;border:1px dashed rgba(255,255,255,.14)"><div style="font-size:30px">\uD83D\uDC65</div><div class="cb" style="margin-top:6px">'+(en?'No friends yet. Invite people — and see who reads others better. Real friends only here.':'Пока никого. Позови друзей — и посмотрите, кто лучше читает людей. Здесь только настоящие.')+'</div></div>':'';
   var addBtn=(_lbTab==='friends')?'<button class="btn go" style="margin:0 0 12px" onclick="inviteFriend()">'+(en?'+ Add a friend':'+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0434\u0440\u0443\u0433\u0430')+'</button>':'';
@@ -4138,7 +4262,7 @@ function boot(){tgInit();
   },true);
   // ensure the insight FAB is a direct <body> child so position:fixed resolves against the viewport (not #app)
   var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
-  load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'intro');var gift=checkGiftLink();if(!gift)checkCompareLink();registerRef();
+  load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'intro');var gift=checkGiftLink();if(!gift)checkCompareLink();registerRef();var duelLink=checkDuelLink();if(!duelLink)setTimeout(syncDuels,1400);
   track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
   reportState('open');fetchEntitlements();
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
