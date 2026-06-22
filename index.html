@@ -736,12 +736,12 @@
   #reveal .rname{position:absolute;bottom:-66px;font-size:34px;font-weight:800;letter-spacing:-.02em;opacity:0;white-space:nowrap;animation:rnamein .5s 1.5s forwards}
   @keyframes rnamein{to{opacity:1;transform:translateY(-10px)}}
 
-  #boot{position:absolute;inset:0;z-index:80;overflow:hidden;background:radial-gradient(circle at 28% 26%,rgba(46,86,170,.22),transparent 50%),radial-gradient(circle at 78% 74%,rgba(18,128,138,.18),transparent 54%),radial-gradient(circle at 50% 50%,#0b1226,#070b18 58%,#04060e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;transition:opacity .6s ease}
+  #boot{position:absolute;inset:0;z-index:80;overflow:hidden;background:radial-gradient(circle at 30% 24%,rgba(40,84,190,.28),transparent 52%),radial-gradient(circle at 76% 76%,rgba(24,104,160,.18),transparent 56%),radial-gradient(circle at 50% 50%,#0a1232,#060c24 56%,#03061a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;transition:opacity .6s ease}
   #boot.gone{opacity:0;pointer-events:none}
   /* full-screen ambient cosmos: same clip, scaled + blurred, so the nebula bleeds past the orb */
-  #boot .boot-vid-bg{position:absolute;top:50%;left:50%;width:max(150vw,150vh);height:max(150vw,150vh);transform:translate(-50%,-50%);object-fit:cover;z-index:0;opacity:.5;filter:blur(60px) brightness(.4) saturate(1.05);pointer-events:none;animation:bootBgDrift 34s ease-in-out infinite alternate}
+  #boot .boot-vid-bg{position:absolute;top:50%;left:50%;width:max(150vw,150vh);height:max(150vw,150vh);transform:translate(-50%,-50%);object-fit:cover;z-index:0;opacity:.38;filter:blur(64px) brightness(.32) saturate(1.1);pointer-events:none;animation:bootBgDrift 34s ease-in-out infinite alternate}
   /* light deep-space vignette so the warm core can't bleed orange to the edges — keeps frame navy like the video */
-  #boot::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 48%,transparent 42%,rgba(5,8,18,.34) 76%,rgba(4,6,14,.66) 100%)}
+  #boot::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 48%,rgba(10,20,52,.30) 0%,rgba(8,15,42,.46) 55%,rgba(4,8,24,.74) 100%)}
   @keyframes bootBgDrift{from{transform:translate(-50%,-50%) scale(1) rotate(0)}to{transform:translate(-50%,-50%) scale(1.14) rotate(7deg)}}
   /* crisp twinkling starfield over the blurred nebula (two parallax layers) */
   #boot .boot-stars{position:absolute;inset:0;z-index:0;pointer-events:none}
@@ -750,7 +750,7 @@
   #boot .boot-stars::after{background-image:radial-gradient(1.8px 1.8px at 22% 35%,#fff,transparent),radial-gradient(2px 2px at 49% 64%,rgba(255,245,225,.9),transparent),radial-gradient(1.8px 1.8px at 70% 47%,#fff,transparent),radial-gradient(2.2px 2.2px at 15% 72%,rgba(190,215,255,.9),transparent),radial-gradient(1.8px 1.8px at 86% 31%,#fff,transparent),radial-gradient(2px 2px at 38% 88%,rgba(255,255,255,.9),transparent);animation:starTwinkle 6.5s ease-in-out .8s infinite,starDrift 40s linear infinite}
   @keyframes starTwinkle{0%,100%{opacity:.45}50%{opacity:1}}
   @keyframes starDrift{from{transform:translateY(0)}to{transform:translateY(-22px)}}
-  #boot::before{content:'';position:absolute;top:50%;left:50%;width:340px;height:340px;margin:-210px 0 0 -170px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,80,.18),rgba(255,93,108,.08) 45%,transparent 70%);animation:bootHalo 4s ease-in-out infinite;pointer-events:none}
+  #boot::before{content:'';position:absolute;top:50%;left:50%;width:340px;height:340px;margin:-210px 0 0 -170px;border-radius:50%;background:radial-gradient(circle,rgba(60,110,225,.18),rgba(40,90,190,.08) 45%,transparent 70%);animation:bootHalo 4s ease-in-out infinite;pointer-events:none}
   @keyframes bootHalo{0%,100%{opacity:.6;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
   /* large natural-size SVG so it stays vector-crisp when it fills the screen (only tiny upscale on zoom) */
   #boot .spiral-wrap{position:absolute;top:50%;left:50%;width:86vmin;height:86vmin;margin:-43vmin 0 0 -43vmin;z-index:1;transform:scale(.46);animation:bootReveal 1s cubic-bezier(.2,.9,.3,1.1) both,bootSpin 16s linear 1s infinite}
