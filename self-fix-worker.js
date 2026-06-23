@@ -130,6 +130,16 @@ async function rlIdentity(env, body, ip) {
   return 'ip' + (ip || '0');
 }
 
+/* build a human-readable facet line from the full passport (love/work/fears/shadow) so the clone speaks the WHOLE person */
+function facetStr(p) {
+  if (!p) return '';
+  const f = [];
+  if (p.love) f.push('love-style=' + p.love);
+  if (p.work) f.push('work-role=' + p.work);
+  if (p.fears) f.push('deep-fear=' + p.fears);
+  if (p.shadow) f.push('shadow=' + p.shadow);
+  return f.length ? (' facets: ' + f.join(', ') + '.') : '';
+}
 /* ---------- live AI clone↔clone dialogue (Claude Haiku) ---------- */
 async function onClone(env, body, ip) {
   if (!env.ANTHROPIC_API_KEY) return { lines: [], verdict: '', fallback: true };
@@ -139,7 +149,7 @@ async function onClone(env, body, ip) {
   const sys = lang === 'en'
     ? `You write a short, vivid first-meeting dialogue between two people's personality "clones", grounded in their Big Five profiles. Return STRICT JSON only: {"lines":[{"s":"me"|"peer","t":"..."}],"verdict":"one warm sentence: should they connect and why"}. 6-8 alternating lines starting with "me", natural and specific to the traits, no emojis, each line <=120 chars.`
     : `Ты пишешь короткий живой диалог первого знакомства между «клонами» двух людей на основе их профилей Big Five. Верни ТОЛЬКО строгий JSON: {"lines":[{"s":"me"|"peer","t":"..."}],"verdict":"одно тёплое предложение: стоит ли им познакомиться и почему"}. 6-8 реплик по очереди, начиная с "me", естественно и конкретно по чертам, без эмодзи, каждая <=120 символов.`;
-  const usr = `me: name=${me.name || 'I'}, type=${me.type}, big=${JSON.stringify(me.big || {})}. peer: name=${peer.name}, type=${peer.type}, big=${JSON.stringify(peer.big || {})}. matchScore=${body.score}.`;
+  const usr = `me: name=${me.name || 'I'}, type=${me.type}, big=${JSON.stringify(me.big || {})}.${facetStr(me)} peer: name=${peer.name}, type=${peer.type}, big=${JSON.stringify(peer.big || {})}.${facetStr(peer)} matchScore=${body.score}. Weave their facets (love style, work role, deep fear, shadow) into what the clones say — make it specific, not generic.`;
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -168,7 +178,7 @@ async function onTalk(env, body, ip) {
     ? `You ARE a person's personality "clone", grounded in their Big Five profile. Speak first-person AS them — warm, specific, self-aware, concise (1-3 sentences). ${mode === 'peer' ? 'You are ' + (peer.name || 'this person') + ', chatting with someone getting to know you.' : "You are the user's own digital double — reflect them, help them understand themselves."} No emojis. Stay fully in character.`
     : `Ты — «клон» личности человека на основе его профиля Big Five. Говори от первого лица КАК он — тепло, конкретно, осознанно, коротко (1-3 предложения). ${mode === 'peer' ? 'Ты — ' + (peer.name || 'этот человек') + ', общаешься с тем, кто хочет тебя узнать.' : 'Ты — цифровой двойник самого пользователя: отражай его, помогай понять себя.'} Без эмодзи. Полностью в образе.`;
   const msgs = [
-    { role: 'user', content: `Profile: name=${persona.name || ''}, type=${persona.type || ''}, big=${JSON.stringify(persona.big || {})}.` },
+    { role: 'user', content: `Profile: name=${persona.name || ''}, type=${persona.type || ''}, big=${JSON.stringify(persona.big || {})}.${facetStr(persona)} Draw on these facets (love style, work role, deep fear, shadow) to be specific and personal.` },
     { role: 'assistant', content: lang === 'en' ? 'Got it. I am ready.' : 'Понял. Я готов.' },
   ];
   (body.history || []).slice(-12).forEach(h => { if (h && h.content) msgs.push({ role: h.role === 'clone' ? 'assistant' : 'user', content: String(h.content).slice(0, 500) }); });
