@@ -2698,6 +2698,9 @@ function showTestResult(key,fresh){
       html+=fold('<span style="color:#52e6a4">✅ '+(en?'What to do':'Что делать')+'</span>','<ul class="adv-list">'+adv.do.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',true);
       html+=fold('<span style="color:#ff7a88">⛔ '+(en?'What to avoid':'Чего избегать')+'</span>','<ul class="adv-list">'+adv.dont.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>');
     }
+    // value boost: tie this paid result to the user's core + give a concrete weekly practice
+    if(S.result){html+='<div class="cb" style="margin-top:12px;border-left:3px solid #ffae42;padding-left:12px">🧭 <b>'+(en?'Tied to your core ':'Связь с твоим ядром ')+'«'+Tt(S.result.primary).name+'»:</b> '+coreLink(key,dom)+'</div>';}
+    if(adv&&adv.do&&adv.do[0]){html+='<div class="cb" style="margin-top:10px;border-left:3px solid #52e6a4;padding-left:12px">🎯 <b>'+(en?'Try this week:':'Практика недели:')+'</b> '+adv.do[0]+'</div>';}
     // share + PvP actions for this test
     html+='<div class="action-stack"><button class="btn go" onclick="openShareHub()">'+(en?'Share':'Поделиться')+'</button></div>';
     html+=nextTestCTA();
@@ -3495,6 +3498,13 @@ function homeInsights(){
 function crossLove(type,love){var en=isEN();if(love==='anxious')return en?'it matters to you to feel support from those close — ask for it directly, you’ll get it.':'тебе важно чувствовать опору в близких — проси о ней прямо, тебе это дадут.';if(love==='secure')return en?'you give your partner rare stability — that’s your superpower.':'ты даёшь партнёру редкую устойчивость — это твоя суперсила.';if(love==='avoidant')return en?'you need space even in love — choose those who respect it.':'тебе нужно пространство даже в любви — выбирай тех, кто это уважает.';return en?'you move first — your courage in feelings is magnetic.':'ты идёшь навстречу первым — твоя смелость в чувствах притягивает.';}
 function crossWork(type,work){var en=isEN();if(work==='leader')return en?'you’re built to lead, but save your strength: not everything must be carried alone.':'ты создан вести, но береги силы: не всё нужно тащить лично.';if(work==='doer')return en?'you get results — learn to show your contribution, not just grind.':'ты доводишь до результата — научись показывать вклад, а не только пахать.';if(work==='ideator')return en?'you need a finisher beside you to turn ideas into reality.':'тебе нужен рядом исполнитель, чтобы идеи становились делом.';return en?'you hold the team together — an underrated strength.':'ты держишь команду вместе — это недооценённая сила.';}
 function crossFear(type,fear){var en=isEN();if(fear==='alone')return en?'connection is oxygen for you, but learn to feel whole alone too.':'связи для тебя — кислород, но учись быть целым и наедине с собой.';if(fear==='control')return en?'by letting go of small things you’ll gain more peace than control ever holds.':'отпуская мелочи, ты обретёшь больше покоя, чем удержишь контролем.';if(fear==='failure')return en?'your worth isn’t in achievements — separate yourself from the result.':'твоя ценность не в достижениях — отделяй себя от результата.';return en?'trust who you are — authenticity is your anchor.':'доверься тому, кто ты есть — настоящесть и есть твоя опора.';}
+// ties any test result back to the user's core spiral type — the "this is about YOU" synthesis
+function coreLink(key,dom){var en=isEN();var nm=S.result?Tt(S.result.primary).name:'';
+  if(key==='love')return crossLove(S.result.primary,dom);
+  if(key==='work')return crossWork(S.result.primary,dom);
+  if(key==='fears')return crossFear(S.result.primary,dom);
+  if(key==='shadow')return en?('it’s the flip side of your “'+nm+'” strength — name it under stress, and it turns from self-sabotage into self-knowledge.'):('это обратная сторона твоей силы «'+nm+'» — назови её в стрессе, и она станет самопознанием, а не саморазрушением.');
+  return '';}
 function nextTest(){var order=['love','work','fears','shadow'];for(var i=0;i<order.length;i++){var k=order[i];if(!(S.tests&&S.tests[k]))return k;}return null;}
 /* ===== daily loop — reason to return every day ===== */
 function dailyState(){if(!S.daily)S.daily={lastOpen:0,streak:0,duelDay:0};return S.daily;}
@@ -3696,6 +3706,32 @@ function passportSummary(){
   if(gr)html+='<div class="cb" style="margin-top:12px;border-left:3px solid '+t.color+';padding-left:12px">🌱 <b>'+(en?'Growth edge:':'Точка роста:')+'</b> '+gr.grow+'</div>';
   return html;
 }
+// the whole portrait — weaves EVERY completed facet into one cohesive self-portrait (the "цельная картина")
+function wholePortrait(){
+  if(!S.result)return '';
+  var en=isEN();var te=Tt(S.result.primary),t=TYPES[S.result.primary],gr=Gt(S.result.primary);var T=S.tests||{};
+  var p=[];
+  p.push((en?'You are a ':'Ты — ')+'<b style="color:'+t.color+'">«'+te.name+'»</b> — '+te.light+'.');
+  if(T.love)p.push((en?'In love you are ':'В любви ты ')+'<b>«'+testResName('love',T.love)+'»</b>: '+crossLove(S.result.primary,T.love));
+  if(T.work)p.push((en?'At work — ':'В деле — ')+'<b>«'+testResName('work',T.work)+'»</b>. '+crossWork(S.result.primary,T.work));
+  if(T.fears)p.push((en?'Deep down you’re driven by the fear of ':'Глубже всего тобой движет страх ')+'<b>«'+testResName('fears',T.fears)+'»</b> — '+crossFear(S.result.primary,T.fears));
+  if(T.shadow)p.push((en?'Your shadow is ':'Твоя тень — ')+'<b>«'+testResName('shadow',T.shadow)+'»</b>'+(en?': the flip side of your strength that surfaces under stress.':' — обратная сторона твоей силы, что выходит наружу под стрессом.'));
+  var prog=avatarProgress(),close;
+  if(prog>=5)close=en?'Together this is the whole you — core, love, work, fear and shadow in one portrait. Few people ever know themselves this deeply.':'Вместе это — цельный ты: ядро, любовь, дело, страх и тень в одном портрете. Мало кто знает себя так глубоко.';
+  else{var left=5-prog;close=en?('The picture is forming — '+left+' more '+ppPlural(left)+' and your portrait is complete.'):('Картина складывается — ещё '+left+' '+ppPlural(left)+' до полного портрета.');}
+  var body=p.map(function(s){return '<p style="margin:0 0 10px;line-height:1.5">'+s+'</p>';}).join('');
+  body+='<p style="margin:6px 0 0;line-height:1.5;color:#cfc8ee">'+close+'</p>';
+  if(gr)body+='<div class="cb" style="margin-top:12px;border-left:3px solid '+t.color+';padding-left:12px">🌱 <b>'+(en?'Your growth edge:':'Твоя точка роста:')+'</b> '+gr.grow+'</div>';
+  return body;
+}
+// the deeper layer under the portrait — science + facet connections, collapsed by default
+function passportDepth(){
+  var en=isEN();var html='';var bi=bigInsights();
+  if(bi.length)html+=fold('🧬 '+(en?'What your profile says':'Что говорит твой профиль')+' ('+bi.length+')','<ul class="adv-list">'+bi.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',false);
+  var hasTests=S.tests&&(S.tests.love||S.tests.work||S.tests.fears||S.tests.shadow);
+  if(hasTests){var ins=homeInsights();if(ins.length)html+=fold('🔗 '+(en?'How your facets connect':'Как грани связаны')+' ('+ins.length+')','<ul class="adv-list">'+ins.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',false);}
+  return html;
+}
 /* progressive disclosure — punchy line visible, depth one tap away */
 /* open by default so info blocks are visible at a glance (pass open===false to start collapsed) */
 function fold(head,body,open,flat){return '<details class="fold'+(flat?' flat':'')+'"'+((open!==false)?' open':'')+'><summary>'+head+'<span class="fold-x">▾</span></summary><div class="fold-b">'+body+'</div></details>';}
@@ -3746,7 +3782,10 @@ function renderPassport(){
       '<div class="pp-step-m"><div class="pp-step-l">'+(en?s.label_en:s.label)+'</div><div class="pp-step-s">'+resName+'</div></div>'+
       '<div class="pp-step-go">'+(d?(en?'review →':'разбор →'):(en?'take →':'пройти →'))+'</div></div>';
   }).join('')+'</div>';
-  var summary='<div class="section-h"><h2>'+(en?'Overview':'Общая сводка')+'</h2></div><div class="card-soft">'+passportSummary()+'</div>';
+  var depth=passportDepth();
+  var summary='<div class="section-h"><h2>'+(en?'Your whole portrait':'Твой цельный портрет')+'</h2></div>'+
+    '<div class="card-soft" style="border-left:3px solid '+t.color+'">'+wholePortrait()+'</div>'+
+    (depth?('<div class="card-soft" style="margin-top:12px">'+depth+'</div>'):'');
   var big='';
   if(S.result.big){
     big='<div class="section-h"><h2>'+(en?'Your Big Five profile · the science':'Профиль Big Five · научная основа')+'</h2></div><div class="card-soft" style="text-align:center">'+
