@@ -1188,7 +1188,7 @@ function freeDuelsLeft(){return 99;} // duels are free & unlimited — monetizat
 function exitDuel(){
   var en=isEN();
   var started=(typeof D!=='undefined'&&D&&D.i>0);
-  var go0=function(){closeModal();if(typeof D!=='undefined'&&D){clearTimeout(D._to);}D=null;go('home');};
+  var go0=function(){closeModal();if(typeof D!=='undefined'&&D){clearTimeout(D._to);clearTimeout(D._adv);}D=null;go('home');};
   if(!started){go0();return;}
   modal(en?'Leave the duel?':'Выйти из дуэли?',en?'This duel won’t count — you can play again anytime.':'Текущая дуэль не засчитается — сыграть заново можно в любой момент.',go0);
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Leave':'Выйти');var n=document.getElementById('mNo');if(n)n.textContent=(en?'Stay':'Остаться');},0);
@@ -1973,6 +1973,7 @@ var INS_PROMPTS={ru:['Что зацепило прямо сейчас?','Как�
   en:['What just struck you?','A thought about yourself?','Jot the takeaway before it fades','What does this say about you?','The insight of the moment, in one line','What made you pause?','What did you realize about you?']};
 var INS_DONE={ru:['Записал ✍️','Мысль сохранена 💡','Поймали инсайт ✨','В копилку 📌','Ценно. Записал','Зафиксировано 🧠'],
   en:['Saved ✍️','Thought kept 💡','Insight caught ✨','Added 📌','Valuable. Saved','Captured 🧠']};
+var _insActive=false;  // true while the capture-insight modal is open, so dismissing it still saves typed text
 function insPick(a){return a[Math.floor(Math.random()*a.length)];}
 function escIns(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function insRewardLeft(){var d=dayNum();if(S._insDay!==d)return 10;return Math.max(0,10-(S._insCount||0));}
@@ -1980,11 +1981,13 @@ function captureInsight(){var en=isEN();var ph=insPick(INS_PROMPTS[en?'en':'ru']
   var foot='<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(left>0?(en?'+5 to rating for an insight':'+5 к рейтингу за инсайт'):(en?'Daily reward cap reached — still saved':'Лимит награды на сегодня — но сохраним'))+' · <span onclick="closeModal();go(\'insights\')" style="color:#7fe9ff;cursor:pointer">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</span></div>';
   var body='<textarea id="insText" rows="3" maxlength="400" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px 14px;border-radius:14px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:15px;resize:none;outline:none"></textarea>'+foot;
   modal(en?'Capture an insight':'Записать инсайт',en?'A thought worth keeping? Don’t lose it.':'Пришла ценная мысль? Запиши, чтобы не потерять.',function(){saveInsight();},body);
+  _insActive=true;
   syncFab();
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Save':'Сохранить');var ta=document.getElementById('insText');if(ta)ta.focus();},30);
 }
 function saveInsight(){var en=isEN();var ta=document.getElementById('insText');var txt=ta?ta.value.trim():'';
   if(txt.length<3){pop(en?'Write a bit more ✍️':'Напиши чуть больше ✍️');return;}
+  _insActive=false;
   S.insights=S.insights||[];S.insights.unshift({t:Date.now(),text:txt.slice(0,400),type:S.result?S.result.primary:''});
   var d=dayNum();if(S._insDay!==d){S._insDay=d;S._insCount=0;}
   var rewarded=false;if((S._insCount||0)<10){S.rating+=5;S._insCount=(S._insCount||0)+1;rewarded=true;}
@@ -1996,7 +1999,7 @@ function deleteInsight(i){S.insights=S.insights||[];if(i>=0&&i<S.insights.length
 function renderInsights(){var en=isEN();var host=document.getElementById('insightsBody');if(!host)return;var arr=S.insights||[];
   var head='<div class="section-h"><h2>'+(en?'My insights':'Мои инсайты')+'</h2></div>';
   var addBtn='<button class="btn" style="margin-bottom:14px" onclick="captureInsight()">'+(en?'+ New insight':'+ Новый инсайт')+'</button>';
-  if(!arr.length){host.innerHTML=head+addBtn+'<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'No insights yet. Tap the 💡 button during a test to capture a thought — and earn rating for it.':'Пока пусто. Жми кнопку 💡 во время теста, чтобы поймать мысль — и получить за неё рейтинг.')+'</div></div>';return;}
+  if(!arr.length){host.innerHTML=head+addBtn+'<div class="card-soft" style="text-align:center"><div class="cb">'+(en?'No insights yet. Tap “+ New insight” above, or the 💡 button while reading your results — capture a thought and earn rating for it.':'Пока пусто. Жми «+ Новый инсайт» сверху или кнопку 💡 при чтении своих результатов — поймай мысль и получи за неё рейтинг.')+'</div></div>';return;}
   var rows=arr.map(function(o,i){var dt=new Date(o.t);var ds=dt.getDate()+'.'+('0'+(dt.getMonth()+1)).slice(-2);var tn=o.type?Tt(o.type).name:'';
     return '<div class="ins-card"><div class="ins-meta">📌 '+ds+(tn?(' · '+tn):'')+'<span class="ins-del" onclick="deleteInsight('+i+')">✕</span></div><div class="ins-text">'+escIns(o.text)+'</div></div>';}).join('');
   host.innerHTML=head+addBtn+'<div class="ins-list">'+rows+'</div>';
@@ -2301,8 +2304,12 @@ function duelResolve(i){
   document.getElementById('duelReveal').innerHTML='<div class="duel-reveal"><div class="dr '+(hit?'hit':'miss')+'">'+head+'</div><div class="ds">'+(en?'They picked “'+q.o[fp][1]+'”':'Соперник выбрал «'+q.o[fp][1]+'»')+'</div>'+combo+'</div>';
   var last=(D.i>=D.qs.length-1);
   document.getElementById('duelNext').innerHTML='<button class="btn mt" onclick="duelNext()">'+(last?(en?'Duel result →':'Итог дуэли →'):(en?'Next →':'Дальше →'))+'</button>';
+  // no more scroll-and-tap every round: show what happened, bring it into view, then auto-advance (button stays as a skip)
+  var sd=document.getElementById('sDuel'),rv=document.getElementById('duelReveal');
+  if(sd&&rv){var rr=rv.getBoundingClientRect(),sr=sd.getBoundingClientRect();if(rr.bottom>sr.bottom)sd.scrollTop+=(rr.bottom-sr.bottom)+24;}
+  clearTimeout(D._adv);D._adv=setTimeout(function(){duelNext();},last?1900:1450);
 }
-function duelNext(){clearTimeout(D._to);if(D.i>=D.qs.length-1)return finishDuel();D.i++;renderDuel();document.getElementById('sDuel').scrollTo(0,0);}
+function duelNext(){clearTimeout(D._to);clearTimeout(D._adv);if(D.i>=D.qs.length-1)return finishDuel();D.i++;renderDuel();document.getElementById('sDuel').scrollTo(0,0);}
 function friendPickFor(q){
   // friend's spiral type implies Big Five tendencies; pick the answer value matching that tendency
   var T=D.oppType;
@@ -4310,7 +4317,10 @@ function setHTML(sel,html){var e=document.querySelector(sel);if(e)e.innerHTML=ht
 function toggleLang(){S.lang=(S.lang==='en')?'ru':'en';save();applyLang();pop(S.lang==='en'?'English':'Русский');}
 function syncWallet(){var ws=document.getElementById('wStars');if(ws)ws.textContent=S.stars;var wr=document.getElementById('wRating');if(wr){var prev=parseInt(wr.textContent,10);if(prev!==S.rating){wr.textContent=S.rating;var chip=document.getElementById('ratingChip');if(chip){chip.classList.remove('bump');void chip.offsetWidth;chip.classList.add('bump');}}else wr.textContent=S.rating;}}
 function modal(t,h,onYes,extra){var en=isEN();var b=document.getElementById('modalBody');b.innerHTML='<h3>'+t+'</h3><p>'+h+'</p>'+(extra||'')+(onYes?'<div class="btn-row" style="margin-top:18px"><button class="btn ghost" id="mNo" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button><button class="btn gold" id="mYes">'+(en?'Open':'Открыть')+'</button></div>':(extra?'':'<button class="btn ghost" onclick="closeModal()">'+(en?'Got it':'Понятно')+'</button>'));document.getElementById('modalBg').classList.add('show');if(onYes)document.getElementById('mYes').onclick=onYes;syncFab();}
-function closeModal(){document.getElementById('modalBg').classList.remove('show');syncFab();}
+function closeModal(){
+  // never lose a typed insight: if the insight modal is dismissed (backdrop / "Not now") with real text, save it instead of discarding
+  if(_insActive){_insActive=false;try{var _ta=document.getElementById('insText');if(_ta&&_ta.value.trim().length>=3){saveInsight();return;}}catch(e){}}
+  document.getElementById('modalBg').classList.remove('show');syncFab();}
 document.getElementById('modalBg').addEventListener('click',function(e){if(e.target.id==='modalBg')closeModal();});
 var popT;function pop(t){var el=document.getElementById('toast');var dim=document.getElementById('toastDim');el.innerHTML=t;el.classList.add('show');if(dim)dim.classList.add('show');clearTimeout(popT);popT=setTimeout(function(){el.classList.remove('show');if(dim)dim.classList.remove('show');},2000);}
 
