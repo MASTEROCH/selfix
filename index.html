@@ -206,6 +206,10 @@
   .bundle-link s{color:#9a93c2}.bundle-link b{color:#ffcf5c}
   .badge-save{display:inline-block;font-size:10px;font-weight:800;color:#04210f;background:#4be38f;border-radius:6px;padding:1px 5px;margin-left:2px;vertical-align:middle}
   .trust-badge{display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:#c6c0e4;background:linear-gradient(160deg,rgba(46,42,70,.4),rgba(28,24,46,.3));border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;margin-top:18px;cursor:pointer;text-align:center;line-height:1.4}
+  /* test-result archetype spectrum — shows the full range with the user's result highlighted */
+  .res-spectrum{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;justify-content:center}
+  .rs-chip{font-size:11.5px;padding:5px 11px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#b6b0d6;transition:transform .15s var(--ease-spring)}
+  .rs-chip.on{background:rgba(255,174,66,.18);border-color:#ffae42;color:#ffce6b;font-weight:800;box-shadow:0 0 16px rgba(255,174,66,.25);transform:scale(1.04)}
   .adv-list{list-style:none;margin:0;padding:0}
   .adv-list li{position:relative;padding:7px 0 7px 22px;font-size:14px;line-height:1.45;color:#e8e3ff;border-bottom:1px solid rgba(255,255,255,.05)}
   .adv-list li:last-child{border-bottom:none}
@@ -1556,7 +1560,7 @@ var TEST_BANKS={
     {art:'💔',q:'Главный страх в отношениях?',o:[['🚪','Что бросят','abandon'],['🔗','Что поглотят','engulf'],['🥱','Что станет скучно','boredom'],['🎭','Что не примут настоящим','reject']]},
     {art:'🌹',q:'Как ты показываешь любовь?',o:[['💬','Словами','words'],['🤝','Делами','acts'],['🎁','Подарками','gifts'],['⏰','Временем','time']]},
     {art:'⚖️',q:'В ссоре ты…',o:[['🔥','Иду на конфликт','fight'],['🧊','Замолкаю','freeze'],['🏃','Ухожу остыть','flee'],['🕊️','Ищу мир сразу','fawn']]}
-  ],result:{anxious:{n:'Тревожно-влюблённый',d:'Ты любишь глубоко и боишься потерять. Тебе нужны подтверждения — и это нормально, если партнёр их даёт.'},secure:{n:'Надёжный',d:'Ты любишь спокойно и уверенно. С тобой партнёр чувствует опору — это редкий дар.'},avoidant:{n:'Закрытый',d:'Ты ценишь свободу и держишь дистанцию. Близость даётся через доверие, и ему нужно время.'},pursuer:{n:'Завоеватель',d:'Ты идёшь навстречу первым и не боишься чувств. Главное — не потерять себя в другом.'},default:{n:'Ищущий',d:'Твой стиль любви ещё формируется — и это делает тебя живым.'}}},
+  ],result:{anxious:{n:'Тревожно-влюблённый',d:'Ты любишь глубоко и боишься потерять. Тебе нужны подтверждения — и это нормально, если партнёр их даёт.'},secure:{n:'Надёжный',d:'Ты любишь спокойно и уверенно. С тобой партнёр чувствует опору — это редкий дар.'},avoidant:{n:'Закрытый',d:'Ты ценишь свободу и держишь дистанцию. Близость даётся через доверие, и ему нужно время.'},pursuer:{n:'Завоеватель',d:'Ты идёшь навстречу первым и не боишься чувств. Главное — не потерять себя в другом.'},acts:{n:'Служение',d:'Ты любишь делами — заботой, поддержкой, надёжностью. Слова даются труднее, но твоя любовь видна в каждом поступке.'},default:{n:'Ищущий',d:'Твой стиль любви ещё формируется — и это делает тебя живым.'}}},
   work:{title:'Рабочий профиль',glyph:'💼',q:[
     {art:'🎯',q:'В команде ты обычно…',o:[['👑','Лидер','leader'],['🛠️','Исполнитель','doer'],['💡','Генератор идей','ideator'],['🤝','Связующее звено','connector']]},
     {art:'🔥',q:'Что тебя мотивирует?',o:[['🏆','Победа','achiever'],['💰','Деньги','earner'],['🌟','Признание','seeker'],['🧩','Интересная задача','explorer']]},
@@ -1586,7 +1590,7 @@ var TEST_BANKS_EN={
     {art:'💔',q:'Your biggest fear in a relationship?',o:[['🚪','Being left','abandon'],['🔗','Being swallowed up','engulf'],['🥱','That it’ll get boring','boredom'],['🎭','Not being accepted as you are','reject']]},
     {art:'🌹',q:'How do you show love?',o:[['💬','With words','words'],['🤝','With actions','acts'],['🎁','With gifts','gifts'],['⏰','With time','time']]},
     {art:'⚖️',q:'In a fight you…',o:[['🔥','Go into the conflict','fight'],['🧊','Go quiet','freeze'],['🏃','Leave to cool off','flee'],['🕊️','Seek peace right away','fawn']]}
-  ],result:{anxious:{n:'Anxiously in love',d:'You love deeply and fear loss. You need reassurance — and that’s fine when your partner gives it.'},secure:{n:'Secure',d:'You love calmly and surely. Your partner feels grounded with you — that’s a rare gift.'},avoidant:{n:'Guarded',d:'You value freedom and keep your distance. Closeness comes through trust, and it needs time.'},pursuer:{n:'Pursuer',d:'You step forward first and aren’t afraid of feelings. Just don’t lose yourself in the other.'},default:{n:'Seeker',d:'Your love style is still forming — and that keeps you alive to it.'}}},
+  ],result:{anxious:{n:'Anxiously in love',d:'You love deeply and fear loss. You need reassurance — and that’s fine when your partner gives it.'},secure:{n:'Secure',d:'You love calmly and surely. Your partner feels grounded with you — that’s a rare gift.'},avoidant:{n:'Guarded',d:'You value freedom and keep your distance. Closeness comes through trust, and it needs time.'},pursuer:{n:'Pursuer',d:'You step forward first and aren’t afraid of feelings. Just don’t lose yourself in the other.'},acts:{n:'Acts of service',d:'You love through actions — care, support, reliability. Words come harder, but your love shows in everything you do.'},default:{n:'Seeker',d:'Your love style is still forming — and that keeps you alive to it.'}}},
   work:{title:'Work profile',glyph:'💼',q:[
     {art:'🎯',q:'On a team you usually…',o:[['👑','Lead','leader'],['🛠️','Get it done','doer'],['💡','Generate ideas','ideator'],['🤝','Hold it together','connector']]},
     {art:'🔥',q:'What motivates you?',o:[['🏆','Winning','achiever'],['💰','Money','earner'],['🌟','Recognition','seeker'],['🧩','An interesting problem','explorer']]},
@@ -1616,6 +1620,7 @@ var TEST_ADVICE={
     secure:{do:['Будь якорем, но не бери на себя всю эмоциональную работу за двоих.','Проговаривай и свои потребности — надёжным людям часто кажется, что у них «всё нормально», и они забывают просить.','Выбирай партнёров, способных на близость, а не тех, кого нужно «чинить».'],dont:['Не превращайся в родителя для партнёра.','Не принимай чужую тревожность как свою обязанность гасить.','Не молчи о проблемах только потому, что умеешь терпеть.'],life:'Ты — редкий тип: с тобой спокойно. Твоя задача не измениться, а не растратить этот дар на тех, кто его не ценит. Надёжность в паре — это то, чему остальные учатся годами.'},
     avoidant:{do:['Называй дистанцию словами: «мне нужно побыть одному, это не про тебя» — так партнёр не паникует.','Делай маленькие шаги к близости по своему темпу, а не по чужому давлению.','Замечай момент, когда хочешь сбежать, и оставайся на 10 минут дольше — близость тренируется.'],dont:['Не исчезай молча — это ранит сильнее, чем честное «мне нужно пространство».','Не путай независимость с одиночеством за бронёй.','Не обесценивай чужую потребность в контакте как «навязчивость».'],life:'Твоя свобода и самодостаточность привлекают. Но настоящая сила — не в том, чтобы никого не подпускать, а в том, чтобы выбрать, кого подпустить, и довериться. Близость не отнимает тебя — она добавляет.'},
     pursuer:{do:['Иди навстречу, но оставляй партнёру место сделать шаг к тебе.','Сохраняй свои интересы и круг общения — не растворяйся.','Спрашивай, а не только инициируй: что нужно другому, а не только что хочешь дать ты.'],dont:['Не дави, если в ответ — пауза: это считывается как контроль.','Не строй отношения в одиночку за двоих.','Не теряй себя, подстраиваясь под партнёра.'],life:'Ты не боишься чувств и идёшь первым — это смелость, которой завидуют. Главное — чтобы это был диалог, а не монолог. Когда ты ведёшь и при этом слышишь, ты неотразим.'},
+    acts:{do:['Говори о любви и словами тоже — партнёру важно слышать, не только видеть.','Проси о помощи в ответ — служение должно быть взаимным, иначе истощает.','Замечай, когда заботишься, чтобы избежать близости — иногда проще «сделать», чем открыться.'],dont:['Не жди, что твои поступки прочитают без слов.','Не выгорай, делая всё за двоих.','Не подменяй разговор о чувствах очередным делом.'],life:'Твоя любовь — в действии: ты тот, на кого можно опереться. Это редкая и крепкая форма любви. Добавь к делам слова — и тебя поймут полностью.'},
     default:{do:['Наблюдай за собой в реальных ситуациях — твой стиль любви ещё складывается.','Пробуй проговаривать чувства вслух, даже если непривычно.'],dont:['Не загоняй себя в готовую этикетку раньше времени.'],life:'Твой стиль привязанности живой и гибкий — используй это, чтобы осознанно выбрать, каким партнёром быть.'}
   },
   work:{
@@ -1646,6 +1651,7 @@ var TEST_ADVICE_EN={
     secure:{do:['Be the anchor, but don’t carry all the emotional work for two.','Voice your own needs too — secure people often feel “fine” and forget to ask.','Choose partners who can be close, not ones you have to “fix.”'],dont:['Don’t turn into a parent for your partner.','Don’t take on someone else’s anxiety as your job to soothe.','Don’t stay silent about problems just because you can endure.'],life:'You’re a rare type: people feel calm with you. Your task isn’t to change, but not to waste that gift on those who don’t value it. Reliability in a couple is what others spend years learning.'},
     avoidant:{do:['Put distance into words: “I need some time alone, it’s not about you” — so your partner doesn’t panic.','Take small steps toward closeness at your own pace, not under someone’s pressure.','Notice the moment you want to bolt, and stay 10 minutes longer — closeness is a muscle.'],dont:['Don’t vanish in silence — it hurts more than an honest “I need space.”','Don’t confuse independence with loneliness behind armor.','Don’t dismiss someone’s need for contact as “clinginess.”'],life:'Your freedom and self-sufficiency are attractive. But real strength isn’t in letting no one in — it’s in choosing whom to let in, and trusting them. Closeness doesn’t take you away — it adds to you.'},
     pursuer:{do:['Step forward, but leave room for your partner to step toward you.','Keep your own interests and circle — don’t dissolve.','Ask, don’t only initiate: what does the other need, not just what you want to give.'],dont:['Don’t push when the answer is a pause — it reads as control.','Don’t build the relationship single-handedly for two.','Don’t lose yourself adapting to your partner.'],life:'You’re unafraid of feelings and you go first — that’s a courage others envy. The key is making it a dialogue, not a monologue. When you lead and still listen, you’re irresistible.'},
+    acts:{do:['Put love into words too — your partner needs to hear it, not only see it.','Ask for help back — service must be mutual or it drains you.','Notice when you’re caring to avoid closeness — sometimes “doing” is easier than opening up.'],dont:['Don’t expect your actions to be read without words.','Don’t burn out doing it all for two.','Don’t replace talking about feelings with another task.'],life:'Your love is in action — you’re the one people can lean on. That’s a rare, sturdy kind of love. Add words to your deeds and you’ll be fully understood.'},
     default:{do:['Watch yourself in real situations — your love style is still taking shape.','Try saying feelings out loud, even if it’s unfamiliar.'],dont:['Don’t box yourself into a ready label too soon.'],life:'Your attachment style is alive and flexible — use that to consciously choose what kind of partner to be.'}
   },
   work:{
@@ -2361,6 +2367,7 @@ function openShareHub(){var en=isEN();var L=I18N[S.lang||'ru'];
   var opts='<div class="action-stack" style="margin-top:6px;padding-top:0;border-top:none">'
     +'<button class="btn gold" onclick="closeModal();openGift()">'+L.res_gift+'</button>'
     +'<button class="btn go" onclick="closeModal();openShare()">'+L.res_share+'</button>'
+    +((avatarProgress()>=2)?('<button class="btn cold" onclick="closeModal();sharePortrait()">'+(en?'Share whole portrait 🖼':'Поделиться цельным портретом 🖼')+'</button>'):'')
     +'<button class="btn cold" onclick="closeModal();inviteCompare()">'+(en?'Compare with a friend':'Сравниться с другом')+'</button>'
     +'<button class="btn violet" onclick="closeModal();startDuelFlow()">'+L.res_duel+'</button>'
     +'<button class="btn ghost" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button>'
@@ -2402,6 +2409,35 @@ function saveShareImage(){var en=isEN();var t=TYPES[S.result.primary];var T=Tt(S
 function hexA(hex,a){var n=parseInt(hex.slice(1),16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
 function rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
 function wrap(x,text,cx,cy,maxw,lh){var words=text.split(' ');var line='';var lines=[];for(var i=0;i<words.length;i++){var test=line+words[i]+' ';if(x.measureText(test).width>maxw&&line){lines.push(line);line=words[i]+' ';}else line=test;}lines.push(line);for(var j=0;j<lines.length;j++)x.fillText(lines[j].trim(),cx,cy+j*lh);}
+// shareable WHOLE-PORTRAIT card — core + every facet in one image (virality for the full picture)
+function sharePortrait(){var en=isEN();if(!S.result)return;var t=TYPES[S.result.primary];var T=Tt(S.result.primary);var r=S.result;var W=1080,H=1920;var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  var g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#1c1838');g.addColorStop(1,'#08060f');x.fillStyle=g;x.fillRect(0,0,W,H);
+  var rg=x.createRadialGradient(W/2,300,40,W/2,300,820);rg.addColorStop(0,hexA(t.color,.4));rg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=rg;x.fillRect(0,0,W,1100);
+  x.textAlign='center';
+  x.beginPath();x.arc(W/2,320,126,0,7);x.fillStyle=hexA(t.color,.18);x.fill();drawTypeEmblem(x,W/2,320,150,r.primary);
+  x.fillStyle='#c6c0e4';x.font='600 34px sans-serif';x.fillText(en?'WHOLE PORTRAIT':'ЦЕЛЬНЫЙ ПОРТРЕТ',W/2,530);
+  x.fillStyle='#fff';x.font='800 60px sans-serif';x.fillText(S.name||(en?'You':'Ты'),W/2,600);
+  x.fillStyle=t.color;x.font='800 88px sans-serif';x.fillText(T.name,W/2,696);
+  x.font='700 40px sans-serif';x.fillText(T.tag,W/2,756);
+  var Tn=S.tests||{};var rows=[['🌀',en?'Core':'Ядро',T.name]];
+  if(Tn.love)rows.push(['❤️',en?'Love':'Любовь',testResName('love',Tn.love)]);
+  if(Tn.work)rows.push(['💼',en?'Work':'Работа',testResName('work',Tn.work)]);
+  if(Tn.fears)rows.push(['🧬',en?'Fear':'Страх',testResName('fears',Tn.fears)]);
+  if(Tn.shadow)rows.push(['🌙',en?'Shadow':'Тень',testResName('shadow',Tn.shadow)]);
+  var y=856;
+  rows.forEach(function(row){
+    rr(x,90,y,W-180,118,24);x.fillStyle='rgba(255,255,255,.05)';x.fill();
+    x.textAlign='left';x.fillStyle='#fff';x.font='58px sans-serif';x.fillText(row[0],128,y+78);
+    x.fillStyle='#9a93c2';x.font='600 32px sans-serif';x.fillText(row[1].toUpperCase(),228,y+50);
+    x.fillStyle='#ece9f9';x.font='800 44px sans-serif';x.fillText(row[2],228,y+94);
+    y+=136;
+  });
+  x.textAlign='center';
+  x.fillStyle='#fff';x.font='800 48px sans-serif';x.fillText(en?'This is the whole me.':'Это цельный я.',W/2,y+74);
+  x.fillStyle=t.color;x.font='800 48px sans-serif';x.fillText(en?'And you? 👇':'А ты? 👇',W/2,y+138);
+  x.fillStyle='#a39ccb';x.font='600 34px sans-serif';x.fillText('SELF-FIX · @'+BOT_USER,W/2,1862);
+  try{var url=c.toDataURL('image/png');var a=document.createElement('a');a.href=url;a.download='selfix_portrait.png';a.click();pop(en?'Portrait saved 🖼':'Портрет сохранён 🖼');}catch(e){pop(en?'Couldn’t save':'Не удалось сохранить');}
+}
 
 /* ===== store ===== */
 var PRODUCTS=[
@@ -2643,6 +2679,8 @@ function finishMT(){
   go('analyze');var ae=document.getElementById('analyzeText');ae.textContent=isEN()?'Assembling your result…':'Собираю результат…';
   setTimeout(function(){
     var dom=domAns(MT.ans);
+    // safety: never serve a thin "default" on a paid test — anchor to the defining (first) answer if the dominant has no dedicated result
+    if(MT.bank.result&&!MT.bank.result[dom]&&MT.ans[0]&&MT.bank.result[MT.ans[0]])dom=MT.ans[0];
     S.tests=S.tests||{};S.tests[MT.key]=dom;
     S.testResults=S.testResults||{};S.testResults[MT.key]=dom;
     save();showTestResult(MT.key,true);
@@ -2693,6 +2731,10 @@ function showTestResult(key,fresh){
   var ah=document.getElementById('avatarResultHost');
   if(ah){ah.style.display='';
     var html='';
+    // visual value: where you land among this test's archetypes + your Big Five (the science behind this facet)
+    var specKeys=Object.keys(tb.result).filter(function(k){return k!=='default';});
+    html+='<div class="res-spectrum">'+specKeys.map(function(k){return '<span class="rs-chip'+(k===dom?' on':'')+'">'+tb.result[k].n+'</span>';}).join('')+'</div>';
+    if(S.result&&S.result.big){html+='<div class="card-soft" style="text-align:center;margin:0 0 14px;padding:12px">'+bigRadar(S.result.big,'#ffae42',180)+'<div class="cb" style="font-size:11.5px;color:#9a93c2;margin-top:6px">'+(en?'Your Big Five — the science behind this facet':'Твой Big Five — наука за этой гранью')+'</div></div>';}
     if(adv){
       html+='<div class="cb" style="margin:2px 0 12px;color:#cfc8ee">💡 '+adv.life+'</div>';
       html+=fold('<span style="color:#52e6a4">✅ '+(en?'What to do':'Что делать')+'</span>','<ul class="adv-list">'+adv.do.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>',true);
@@ -3495,7 +3537,7 @@ function homeInsights(){
   if(out.length===0){out.push(en?('You are a “'+nm+'”. '+te.light.charAt(0).toUpperCase()+te.light.slice(1)+'. Open the tests in “More” to know yourself more precisely.'):('Ты — «'+nm+'». '+te.light.charAt(0).toUpperCase()+te.light.slice(1)+'. Открой тесты в «Глубже», чтобы узнать себя точнее.'));}
   return out;
 }
-function crossLove(type,love){var en=isEN();if(love==='anxious')return en?'it matters to you to feel support from those close — ask for it directly, you’ll get it.':'тебе важно чувствовать опору в близких — проси о ней прямо, тебе это дадут.';if(love==='secure')return en?'you give your partner rare stability — that’s your superpower.':'ты даёшь партнёру редкую устойчивость — это твоя суперсила.';if(love==='avoidant')return en?'you need space even in love — choose those who respect it.':'тебе нужно пространство даже в любви — выбирай тех, кто это уважает.';return en?'you move first — your courage in feelings is magnetic.':'ты идёшь навстречу первым — твоя смелость в чувствах притягивает.';}
+function crossLove(type,love){var en=isEN();if(love==='anxious')return en?'it matters to you to feel support from those close — ask for it directly, you’ll get it.':'тебе важно чувствовать опору в близких — проси о ней прямо, тебе это дадут.';if(love==='secure')return en?'you give your partner rare stability — that’s your superpower.':'ты даёшь партнёру редкую устойчивость — это твоя суперсила.';if(love==='avoidant')return en?'you need space even in love — choose those who respect it.':'тебе нужно пространство даже в любви — выбирай тех, кто это уважает.';if(love==='acts')return en?'you love through deeds — reliable and steady; just add words so it’s felt, not only seen.':'ты любишь делами — надёжно и крепко; добавь слова, чтобы это чувствовали, а не только видели.';return en?'you move first — your courage in feelings is magnetic.':'ты идёшь навстречу первым — твоя смелость в чувствах притягивает.';}
 function crossWork(type,work){var en=isEN();if(work==='leader')return en?'you’re built to lead, but save your strength: not everything must be carried alone.':'ты создан вести, но береги силы: не всё нужно тащить лично.';if(work==='doer')return en?'you get results — learn to show your contribution, not just grind.':'ты доводишь до результата — научись показывать вклад, а не только пахать.';if(work==='ideator')return en?'you need a finisher beside you to turn ideas into reality.':'тебе нужен рядом исполнитель, чтобы идеи становились делом.';return en?'you hold the team together — an underrated strength.':'ты держишь команду вместе — это недооценённая сила.';}
 function crossFear(type,fear){var en=isEN();if(fear==='alone')return en?'connection is oxygen for you, but learn to feel whole alone too.':'связи для тебя — кислород, но учись быть целым и наедине с собой.';if(fear==='control')return en?'by letting go of small things you’ll gain more peace than control ever holds.':'отпуская мелочи, ты обретёшь больше покоя, чем удержишь контролем.';if(fear==='failure')return en?'your worth isn’t in achievements — separate yourself from the result.':'твоя ценность не в достижениях — отделяй себя от результата.';return en?'trust who you are — authenticity is your anchor.':'доверься тому, кто ты есть — настоящесть и есть твоя опора.';}
 // ties any test result back to the user's core spiral type — the "this is about YOU" synthesis
@@ -3724,6 +3766,14 @@ function wholePortrait(){
   if(gr)body+='<div class="cb" style="margin-top:12px;border-left:3px solid '+t.color+';padding-left:12px">🌱 <b>'+(en?'Your growth edge:':'Твоя точка роста:')+'</b> '+gr.grow+'</div>';
   return body;
 }
+// the peak-of-funnel moment: portrait is whole → crown it with the deep report, or share it
+function passportPremiumCard(){
+  if(!S.result)return '';var en=isEN();var done=avatarProgress()>=5;if(!done)return '';
+  if(!S.fullOwned){
+    return '<div class="card-soft upsell" style="text-align:center"><div class="ch" style="color:#ffcf5c;justify-content:center">🏆 '+(en?'YOUR PORTRAIT IS COMPLETE':'ПОРТРЕТ СОБРАН ПОЛНОСТЬЮ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Crown it with the deep report: your dark side, how others truly see you, and you across 4 roles — love · work · conflict · money.':'Увенчай его глубоким разбором: твоя тёмная сторона, как тебя видят на самом деле, и ты в 4 ролях — любовь · работа · конфликт · деньги.')+'</div><button class="btn gold" style="margin-top:14px" onclick="buyFull()">'+(en?'Unlock deep report · ⭐ 200':'Открыть глубокий разбор · ⭐ 200')+'</button></div>';
+  }
+  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(212,255,79,.3)"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ '+(en?'FULL COLLECTION OF YOU':'ПОЛНАЯ КОЛЛЕКЦИЯ СЕБЯ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Every facet assembled and the deep report unlocked. Share your whole portrait — let others discover theirs.':'Все грани собраны и глубокий разбор открыт. Поделись цельным портретом — пусть другие откроют свой.')+'</div><button class="btn go" style="margin-top:14px" onclick="sharePortrait()">'+(en?'Share my portrait':'Поделиться портретом')+'</button></div>';
+}
 // the deeper layer under the portrait — science + facet connections, collapsed by default
 function passportDepth(){
   var en=isEN();var html='';var bi=bigInsights();
@@ -3801,7 +3851,7 @@ function renderPassport(){
     '<button class="btn cold" onclick="go(\'soul\')">'+(en?'Open Soul Sheet':'Открыть Лист Души')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button></div>';
   var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
-  host.innerHTML=hero+changeCard(en)+bar+steps+summary+big+retake+actions;
+  host.innerHTML=hero+changeCard(en)+bar+passportPremiumCard()+steps+summary+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
 /* ===== SOUL SHEET — game layer: Big Five → RPG character + growth quests =====
