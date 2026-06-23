@@ -952,6 +952,7 @@
         <div class="chip lang-chip" id="langChip" onclick="toggleLang()"><span id="langLabel">RU</span></div>
         <div class="chip" id="sndChip" onclick="toggleSound()"><span id="sndLabel">🔊</span></div>
         <div class="chip" id="ratingChip"><svg viewBox="0 0 24 24" fill="none" stroke="#ffce6b" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"><path d="M7 4.5 H17 V8.5 a5 5 0 0 1 -10 0 Z" fill="#ffce6b" fill-opacity=".18"/><path d="M7 6 H4.6 a2.4 2.4 0 0 0 2.6 3.2"/><path d="M17 6 H19.4 a2.4 2.4 0 0 1 -2.6 3.2"/><path d="M12 13.6 V16.5 M9 20 a3 3 0 0 1 6 0 Z"/></svg> <b id="wRating">1000</b></div>
+        <div class="chip" id="ppChip" onclick="go('passport')" style="display:none;cursor:pointer">🧬 <b id="wPP">0/5</b></div>
       </div>
     </div>
 
@@ -2173,7 +2174,7 @@ function maybePromptContact(){
 function renderResult(){
   var r=S.result;var t=TYPES[r.primary];var te=Tt(r.primary);var en=isEN();
   ['personalHost','subtypeHost','spMeters','cardLight','growthHost','rolesHost'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
-  var ah=document.getElementById('avatarResultHost');if(ah){ah.style.display='';ah.innerHTML=avatarCardHTML('')+nextTestCTA();}
+  var ah=document.getElementById('avatarResultHost');if(ah){ah.style.display='';ah.innerHTML=avatarCardHTML('')+cloneTasteCTA()+nextTestCTA();}
   document.getElementById('glow').style.background='radial-gradient(50% 40% at 50% 10%,'+t.color+'33,transparent 60%)';
   var hero=document.getElementById('typeHero');
   hero.style.color=t.color;
@@ -2610,11 +2611,16 @@ function shareAch(a){
   x.fillStyle='#a39ccb';x.font='600 36px sans-serif';x.fillText(en?'SELF-FIX · FIX YOURSELF':'SELF-FIX · ПОЧИНИ СЕБЯ',W/2,1840);
   try{var url=c.toDataURL('image/png');var aa=document.createElement('a');aa.href=url;aa.download='achievement_'+a.id+'.png';aa.click();S._shared=true;save();closeModal();pop(en?'Saved to stories 🖼':'Сохранено в сторис 🖼');}catch(e){closeModal();pop(en?'Couldn’t save':'Не удалось сохранить');}
 }
+// pre-payment value preview: show the archetypes this test reveals + a blurred sample so paying = unlocking something specific
+function testTeaser(key){var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
+  var names=Object.keys(tb.result).filter(function(k){return k!=='default';}).map(function(k){return tb.result[k].n;});
+  return '<div class="res-spectrum" style="margin:14px 0 8px">'+names.map(function(n){return '<span class="rs-chip">'+n+'</span>';}).join('')+'</div>'+
+    '<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);padding:13px;background:rgba(10,8,20,.5);margin-top:6px"><div style="filter:blur(4.5px);user-select:none;font-size:13px;line-height:1.55;color:#cfc8ee;text-align:left">'+(en?'Your style is ███████ — you ██████████ when ██████. Your core fear: ████████. What to do: ███████████, and avoid ██████████.':'Твой стиль — ███████ — ты ██████████, когда ██████. Главный страх: ████████. Что делать: ███████████, и избегать ██████████.')+'</div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#ffce6b;font-size:13px">🔒 '+(en?'unlock to reveal what’s yours':'открой, чтобы узнать своё')+'</div></div>';}
 function openTest(key){
   if(S.ownedTests&&S.ownedTests[key]){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   var pr=testPriceOf(key);
-  modal(en?'Unlock this test?':'Открыть тест?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><br>'+(en?('It opens a new facet of your portrait and an avatar feature.<br><br>Paid with ⭐ '+pr+' Telegram Stars.'):('Откроет новую грань твоего портрета и черту аватара.<br><br>Оплата ⭐ '+pr+' звёздами Telegram.')),function(){
+  modal(en?'Unlock this test?':'Открыть тест?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and weekly practice.':'Новая грань портрета + черта аватара, с личным разбором и практикой недели.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
     closeModal();buyStars('test_'+key,testTitle(key),pr,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
@@ -2696,6 +2702,9 @@ function finishMT(){
 function remainingTests(){var order=['love','work','fears','shadow'],r=[];for(var i=0;i<order.length;i++){var k=order[i];if(!(S.ownedTests&&S.ownedTests[k]))r.push(k);}return r;}
 function testPriceOf(k){for(var i=0;i<TESTS.length;i++)if(TESTS[i].key===k)return TESTS[i].price;return 125;}
 function bundlePrice(){var rem=remainingTests().length;var full=rem*125;return Math.round(full*0.7/10)*10;} // 30% off
+// the "wow" before the paywall: let people feel the living clone for free, right after the core result
+function cloneTasteCTA(){var en=isEN();if(!S.result)return '';
+  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(0,224,199,.34);background:radial-gradient(circle at 50% 0,rgba(0,224,199,.13),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#5ee6d3;justify-content:center">💬 '+(en?'MEET YOUR LIVING CLONE':'ПОЗНАКОМЬСЯ СО СВОИМ КЛОНОМ')+'</div><div class="cb">'+(en?'Your AI double is alive — it thinks and talks like you. Ask it anything about yourself. Free.':'Твой ИИ-двойник живой — думает и говорит как ты. Спроси его о себе что угодно. Бесплатно.')+'</div><button class="btn cold" style="margin-top:14px" onclick="openTalkSelf()">'+(en?'Talk to my clone →':'Поговорить с клоном →')+'</button></div>';}
 function nextTestCTA(){
   var nk=nextTest();
   if(!nk)return '';
@@ -3503,7 +3512,14 @@ function saveAvatarImage(){
 }
 var SCREENS=['intro','onboard','home','quiz','analyze','result','duel','duelResult','store','avatar','board','chats','passport','soul','insights','wardrobe','talk'];
 /* progressive nav — tabs unlock as you earn them (clean first-run, reward on unlock) */
-function navVisible(id){if(id==='nHome')return true;if(id==='nChats')return canMeet();return !!S.result;}
+function navVisible(id){
+  if(id==='nHome')return true;
+  if(!S.result)return false;
+  if(id==='nResult'||id==='nStore')return true;                                  // passport + depth right after the core result
+  if(id==='nBoard')return avatarProgress()>=2||!!S._duelEver||!!(S._friends&&S._friends.length); // rating once there's context to compete
+  if(id==='nChats')return !!(S._lastMeet&&S._lastMeet.length)||!!(S._friends&&S._friends.length); // chats only when there's a real conversation
+  return !!S.result;
+}
 function updateNav(){
   S._navSeen=S._navSeen||{nHome:true};
   var ids=['nHome','nResult','nBoard','nChats','nStore'],newly=[];
@@ -3512,12 +3528,14 @@ function updateNav(){
   if(newly.length){save();newly.forEach(function(b,i){b.classList.remove('reveal');void b.offsetWidth;b.style.animationDelay=(i*90)+'ms';b.classList.add('reveal');});
     setTimeout(function(){pop(isEN()?'New sections unlocked 🔓':'Открыты новые разделы 🔓');},360);}
 }
+// persistent passport-completion chip — always-visible pull to finish the 5/5 portrait
+function syncProgressChip(){var c=document.getElementById('ppChip');if(!c)return;if(!S.result){c.style.display='none';return;}var p=avatarProgress();c.style.display='';var w=document.getElementById('wPP');if(w)w.textContent=p+'/5';c.style.color=(p>=5)?'#D4FF4F':'';c.style.borderColor=(p>=5)?'rgba(212,255,79,.4)':'';}
 function fabScreens(s){return s==='result'||s==='passport'||s==='soul';}
 function syncFab(){var fab=document.getElementById('insFab');if(!fab)return;var mb=document.getElementById('modalBg');var modalOpen=mb&&mb.classList.contains('show');fab.classList.toggle('show',!modalOpen&&fabScreens(go._cur));}
 function go(scr){go._cur=scr;for(var i=0;i<SCREENS.length;i++)document.getElementById('s'+cap(SCREENS[i])).classList.toggle('hidden',SCREENS[i]!==scr);
   var btns=document.querySelectorAll('.nav button');for(var j=0;j<btns.length;j++)btns[j].classList.remove('on');
   var m={home:'nHome',quiz:'nHome',analyze:'nHome',result:'nResult',duel:'nResult',duelResult:'nResult',passport:'nResult',soul:'nResult',store:'nStore',avatar:'nStore',board:'nBoard',chats:'nChats',talk:'nChats'};if(m[scr])document.getElementById(m[scr]).classList.add('on');
-  updateNav();
+  updateNav();syncProgressChip();
   var ind=document.getElementById('navInd');
   if(ind){var aid=m[scr];var ab=aid&&document.getElementById(aid);
     if(ab&&navVisible(aid)){var setInd=function(){ind.style.left=(ab.offsetLeft+ab.offsetWidth/2)+'px';ind.style.opacity='1';};setInd();requestAnimationFrame(setInd);}
