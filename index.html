@@ -168,6 +168,9 @@
   .scary-line::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#c9b3ff;box-shadow:0 0 8px #c9b3ff}
   @keyframes scaryLine{from{opacity:0;transform:translateX(-7px)}to{opacity:1;transform:none}}
   /* facet links */
+  /* master insight (5/5 crown) */
+  .master-insight{border:1px solid rgba(212,255,79,.4)!important;background:radial-gradient(circle at 50% 0,rgba(212,255,79,.13),transparent 65%),linear-gradient(165deg,rgba(28,30,18,.72),rgba(15,15,11,.72))!important;box-shadow:0 0 28px rgba(212,255,79,.18),inset 0 1px 0 rgba(255,255,255,.12);animation:scaryIn .6s var(--ease-out) both}
+  .mi-body{font-size:15.5px;line-height:1.62;color:#f3f5e8;margin-top:11px}
   .flink{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);animation:scaryLine .5s ease-out both}
   .flink:last-child{border-bottom:none}
   .fl-ic{font-size:20px;flex:none;width:26px;text-align:center}
@@ -1967,7 +1970,7 @@ function showCheer(done,c){
 /* progress-aware encouragement after finishing a test (1..5 facets) */
 function progressCheer(){var en=isEN();var p=avatarProgress();
   reportState('progress');
-  if(p>=5){showCheer(null,{e:'🎉',t:(en?'Passport complete!':'Паспорт собран!'),s:(en?'All 5 facets assembled — this is the full you':'Все 5 граней собраны — это полный ты')});return;}
+  if(p>=5){showCheer(null,{e:'✦',t:(en?'Master insight unlocked':'Мастер-инсайт раскрыт'),s:(en?'All 5 facets assembled — the whole pattern of you is revealed':'Все 5 граней собраны — раскрыт цельный узор тебя')});if(!S._masterSeen){S._masterSeen=true;save();setTimeout(function(){go('passport');},1500);}return;}
   var left=5-p;
   if(en)showCheer(null,{e:'🧩',t:(left===1?'One facet left!':'Facet '+p+' of 5'),s:(left===1?'One more test and your passport is complete':left+' more to a full passport')});
   else showCheer(null,{e:'🧩',t:(left===1?'Осталась 1 грань!':'Грань '+p+' из 5'),s:(left===1?'Ещё один тест — и паспорт собран':'Ещё '+left+' до полного паспорта')});
@@ -3845,6 +3848,17 @@ function facetLinksCard(){
   return head+'<div class="card-soft">'+body+'</div>';
 }
 function linkRevealCheer(l){var en=isEN();showCheer(null,{e:l.icon||'🔗',t:(en?'Hidden link revealed':'Скрытая связка раскрыта'),s:l.text});}
+/* ===== master insight — the crown at 5/5: one synthesis of the whole person ===== */
+function masterInsight(){
+  if(!S.result||avatarProgress()<5)return '';var en=isEN();var te=Tt(S.result.primary);var T=S.tests||{};
+  var fear=testResName('fears',T.fears),love=testResName('love',T.love),work=testResName('work',T.work),shadow=testResName('shadow',T.shadow);
+  if(en)return 'Here’s the pattern that holds all of you. Underneath, you’re driven by the fear of “'+fear+'”. From it grow your love (“'+love+'”), the way you work (“'+work+'”), and the shadow that wakes under pressure (“'+shadow+'”). And yet your strength is real: '+te.light+' The moment you stop running from “'+fear+'” and aim yourself on purpose, the scattered facets fall into one whole. That’s the real you. Most people live a whole life without ever seeing their pattern. You saw it.';
+  return 'Вот узор, что держит всё твоё. В глубине тобой движет страх «'+fear+'». Из него растут и твоя любовь («'+love+'»), и то, как ты работаешь («'+work+'»), и тень, что просыпается под давлением («'+shadow+'»). И при этом твоя сила реальна: '+te.light+' Стоит тебе перестать убегать от «'+fear+'» и направить себя осознанно — разрозненные грани складываются в одно целое. Это и есть настоящий ты. Большинство проживают жизнь, так и не увидев свой узор. Ты — увидел.';
+}
+function masterInsightCard(){
+  var t=masterInsight();if(!t)return '';var en=isEN();
+  return '<div class="card-soft master-insight"><div class="ch" style="color:#D4FF4F">✦ '+(en?'MASTER INSIGHT':'МАСТЕР-ИНСАЙТ')+'</div><div class="mi-body">'+t+'</div></div>';
+}
 function bigInsights(){
   var b=S.result&&S.result.big;if(!b)return [];
   var en=isEN();function P(ru,e){return en?e:ru;}
@@ -3985,7 +3999,7 @@ function renderPassport(){
     '<button class="btn cold" onclick="go(\'soul\')">'+(en?'Open Soul Sheet':'Открыть Лист Души')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button></div>';
   var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
-  host.innerHTML=hero+changeCard(en)+bar+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
+  host.innerHTML=hero+masterInsightCard()+changeCard(en)+bar+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
 /* ===== SOUL SHEET — game layer: Big Five → RPG character + growth quests =====
