@@ -1132,7 +1132,7 @@
   <div class="toast" id="toast"></div>
   <div class="savedot" id="savedot">✓ сохранено</div>
   <div id="reveal"><div class="burst"><span class="seed"></span><span class="rg" id="revealGlyph">🔥</span><span class="rname" id="revealName">—</span></div></div>
-  <div id="boot"><video class="boot-vid-bg" src="boot.mp4?v=1" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="boot-stars"></div><video id="bootVid" class="boot-vid" src="boot.mp4?v=1" autoplay muted loop playsinline preload="auto" disablepictureinpicture poster=""></video><div class="bt">SELF-FIX</div><div class="btsub" id="bootSub">почини себя</div><div class="boot-dust"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div id="boot"><video class="boot-vid-bg" src="boot.mp4?v=1" autoplay muted loop playsinline webkit-playsinline="true" preload="auto" aria-hidden="true"></video><div class="boot-stars"></div><video id="bootVid" class="boot-vid" src="boot.mp4?v=1" autoplay muted loop playsinline webkit-playsinline="true" preload="auto" disablepictureinpicture></video><div class="bt">SELF-FIX</div><div class="btsub" id="bootSub">почини себя</div><div class="boot-dust"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 </div>
 
 <script>
@@ -2174,7 +2174,7 @@ function maybePromptContact(){
 function renderResult(){
   var r=S.result;var t=TYPES[r.primary];var te=Tt(r.primary);var en=isEN();
   ['personalHost','subtypeHost','spMeters','cardLight','growthHost','rolesHost'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
-  var ah=document.getElementById('avatarResultHost');if(ah){ah.style.display='';ah.innerHTML=avatarCardHTML('')+cloneTasteCTA()+nextTestCTA();}
+  var ah=document.getElementById('avatarResultHost');if(ah){ah.style.display='';ah.innerHTML=avatarCardHTML('')+nextTestCTA()+cloneTasteCTA();}
   document.getElementById('glow').style.background='radial-gradient(50% 40% at 50% 10%,'+t.color+'33,transparent 60%)';
   var hero=document.getElementById('typeHero');
   hero.style.color=t.color;
@@ -2620,7 +2620,7 @@ function openTest(key){
   if(S.ownedTests&&S.ownedTests[key]){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   var pr=testPriceOf(key);
-  modal(en?'Make your double smarter?':'Сделать двойника умнее?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br>'+(en?'Teaches your AI double this part of you — so it advises you sharper. Plus a new facet of your portrait, a personal breakdown and a weekly practice.':'Научит твоего ИИ-двойника этой части тебя — он будет точнее советовать. Плюс новая грань портрета, личный разбор и практика недели.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
+  modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
     closeModal();buyStars('test_'+key,testTitle(key),pr,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
@@ -2707,7 +2707,7 @@ function cloneHomeCard(){var en=isEN();if(!S.result)return '';
   return '<div class="next-hero" onclick="openTalkSelf()" style="--ac:#00E0C7;margin-bottom:14px"><div class="nh-eyebrow" style="color:#5ee6d3">'+(en?'YOUR AI DOUBLE':'ТВОЙ ИИ-ДВОЙНИК')+'</div><div class="nh-row"><div class="nh-ic">💬</div><div class="nh-tx"><div class="nh-t">'+(en?'Ask your double about real life':'Спроси двойника о реальной жизни')+'</div><div class="nh-s">'+(en?'love · work · a decision — it knows you like no one else':'любовь · работа · решение — он знает тебя как никто')+'</div></div></div><div class="nh-cta"><span>'+(en?'Talk to my double →':'Поговорить с двойником →')+'</span></div></div>';}
 // the "wow" before the paywall: let people feel the living clone for free, right after the core result
 function cloneTasteCTA(){var en=isEN();if(!S.result)return '';
-  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(0,224,199,.34);background:radial-gradient(circle at 50% 0,rgba(0,224,199,.13),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#5ee6d3;justify-content:center">💬 '+(en?'MEET YOUR LIVING CLONE':'ПОЗНАКОМЬСЯ СО СВОИМ КЛОНОМ')+'</div><div class="cb">'+(en?'Your AI double is alive — it thinks and talks like you. Ask it anything about yourself. Free.':'Твой ИИ-двойник живой — думает и говорит как ты. Спроси его о себе что угодно. Бесплатно.')+'</div><button class="btn cold" style="margin-top:14px" onclick="openTalkSelf()">'+(en?'Talk to my clone →':'Поговорить с клоном →')+'</button></div>';}
+  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(0,224,199,.34);background:radial-gradient(circle at 50% 0,rgba(0,224,199,.13),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#5ee6d3;justify-content:center">💬 '+(en?'SAY HI TO YOUR CLONE':'ПОЗНАКОМЬСЯ С ДВОЙНИКОМ')+'</div><div class="cb">'+(en?'Curious? Your AI double thinks and talks like you — chat with it for a couple of minutes. A few free messages a day.':'Любопытно? Твой ИИ-двойник думает и говорит как ты — поболтай пару минут. Несколько бесплатных сообщений в день.')+'</div><button class="btn cold" style="margin-top:14px" onclick="openTalkSelf()">'+(en?'Talk to my clone →':'Поговорить с клоном →')+'</button></div>';}
 function nextTestCTA(){
   var nk=nextTest();
   if(!nk)return '';
@@ -3359,7 +3359,7 @@ function renderTalk(){
   th.scrollTop=th.scrollHeight;
 }
 /* clone chat is the most token-hungry feature -> free daily cap, lift for 1h with Stars */
-var CHAT_FREE_PER_DAY=20, CHAT_UNLOCK_PRICE=30;
+var CHAT_FREE_PER_DAY=5, CHAT_UNLOCK_PRICE=30;
 function chatUnlocked(){return !!(S._chatUnlockUntil&&Date.now()<S._chatUnlockUntil);}
 function chatLeftToday(){var d=dayNum();if(S._chatDay!==d){S._chatDay=d;S._chatCount=0;}return Math.max(0,CHAT_FREE_PER_DAY-(S._chatCount||0));}
 function offerChatUnlock(){var en=isEN();
@@ -3612,7 +3612,7 @@ function nextStepBest(){
   if(nk){var owned=S.ownedTests&&S.ownedTests[nk];var firstPaid=(nk==='love'&&!paidDone);
     return {ic:testIcon(nk),
       title:en?('Open \u201c'+testTitle(nk)+'\u201d'):('\u041e\u0442\u043a\u0440\u043e\u0439 \u00ab'+testTitle(nk)+'\u00bb'),
-      sub:firstPaid?(en?'Teach your double about love \u2014 so it advises you on it':'\u041d\u0430\u0443\u0447\u0438 \u0434\u0432\u043e\u0439\u043d\u0438\u043a\u0430 \u0442\u0435\u043c\u0435 \u043b\u044e\u0431\u0432\u0438 \u2014 \u0447\u0442\u043e\u0431\u044b \u0441\u043e\u0432\u0435\u0442\u043e\u0432\u0430\u043b \u043f\u043e \u043d\u0435\u0439'):(en?'Makes your double sharper about you':'\u0414\u0432\u043e\u0439\u043d\u0438\u043a \u0441\u0442\u0430\u043d\u0435\u0442 \u0443\u043c\u043d\u0435\u0435 \u043e \u0442\u0435\u0431\u0435'),
+      sub:firstPaid?(en?'Your core is set \u2014 open the first facet of you (1 of 5)':'\u042f\u0434\u0440\u043e \u0433\u043e\u0442\u043e\u0432\u043e \u2014 \u043e\u0442\u043a\u0440\u043e\u0439 \u043f\u0435\u0440\u0432\u0443\u044e \u0433\u0440\u0430\u043d\u044c \u0441\u0435\u0431\u044f (1 \u0438\u0437 5)'):(en?'Another facet of you — closer to the full portrait':'\u0415\u0449\u0451 \u0433\u0440\u0430\u043d\u044c \u0442\u0435\u0431\u044f \u2014 \u0431\u043b\u0438\u0436\u0435 \u043a \u043f\u043e\u043b\u043d\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0440\u0435\u0442\u0443'),
       cta:owned?(en?'Take \u2192':'\u041f\u0440\u043e\u0439\u0442\u0438 \u2192'):('\u2b50 '+testPriceOf(nk)),
       act:(function(k,o){return function(){o?runTest(k):openTest(k);};})(nk,owned)};}
   // 3. all tests taken \u2014 now the clone-meeting wow is earned
@@ -3664,7 +3664,7 @@ function renderHome(){
       '<div class="card-soft steps-card">'+steps+'</div>'+
       '<div class="trust-badge" onclick="methodologyInfo()">🔬 '+(en?'Built on Big Five (OCEAN) — real personality science':'На основе Big Five (OCEAN) — настоящая наука о личности')+' <span style="color:#7fe9ff">ⓘ</span></div>';
   }else{
-    cta.innerHTML=cloneHomeCard()+progressStrip()+nextStepHero()+dailyCard();maybeCoach();
+    cta.innerHTML=progressStrip()+nextStepHero()+dailyCard();maybeCoach();
   }
   var ih=document.getElementById('homeInsight');
   if(S.result){
@@ -4383,25 +4383,25 @@ function renderIntro(){
   var mark='<div class="spiralmark" style="margin-bottom:2px"><svg viewBox="0 0 200 200" fill="none"><defs><linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff5d6c"/><stop offset="35%" stop-color="#ffae42"/><stop offset="65%" stop-color="#52dd92"/><stop offset="100%" stop-color="#5d8cff"/></linearGradient></defs><path d="M108,100 a8,8 0 1 1 -8,-8" fill="none" stroke="url(#ig)" stroke-width="0"/></svg></div>';
   var feats=en?[
     {ic:"\uD83E\uDDEC",tx:"A <b>science-based</b> portrait of you in 2 minutes (Big Five)"},
-    {ic:"\uD83D\uDCAC",tx:"A living <b>AI double</b> that knows you \u2014 ask it anything about yourself"},
-    {ic:"\uD83E\uDDED",tx:"It helps with <b>real life</b>: love, work, decisions"}
+    {ic:"🧩",tx:"<b>5 facets</b>: core, love, work, fears, shadow — your full passport"},
+    {ic:"💫",tx:"Your <b>AI clone</b> connects you with your people"}
   ]:[
     {ic:"\uD83E\uDDEC",tx:"<b>Научный</b> портрет тебя за 2 минуты (Big Five)"},
-    {ic:"\uD83D\uDCAC",tx:"Живой <b>ИИ-двойник</b>, который тебя знает \u2014 спроси его о себе что угодно"},
-    {ic:"\uD83E\uDDED",tx:"Помогает с <b>реальной жизнью</b>: любовь, работа, решения"}
+    {ic:"🧩",tx:"<b>5 граней</b>: ядро, любовь, работа, страхи, тень — полный паспорт"},
+    {ic:"💫",tx:"Твой <b>ИИ-клон</b> знакомит тебя с твоими людьми"}
   ];
   host.innerHTML='<div class="intro-wrap">'+
     avatarHeroIntro()+
-    '<h1 class="intro-hook">'+(en?'Talk to <span class="grad">yourself</span> — for real':'Поговори <span class="grad">с собой</span> — по-настоящему')+'</h1>'+
-    '<div class="intro-sub">'+(en?'Take a 2-min science test, and your AI double comes alive — it knows you and helps with your real life.':'Пройди 2-мин научный тест — и твой ИИ-двойник оживёт. Он знает тебя и помогает с реальной жизнью.')+'</div>'+
+    '<h1 class="intro-hook">'+(en?'Who are you, <span class="grad">really?</span>':'Кто ты <span class="grad">на самом деле?</span>')+'</h1>'+
+    '<div class="intro-sub">'+(en?'Take science-based tests and assemble your full portrait — facet by facet, all the way down.':'Пройди научные тесты и собери полный портрет себя — грань за гранью, до самого дна.')+'</div>'+
     '<div class="intro-list">'+feats.map(function(f){return '<div class="intro-feat"><span class="ic">'+f.ic+'</span><span class="tx">'+f.tx+'</span></div>';}).join('')+'</div>'+
     '</div>'+
-    '<div class="intro-cta"><button class="btn go" onclick="go(\'onboard\')">'+(en?'Create my double \u2192':'Создать двойника \u2192')+'</button><div class="intro-tiny">'+(en?'Free \u00b7 2 minutes \u00b7 no signup':'Бесплатно \u00b7 2 минуты \u00b7 без регистрации')+'</div></div>';
+    '<div class="intro-cta"><button class="btn go" onclick="go(\'onboard\')">'+(en?'Discover myself \u2192':'Узнать себя \u2192')+'</button><div class="intro-tiny">'+(en?'Free \u00b7 2 minutes \u00b7 no signup':'Бесплатно \u00b7 2 минуты \u00b7 без регистрации')+'</div></div>';
 }
 function avatarHeroIntro(){return '<div class="logo-wrap" style="width:84px;height:84px;margin:0 auto 4px"><span style="position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(255,186,82,.4),transparent 68%);filter:blur(6px);animation:hudGlow 3.6s ease-in-out infinite"></span><img src="logo.png" alt="SELF-FIX" style="width:84px;height:84px;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 0 12px rgba(255,176,72,.5))"></div>';}
 function boot(){tgInit();
   // nudge the boot clips to autoplay inside Telegram's WebView (muted+playsinline already set)
-  try{document.querySelectorAll('#boot video').forEach(function(v){var _p=v.play&&v.play();if(_p&&_p.catch)_p.catch(function(){});});}catch(e){}
+  try{document.querySelectorAll('#boot video').forEach(function(v){v.muted=true;v.defaultMuted=true;v.playsInline=true;v.removeAttribute('controls');var _p=v.play&&v.play();if(_p&&_p.catch)_p.catch(function(){var rt=function(){try{v.play();}catch(_){}};document.addEventListener('pointerdown',rt,{once:true});document.addEventListener('touchstart',rt,{once:true});});});}catch(e){}
   // tap anywhere outside a text field dismisses the keyboard (blur active input)
   document.addEventListener('pointerdown',function(e){
     var a=document.activeElement;if(!a||(a.tagName!=='INPUT'&&a.tagName!=='TEXTAREA'))return;
