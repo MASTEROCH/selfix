@@ -167,6 +167,12 @@
   .scary-line{font-size:14.5px;line-height:1.5;color:#ece9f9;margin-top:9px;padding-left:15px;position:relative;opacity:0;animation:scaryLine .55s ease-out forwards}
   .scary-line::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#c9b3ff;box-shadow:0 0 8px #c9b3ff}
   @keyframes scaryLine{from{opacity:0;transform:translateX(-7px)}to{opacity:1;transform:none}}
+  /* facet links */
+  .flink{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);animation:scaryLine .5s ease-out both}
+  .flink:last-child{border-bottom:none}
+  .fl-ic{font-size:20px;flex:none;width:26px;text-align:center}
+  .fl-tx{font-size:14px;line-height:1.46;color:#e8e3ff}
+  .flink.locked .fl-ic{opacity:.55}
   .depth-map{cursor:pointer;transition:transform .15s var(--ease-spring);margin-bottom:13px}
   .depth-map:active{transform:scale(.985)}
   .dm-track{display:flex;align-items:center;margin:13px 2px 4px}
@@ -2785,7 +2791,7 @@ function showTestResult(key,fresh){
     html+=nextTestCTA();
     ah.innerHTML=avatarCardHTML(fresh?(en?'+1 avatar feature!':'+1 черта аватара!'):'')+html;
   }
-  if(fresh){try{if(navigator.vibrate)navigator.vibrate([0,30,50,30]);}catch(e){}setTimeout(progressCheer,650);}
+  if(fresh){try{if(navigator.vibrate)navigator.vibrate([0,30,50,30]);}catch(e){}setTimeout(progressCheer,650);var _nl=facetLinks().filter(function(L){return L.a===key||L.b===key;});if(_nl.length)setTimeout(function(){linkRevealCheer(_nl[0]);},2100);}
 }
 function shareTestResult(key){var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];var dom=S.tests[key];var res=tb.result[dom]||tb.result.default;
   modal(en?'Share':'Поделиться',en?('Your result on “'+testTitle(key)+'”: <b>'+res.n+'</b>. Invite a friend to take the same test and compare — or challenge them to a PvP duel.'):('Твой результат теста «'+tb.title+'»: <b>'+res.n+'</b>. Позови друга пройти тот же тест и сравните — или вызови на PvP-дуэль.'),function(){closeModal();pop(en?'Link copied ✨':'Ссылка скопирована ✨');});
@@ -3800,6 +3806,45 @@ function depthMap(justKey){
     :(en?('Assembled '+prog+'/5. At 5/5 your <b>whole portrait</b> + rare facet-links unlock.'):('Собрано '+prog+'/5. На 5/5 раскрывается <b>цельный портрет</b> + редкие связки граней.'));
   return '<div class="card-soft depth-map" onclick="go(\'passport\')"><div class="ch" style="color:#c9b3ff">🕳️ '+(en?'DEPTH MAP':'КАРТА ГЛУБИНЫ')+'</div><div class="dm-track">'+track+'</div><div class="cb dm-cap">'+cap+'</div></div>';
 }
+/* ===== facet links — hidden cross-facet insights that unlock as you complete tests ===== */
+var FLINKS=[
+ {a:'love',b:'fears',icon:'💔',
+   ru:function(l,f){return 'Твой страх «'+f+'» — корень стиля любви «'+l+'». Поменяешь отношение к страху — изменится и любовь.';},
+   en:function(l,f){return 'Your fear of “'+f+'” is the root of your love style “'+l+'”. Shift the fear — and love shifts with it.';}},
+ {a:'work',b:'fears',icon:'🔥',
+   ru:function(w,f){return 'Страх «'+f+'» — топливо твоего рабочего стиля «'+w+'»: гонит вперёд и одновременно выжигает. Используй, но дозируй.';},
+   en:function(w,f){return 'The fear of “'+f+'” fuels your work style “'+w+'” — it drives you and burns you at once. Use it, but ration it.';}},
+ {a:'fears',b:'shadow',icon:'🕳️',
+   ru:function(f,sh){return 'Твоя тень «'+sh+'» включается ровно тогда, когда срабатывает страх «'+f+'». Эту связку в себе почти никто не замечает.';},
+   en:function(f,sh){return 'Your shadow “'+sh+'” switches on exactly when the fear of “'+f+'” fires. Almost no one notices this link in themselves.';}},
+ {a:'love',b:'shadow',icon:'🌑',
+   ru:function(l,sh){return 'Под стрессом в близости твой «'+l+'» соскальзывает в тень «'+sh+'». Это твой сигнал: пора притормозить.';},
+   en:function(l,sh){return 'Under stress in closeness, your “'+l+'” slides into the shadow “'+sh+'”. That’s your signal to slow down.';}},
+ {a:'work',b:'shadow',icon:'⚔️',
+   ru:function(w,sh){return 'Под давлением на работе «'+w+'» срывается в тень «'+sh+'». Знай этот момент — и не дай ей рулить.';},
+   en:function(w,sh){return 'Under pressure at work, “'+w+'” snaps into the shadow “'+sh+'”. Know that moment — and don’t let it take the wheel.';}},
+ {a:'love',b:'work',icon:'⚖️',
+   ru:function(l,w){return 'В любви ты «'+l+'», в деле «'+w+'» — одна энергия в двух мирах. Замечай, где она помогает, а где мешает.';},
+   en:function(l,w){return 'In love you’re “'+l+'”, at work “'+w+'” — one energy across two worlds. Notice where it helps and where it hurts.';}}
+];
+function linkPlural(n){if(isEN())return n===1?'link':'links';var a=n%10,b=n%100;return (a===1&&b!==11)?'связка':((a>=2&&a<=4&&(b<10||b>=20))?'связки':'связок');}
+function facetLinks(){
+  var T=S.tests||{};if(!S.result)return [];var en=isEN();var out=[];
+  FLINKS.forEach(function(L){if(T[L.a]&&T[L.b]){var an=testResName(L.a,T[L.a]),bn=testResName(L.b,T[L.b]);out.push({icon:L.icon,a:L.a,b:L.b,text:(en?L.en:L.ru)(an,bn)});}});
+  return out;
+}
+function lockedLinkCount(){var T=S.tests||{},n=0;FLINKS.forEach(function(L){if(!(T[L.a]&&T[L.b]))n++;});return n;}
+function facetLinksCard(){
+  if(!S.result)return '';var en=isEN();var links=facetLinks();var locked=lockedLinkCount();
+  if(!links.length&&locked===0)return '';
+  var head='<div class="section-h"><h2>'+(en?'Facet links':'Связки граней')+(links.length?(' ('+links.length+')'):'')+'</h2></div>';
+  var body='';
+  if(links.length)body+=links.map(function(l){return '<div class="flink"><span class="fl-ic">'+l.icon+'</span><div class="fl-tx">'+l.text+'</div></div>';}).join('');
+  else body+='<div class="cb" style="color:#9a93c2">'+(en?'Finish 2+ facets to reveal hidden links between them.':'Пройди 2+ грани — и раскроются скрытые связки между ними.')+'</div>';
+  if(locked>0)body+='<div class="flink locked"><span class="fl-ic">🔒</span><div class="fl-tx" style="color:#8c86ad">'+(en?(locked+' more '+linkPlural(locked)+' unlock as you finish more facets'):('Ещё '+locked+' '+linkPlural(locked)+' откроется с новыми гранями'))+'</div></div>';
+  return head+'<div class="card-soft">'+body+'</div>';
+}
+function linkRevealCheer(l){var en=isEN();showCheer(null,{e:l.icon||'🔗',t:(en?'Hidden link revealed':'Скрытая связка раскрыта'),s:l.text});}
 function bigInsights(){
   var b=S.result&&S.result.big;if(!b)return [];
   var en=isEN();function P(ru,e){return en?e:ru;}
@@ -3940,7 +3985,7 @@ function renderPassport(){
     '<button class="btn cold" onclick="go(\'soul\')">'+(en?'Open Soul Sheet':'Открыть Лист Души')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button></div>';
   var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
-  host.innerHTML=hero+changeCard(en)+bar+passportPremiumCard()+steps+summary+big+retake+actions;
+  host.innerHTML=hero+changeCard(en)+bar+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
 /* ===== SOUL SHEET — game layer: Big Five → RPG character + growth quests =====
