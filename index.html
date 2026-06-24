@@ -161,6 +161,23 @@
   @keyframes nhShine{0%{background-position:160% 0}58%,100%{background-position:-100% 0}}
 
   /* progress-path strip + first-run coachmark */
+  /* scary-accurate readout */
+  .scary{border:1px solid rgba(201,179,255,.32)!important;background:radial-gradient(circle at 0 0,rgba(124,58,255,.16),transparent 62%),rgba(20,17,38,.62)!important;animation:scaryIn .5s var(--ease-out) both}
+  @keyframes scaryIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .scary-line{font-size:14.5px;line-height:1.5;color:#ece9f9;margin-top:9px;padding-left:15px;position:relative;opacity:0;animation:scaryLine .55s ease-out forwards}
+  .scary-line::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#c9b3ff;box-shadow:0 0 8px #c9b3ff}
+  @keyframes scaryLine{from{opacity:0;transform:translateX(-7px)}to{opacity:1;transform:none}}
+  .depth-map{cursor:pointer;transition:transform .15s var(--ease-spring);margin-bottom:13px}
+  .depth-map:active{transform:scale(.985)}
+  .dm-track{display:flex;align-items:center;margin:13px 2px 4px}
+  .dm-node{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#6b6590;transition:background .5s,border-color .5s,box-shadow .5s,color .5s}
+  .dm-node.on{background:rgba(124,58,255,.2);border-color:#7C3AFF;color:#c9b3ff;box-shadow:0 0 14px rgba(124,58,255,.45)}
+  .dm-node.dm-just{animation:cePop .6s var(--ease-spring)}
+  .dm-link{flex:1;height:2px;min-width:6px;background:rgba(255,255,255,.1);transition:background .6s ease}
+  .dm-link.on{background:linear-gradient(90deg,#7C3AFF,#00E0C7)}
+  .dm-treasure{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:17px;background:radial-gradient(circle,rgba(212,255,79,.18),transparent 70%);border:1px dashed rgba(212,255,79,.45);color:#D4FF4F;transition:all .5s}
+  .dm-treasure.open{border-style:solid;box-shadow:0 0 20px rgba(212,255,79,.5);animation:hudGlow 3s ease-in-out infinite}
+  .dm-cap{font-size:12.5px;margin-top:11px;color:#b6b0d6}
   .prog-strip{cursor:pointer;margin-bottom:13px;padding:12px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
   .ps-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:9px}
   .ps-lbl{font-weight:800;font-size:13px}
@@ -2192,7 +2209,7 @@ function renderResult(){
       (en?('Your name carries <b>'+nt+'</b>. Those born '+seasonK+' carry <b>'+seasonLine+'</b>'+(dayWord?', and your day number speaks of <b>'+dayWord+'</b>':'')+'. It’s woven into your portrait.')
         :('В твоём имени — <b>'+nt+'</b>. Рождённые '+seasonK+' несут <b>'+seasonLine+'</b>'+(dayWord?', а число дня говорит о такой черте как <b>'+dayWord+'</b>':'')+'. Это вплелось в твой портрет.'))+'</div>'+
     (r.energyInfo?'<div class="cb" style="margin-top:12px">'+r.energyInfo.glyph+' '+(en?'<b>Energy type — '+ei.name+'</b>: '+ei.line+'.':'<b>Тип энергии — '+ei.name+'</b>: '+ei.line+'.')+'</div>':'');
-  ph.innerHTML=fold('🔮 '+(en?'What your name & date add':'Что добавили имя и дата'),pbody);
+  ph.innerHTML=scaryReadout()+fold('🔮 '+(en?'What your name & date add':'Что добавили имя и дата'),pbody);
   var sub=rareSubtype(r);var sh=document.getElementById('subtypeHost');
   if(sub){S._gotRare=true;}
   var subName=sub?(en?SUBTYPE_EN.name:sub.name):'',subDesc=sub?(en?SUBTYPE_EN.desc:sub.desc):'';
@@ -2750,6 +2767,7 @@ function showTestResult(key,fresh){
   var ah=document.getElementById('avatarResultHost');
   if(ah){ah.style.display='';
     var html='';
+    if(fresh)html+=depthMap(key);
     // visual value: where you land among this test's archetypes + your Big Five (the science behind this facet)
     var specKeys=Object.keys(tb.result).filter(function(k){return k!=='default';});
     html+='<div class="res-spectrum">'+specKeys.map(function(k){return '<span class="rs-chip'+(k===dom?' on':'')+'">'+tb.result[k].n+'</span>';}).join('')+'</div>';
@@ -3664,7 +3682,7 @@ function renderHome(){
       '<div class="card-soft steps-card">'+steps+'</div>'+
       '<div class="trust-badge" onclick="methodologyInfo()">🔬 '+(en?'Built on Big Five (OCEAN) — real personality science':'На основе Big Five (OCEAN) — настоящая наука о личности')+' <span style="color:#7fe9ff">ⓘ</span></div>';
   }else{
-    cta.innerHTML=progressStrip()+nextStepHero()+dailyCard();maybeCoach();
+    cta.innerHTML=depthMap()+nextStepHero()+dailyCard();maybeCoach();
   }
   var ih=document.getElementById('homeInsight');
   if(S.result){
@@ -3745,6 +3763,43 @@ function ppOpenStep(key){
   if(S.ownedTests&&S.ownedTests[key])runTest(key);else openTest(key);
 }
 /* deeper layer: insights from COMBINATIONS of Big Five factors, not single traits */
+/* ===== VALUE: scary-accurate readout + depth map ===== */
+var SCARY={
+ O:{hi:['Тебе тесно в чужих рамках — ты скорее сломаешь правило, чем проживёшь чужой сценарий.','You chafe in other people’s frames — you’d rather break a rule than live someone else’s script.'],
+    lo:['Ты доверяешь проверенному — но порой упускаешь шанс просто потому, что он непривычный.','You trust the proven — but sometimes pass on a chance just because it’s unfamiliar.']},
+ C:{hi:['Ты держишь слово даже когда это невыгодно — и втайне теряешь уважение к тем, кто так не умеет.','You keep your word even when it costs you — and secretly lose respect for those who don’t.'],
+    lo:['Ты живёшь идеями и импульсом, но незакрытые дела висят фоном и тихо тебя гложут.','You run on ideas and impulse, but unfinished things linger and quietly gnaw at you.']},
+ E:{hi:['Ты заряжаешься от людей — но наедине с собой иногда становится непривычно пусто.','People energize you — but alone with yourself it can get unexpectedly empty.'],
+    lo:['Тебе нужно одиночество, чтобы быть собой — и ты часто кажешься вовлечённее, чем чувствуешь.','You need solitude to be yourself — and you often seem more engaged than you feel.']},
+ A:{hi:['Ты ставишь чужой комфорт выше своего — а потом тихо обижаешься, что этого не ценят.','You put others’ comfort above your own — then quietly resent that it goes unnoticed.'],
+    lo:['Ты говоришь правду в лицо — людям бывает больно, хотя ты просто честен.','You tell the truth to people’s faces — it can sting, though you’re just being honest.']},
+ N:{hi:['Снаружи ты спокоен, но внутри проживаешь всё в разы сильнее, чем показываешь.','On the outside you’re calm, but inside you feel everything far more than you let on.'],
+    lo:['Тебя трудно выбить из колеи — но иногда люди читают это как холодность.','You’re hard to rattle — but sometimes people read it as coldness.']}
+};
+function scaryReadout(){
+  var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
+  var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(x,y){return y.d-x.d;});
+  var lines=[];
+  for(var i=0;i<ks.length&&lines.length<2;i++){var f=ks[i];if(f.d<12)continue;var t=SCARY[f.k][f.v>=50?'hi':'lo'];lines.push(en?t[1]:t[0]);}
+  if(!lines.length){var bi=bigInsights();if(bi.length)lines.push(bi[0]);}
+  if(!lines.length)return '';
+  return '<div class="card-soft scary">'+
+    '<div class="ch" style="color:#c9b3ff">👁 '+(en?'WHAT FEW PEOPLE NOTICE ABOUT YOU':'ЧТО ПРО ТЕБЯ МАЛО КТО ЗАМЕЧАЕТ')+'</div>'+
+    lines.map(function(l,i){return '<div class="scary-line" style="animation-delay:'+(0.2+i*0.5)+'s">'+l+'</div>';}).join('')+
+    '</div>';
+}
+function depthMap(justKey){
+  if(!S.result)return '';var en=isEN();var prog=avatarProgress(),done=prog>=5;
+  var track='';
+  for(var i=0;i<PP_STEPS.length;i++){var st=PP_STEPS[i];var d=ppStepDone(st.key);
+    if(i>0)track+='<div class="dm-link'+(i<prog?' on':'')+'"></div>';
+    track+='<div class="dm-node'+(d?' on':'')+(justKey&&justKey===st.key?' dm-just':'')+'" title="'+(en?st.label_en:st.label)+'">'+testGlyph(st.key,16)+'</div>';
+  }
+  track+='<div class="dm-link'+(done?' on':'')+'"></div><div class="dm-treasure '+(done?'open':'locked')+'">'+(done?'✨':'🔒')+'</div>';
+  var cap=done?(en?'Full portrait assembled — you reached the bottom ✨':'Цельный портрет собран — ты дошёл до самого дна ✨')
+    :(en?('Assembled '+prog+'/5. At 5/5 your <b>whole portrait</b> + rare facet-links unlock.'):('Собрано '+prog+'/5. На 5/5 раскрывается <b>цельный портрет</b> + редкие связки граней.'));
+  return '<div class="card-soft depth-map" onclick="go(\'passport\')"><div class="ch" style="color:#c9b3ff">🕳️ '+(en?'DEPTH MAP':'КАРТА ГЛУБИНЫ')+'</div><div class="dm-track">'+track+'</div><div class="cb dm-cap">'+cap+'</div></div>';
+}
 function bigInsights(){
   var b=S.result&&S.result.big;if(!b)return [];
   var en=isEN();function P(ru,e){return en?e:ru;}
