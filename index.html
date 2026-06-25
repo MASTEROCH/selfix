@@ -1896,7 +1896,7 @@ function submitOnboard(){
   if(!day||!month||day<1||day>31||month<1||month>12)return modal(enO?'Check the date':'Проверь дату',enO?'Enter your day and month of birth as numbers (e.g. 15 and 07).':'Введи день и месяц рождения числами (например 15 и 07).');
   S.name=name;S.day=day;S.month=month;S.year=year||0;S.onboarded=true;save();
   track('onboard_done',{gender:S.gender});reportState('onboarded');
-  go('intro');
+  claimWelcomeGift();
 }
 // onboarding done -> hand the welcome gift, which launches the first free test
 function claimWelcomeGift(){
@@ -4508,7 +4508,7 @@ function renderIntro(){
     '<div class="intro-sub">'+(en?'Take science-based tests and assemble your full portrait — facet by facet, all the way down.':'Пройди научные тесты и собери полный портрет себя — грань за гранью, до самого дна.')+'</div>'+
     '<div class="intro-list">'+feats.map(function(f){return '<div class="intro-feat"><span class="ic">'+f.ic+'</span><span class="tx">'+f.tx+'</span></div>';}).join('')+'</div>'+
     '</div>'+
-    '<div class="intro-cta"><button class="btn go" onclick="claimWelcomeGift()">'+(en?'Get my gift \u2192':'Забрать подарок \u2192')+'</button><div class="intro-tiny">'+(en?'Free \u00b7 2 minutes \u00b7 no signup':'Бесплатно \u00b7 2 минуты \u00b7 без регистрации')+'</div></div>';
+    '<div class="intro-cta"><button class="btn go" onclick="go(\'onboard\')">'+(en?'Discover myself \u2192':'Узнать себя \u2192')+'</button><div class="intro-tiny">'+(en?'Free \u00b7 2 minutes \u00b7 no signup':'Бесплатно \u00b7 2 минуты \u00b7 без регистрации')+'</div></div>';
 }
 function avatarHeroIntro(){return '<div class="logo-wrap" style="width:84px;height:84px;margin:0 auto 4px"><span style="position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(255,186,82,.4),transparent 68%);filter:blur(6px);animation:hudGlow 3.6s ease-in-out infinite"></span><img src="logo.png" alt="SELF-FIX" style="width:84px;height:84px;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 0 12px rgba(255,176,72,.5))"></div>';}
 function boot(){tgInit();
@@ -4522,7 +4522,7 @@ function boot(){tgInit();
   },true);
   // ensure the insight FAB is a direct <body> child so position:fixed resolves against the viewport (not #app)
   var _f=document.getElementById('insFab');if(_f&&_f.parentNode!==document.body)document.body.appendChild(_f);
-  load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'onboard');var gift=checkGiftLink();if(!gift)checkCompareLink();registerRef();var duelLink=checkDuelLink();if(!duelLink)setTimeout(syncDuels,1400);
+  load();var newDay=touchDaily();syncWallet();applyLang();go(S.onboarded?'home':'intro');var gift=checkGiftLink();if(!gift)checkCompareLink();registerRef();var duelLink=checkDuelLink();if(!duelLink)setTimeout(syncDuels,1400);
   track('app_open',{onboarded:!!S.onboarded,hasResult:!!S.result,gift:!!gift,newDay:!!newDay});
   reportState('open');fetchEntitlements();
   if(newDay&&S.result&&!S._pendingCmp){var st=dailyStreak();setTimeout(function(){pop(isEN()?('Welcome back · streak 🔥 '+st):('С возвращением · стрик 🔥 '+st));},3200);}
