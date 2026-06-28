@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SELF-FIX — тест, который называет то, что ты вслух не говоришь</title>
+<meta name="description" content="Научный тест личности (Big Five), который называет твоё скрытое противоречие и считает, насколько ты редкий — 1 из N. 2 минуты, бесплатно.">
+<meta name="theme-color" content="#05060a">
+<meta property="og:title" content="SELF-FIX — насколько ты редкий?">
+<meta property="og:description" content="Тест, который называет то, что ты о себе вслух не говоришь. И показывает: ты — 1 из N. 2 минуты, бесплатно.">
+<meta property="og:image" content="https://masteroch.github.io/selfix/og-cover.png">
+<meta property="og:url" content="https://masteroch.github.io/selfix/landing.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="apple-touch-icon" href="https://masteroch.github.io/selfix/icon-180.png">
+<style>
+:root{--bg:#05060a;--acc:#7C3AFF;--acc2:#00E0C7;--lime:#D4FF4F;--gold:#FFB547;--rose:#ff5d8f;
+  --txt:#f4f6fb;--txt2:rgba(244,246,251,.72);--txt3:rgba(244,246,251,.5);
+  --grad:linear-gradient(120deg,#ff5d6c,#ffae42 25%,#52dd92 50%,#5d8cff 75%,#ff5d6c);
+  --glass:linear-gradient(160deg,rgba(72,66,112,.34),rgba(28,24,46,.2));--stroke:rgba(255,255,255,.14)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;letter-spacing:-.01em;overflow-x:hidden}
+body{position:relative;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px;position:relative;z-index:2}
+/* aurora background */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(140% 80% at 50% -10%,#0d0a22,#05060a 60%)}
+.orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;mix-blend-mode:screen}
+.o1{width:420px;height:420px;left:-120px;top:-60px;background:radial-gradient(circle,rgba(146,99,255,.9),transparent 70%);animation:f1 30s ease-in-out infinite alternate}
+.o2{width:460px;height:460px;right:-160px;top:18%;background:radial-gradient(circle,rgba(0,224,199,.7),transparent 70%);animation:f2 38s ease-in-out infinite alternate}
+.o3{width:380px;height:380px;left:10%;bottom:-80px;background:radial-gradient(circle,rgba(212,255,79,.5),transparent 70%);opacity:.32;animation:f1 44s ease-in-out infinite alternate-reverse}
+@keyframes f1{to{transform:translate(80px,90px) scale(1.15)}}
+@keyframes f2{to{transform:translate(-90px,70px) scale(1.12)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 6px}
+.brand{font-weight:800;letter-spacing:.3em;font-size:14px;display:flex;align-items:center;gap:9px}
+.brand .dot{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd27a,#ff8e30 55%,#7C3AFF);box-shadow:0 0 18px rgba(255,176,72,.5)}
+.lang{display:flex;gap:4px;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:99px;padding:3px}
+.lang button{background:none;border:none;color:var(--txt3);font:inherit;font-weight:800;font-size:12px;padding:5px 11px;border-radius:99px;cursor:pointer}
+.lang button.on{background:rgba(255,255,255,.14);color:#fff}
+/* hero */
+.hero{padding:46px 0 24px;text-align:center}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.26em;color:#b7b0dd;text-transform:uppercase;margin-bottom:18px}
+h1{font-size:clamp(32px,9vw,52px);line-height:1.04;font-weight:800;letter-spacing:-.03em;margin-bottom:18px}
+.grad{background:var(--grad);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gf 7s linear infinite}
+@keyframes gf{to{background-position:300% 50%}}
+.sub{color:var(--txt2);font-size:clamp(15px,4.4vw,18px);line-height:1.55;max-width:520px;margin:0 auto 30px}
+.sub b{color:var(--txt)}
+/* the rarity centerpiece */
+.rarity{display:inline-flex;flex-direction:column;align-items:center;gap:4px;padding:20px 36px;margin:0 auto 30px;border-radius:24px;background:radial-gradient(circle at 50% 0,rgba(141,240,255,.16),transparent 70%),var(--glass);border:1px solid rgba(141,240,255,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 18px 50px rgba(0,0,0,.4)}
+.rarity .n{font-size:clamp(40px,12vw,64px);font-weight:800;letter-spacing:-.03em;color:#8df0ff;text-shadow:0 0 30px rgba(141,240,255,.45);line-height:1}
+.rarity .c{font-size:13px;color:var(--txt2);letter-spacing:.04em}
+/* CTA */
+.cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;padding:18px 24px;border-radius:18px;font-size:17px;font-weight:800;color:#0b0a16;cursor:pointer;position:relative;overflow:hidden;
+  background:linear-gradient(100deg,#a78bff,#7C3AFF 40%,#00E0C7);box-shadow:0 14px 36px rgba(124,58,255,.4),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .16s cubic-bezier(.34,1.56,.64,1),filter .15s}
+.cta:active{transform:scale(.97)}
+.cta::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%);background-size:230% 100%;animation:sh 3.4s ease-in-out infinite}
+@keyframes sh{0%{background-position:160% 0}60%,100%{background-position:-100% 0}}
+.cta-note{font-size:13px;color:var(--txt3);margin-top:12px}
+/* sections */
+.section{padding:26px 0}
+.sh{font-size:11px;font-weight:700;letter-spacing:.24em;color:#b7b0dd;text-transform:uppercase;text-align:center;margin-bottom:18px}
+.cards{display:flex;flex-direction:column;gap:14px}
+.card{padding:20px;border-radius:20px;background:var(--glass);border:1px solid var(--stroke);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 12px 30px rgba(0,0,0,.28)}
+.card .ic{font-size:30px;margin-bottom:10px}
+.card h3{font-size:18px;font-weight:800;margin-bottom:7px}
+.card p{color:var(--txt2);font-size:14.5px;line-height:1.5}
+.card .quote{margin-top:12px;padding:12px 14px;border-left:3px solid var(--acc);background:rgba(124,58,255,.1);border-radius:10px;font-size:14px;color:#e8e0ff;font-style:italic;line-height:1.45}
+.acc-t{border-color:rgba(141,240,255,.34)}.acc-t .quote{border-left-color:var(--acc2);background:rgba(0,224,199,.1)}
+.acc-g{border-color:rgba(255,211,107,.34)}.acc-g .quote{border-left-color:var(--gold);background:rgba(255,181,71,.1)}
+/* steps */
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:var(--glass);border:1px solid var(--stroke)}
+.step .num{width:30px;height:30px;flex:none;border-radius:50%;background:linear-gradient(135deg,#ffc24d,#f0a52f);color:#241405;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.step .tx{font-size:15px;color:#ece9f9;line-height:1.35}
+.step .tx b{color:#fff}
+/* final cta */
+.final{text-align:center;padding:36px 0 12px}
+.final h2{font-size:clamp(24px,7vw,34px);font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.final p{color:var(--txt2);margin-bottom:24px;font-size:15px}
+/* footer */
+.foot{text-align:center;padding:30px 0 40px;color:var(--txt3);font-size:12.5px;line-height:1.6}
+.foot a{color:#7fe9ff}
+.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px 0 6px}
+.pill{font-size:12.5px;color:var(--txt2);background:rgba(255,255,255,.05);border:1px solid var(--stroke);padding:8px 14px;border-radius:99px}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+<div class="grain"></div>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand"><span class="dot"></span>SELF-FIX</div>
+    <div class="lang"><button id="lru" class="on" onclick="setLang('ru')">RU</button><button id="len" onclick="setLang('en')">EN</button></div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow" data-i="eyebrow">САМОПОЗНАНИЕ НА НАУЧНОЙ ОСНОВЕ · BIG FIVE</div>
+    <h1 data-i="h1">Кто ты <span class="grad">на самом деле?</span></h1>
+    <p class="sub" data-i="sub">Тест, который называет то, что ты о себе <b>вслух не говоришь</b> — и показывает, насколько редкое у тебя сочетание черт.</p>
+    <div class="rarity"><span class="n" data-i="rn">1 из 150</span><span class="c" data-i="rc">настолько ты редкий</span></div>
+    <div><a class="cta" href="https://t.me/selffix_bot" id="cta1"><span>🚀</span><span data-i="cta">Узнать себя — бесплатно</span></a></div>
+    <div class="cta-note" data-i="ctanote">2 минуты · в Telegram · без регистрации</div>
+  </section>
+
+  <section class="section">
+    <div class="sh" data-i="sh1">Почему попадает в точку</div>
+    <div class="cards">
+      <div class="card">
+        <div class="ic">👁</div>
+        <h3 data-i="c1h">Называет то, что ты скрываешь</h3>
+        <p data-i="c1p">Не общие слова, а твоё личное противоречие — то, что обычно не проговаривают вслух.</p>
+        <div class="quote" data-i="c1q">«Тебя считают жёстким, хотя за прямотой — тот, кто просто устал притворяться.»</div>
+      </div>
+      <div class="card acc-t">
+        <div class="ic">🪞</div>
+        <h3 data-i="c2h">Четыре зеркала — одно отражение</h3>
+        <p data-i="c2p">Наука (Big Five), число судьбы, знак зодиака и твои ответы сходятся на одном. Это не совпадение — это ты.</p>
+        <div class="quote" data-i="c2q">«Четыре разных языка — об одном и том же человеке.»</div>
+      </div>
+      <div class="card acc-g">
+        <div class="ic">📊</div>
+        <h3 data-i="c3h">Насколько ты редкий</h3>
+        <p data-i="c3p">Считаем, насколько редко встречается именно твоё сочетание черт — относительно всех людей. Буквально «1 из N».</p>
+        <div class="quote" data-i="c3q">«Большинство устроены иначе. Ты — нет.»</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sh" data-i="sh2">Как это работает</div>
+    <div class="steps">
+      <div class="step"><span class="num">1</span><span class="tx" data-i="s1">Ответь на <b>10 коротких вопросов</b> — свайпом, за 2 минуты</span></div>
+      <div class="step"><span class="num">2</span><span class="tx" data-i="s2">Получи <b>портрет личности</b>: тип, Big Five, скрытое противоречие и редкость</span></div>
+      <div class="step"><span class="num">3</span><span class="tx" data-i="s3">Открывай грани глубже — любовь, работа, страхи, тень — и собери <b>полный паспорт себя</b></span></div>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2 data-i="fh">Готов познакомиться с собой?</h2>
+    <p data-i="fp">2 минуты, которые ты запомнишь.</p>
+    <div><a class="cta" href="https://t.me/selffix_bot" id="cta2"><span>🚀</span><span data-i="cta_b">Пройти тест в Telegram</span></a></div>
+    <div class="pills">
+      <span class="pill" data-i="p1">⏱ 2 минуты</span>
+      <span class="pill" data-i="p2">🎁 бесплатно</span>
+      <span class="pill" data-i="p3">🔬 Big Five (OCEAN)</span>
+    </div>
+  </section>
+
+  <div class="foot">
+    <div data-i="foot">SELF-FIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.</div>
+    <div style="margin-top:8px">© SELF-FIX · <a href="https://t.me/selffix_bot">@selffix_bot</a></div>
+  </div>
+
+</div>
+
+<script>
+var I={
+ ru:{eyebrow:'САМОПОЗНАНИЕ НА НАУЧНОЙ ОСНОВЕ · BIG FIVE',h1:'Кто ты <span class="grad">на самом деле?</span>',
+  sub:'Тест, который называет то, что ты о себе <b>вслух не говоришь</b> — и показывает, насколько редкое у тебя сочетание черт.',
+  rn:'1 из 150',rc:'настолько ты редкий',cta:'Узнать себя — бесплатно',ctanote:'2 минуты · в Telegram · без регистрации',
+  sh1:'Почему попадает в точку',
+  c1h:'Называет то, что ты скрываешь',c1p:'Не общие слова, а твоё личное противоречие — то, что обычно не проговаривают вслух.',c1q:'«Тебя считают жёстким, хотя за прямотой — тот, кто просто устал притворяться.»',
+  c2h:'Четыре зеркала — одно отражение',c2p:'Наука (Big Five), число судьбы, знак зодиака и твои ответы сходятся на одном. Это не совпадение — это ты.',c2q:'«Четыре разных языка — об одном и том же человеке.»',
+  c3h:'Насколько ты редкий',c3p:'Считаем, насколько редко встречается именно твоё сочетание черт — относительно всех людей. Буквально «1 из N».',c3q:'«Большинство устроены иначе. Ты — нет.»',
+  sh2:'Как это работает',
+  s1:'Ответь на <b>10 коротких вопросов</b> — свайпом, за 2 минуты',s2:'Получи <b>портрет личности</b>: тип, Big Five, скрытое противоречие и редкость',s3:'Открывай грани глубже — любовь, работа, страхи, тень — и собери <b>полный паспорт себя</b>',
+  fh:'Готов познакомиться с собой?',fp:'2 минуты, которые ты запомнишь.',cta_b:'Пройти тест в Telegram',
+  p1:'⏱ 2 минуты',p2:'🎁 бесплатно',p3:'🔬 Big Five (OCEAN)',
+  foot:'SELF-FIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.'},
+ en:{eyebrow:'SCIENCE-BASED SELF-DISCOVERY · BIG FIVE',h1:'Who are you, <span class="grad">really?</span>',
+  sub:'A test that names what you <b>don’t say out loud</b> about yourself — and shows how rare your combination of traits is.',
+  rn:'1 in 150',rc:'that’s how rare you are',cta:'Discover yourself — free',ctanote:'2 minutes · in Telegram · no signup',
+  sh1:'Why it hits home',
+  c1h:'It names what you hide',c1p:'Not generic words — your private contradiction, the thing people don’t usually say out loud.',c1q:'“People call you tough, but behind the bluntness is someone tired of pretending.”',
+  c2h:'Four mirrors, one reflection',c2p:'Science (Big Five), your life-path number, your zodiac sign and your answers all point one way. That’s not a coincidence — that’s you.',c2q:'“Four different languages — describing one and the same person.”',
+  c3h:'How rare you are',c3p:'We compute how rare your specific combination of traits is — across everyone. Literally “1 in N”.',c3q:'“Most people aren’t wired this way. You are.”',
+  sh2:'How it works',
+  s1:'Answer <b>10 quick questions</b> — by swiping, in 2 minutes',s2:'Get your <b>personality portrait</b>: type, Big Five, your hidden contradiction and rarity',s3:'Open deeper facets — love, work, fears, shadow — and assemble your <b>full passport</b>',
+  fh:'Ready to meet yourself?',fp:'2 minutes you’ll remember.',cta_b:'Take the test in Telegram',
+  p1:'⏱ 2 minutes',p2:'🎁 free',p3:'🔬 Big Five (OCEAN)',
+  foot:'SELF-FIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.'}
+};
+function setLang(l){
+  var d=I[l];for(var k in d){var el=document.querySelector('[data-i="'+k+'"]');if(el)el.innerHTML=d[k];}
+  document.getElementById('lru').classList.toggle('on',l==='ru');
+  document.getElementById('len').classList.toggle('on',l==='en');
+  document.documentElement.lang=l;try{localStorage.setItem('sf_land_lang',l);}catch(e){}
+}
+(function(){var l='ru';try{var s=localStorage.getItem('sf_land_lang');if(s)l=s;else if((navigator.language||'').slice(0,2)==='en')l='en';}catch(e){}if(l!=='ru')setLang(l);})();
+</script>
+</body>
+</html>
