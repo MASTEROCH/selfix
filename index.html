@@ -3901,8 +3901,9 @@ var TRI_FACTOR={O:{hi:['свобода','freedom'],lo:['надёжность','r
 var TRI_ELEM={fire:['напор','drive'],earth:['опора','steadiness'],air:['ум','mind'],water:['чувство','feeling']};
 /* normative context: percentile vs population + rarity of the trait combination */
 function _erf(x){var sgn=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return sgn*y;}
+function rareSnap(n){var lad=[12,15,20,25,30,40,50,75,100];n=Math.max(12,Math.min(100,Math.round(n)));var best=lad[0];for(var i=0;i<lad.length;i++){if(Math.abs(lad[i]-n)<Math.abs(best-n))best=lad[i];}return best;}
 function bigPct(v){var z=(((v||50)-50))/18;var p=Math.round(50*(1+_erf(z/Math.SQRT2)));return Math.max(2,Math.min(98,p));}
-function rarityN(){var b=S.result&&S.result.big;if(!b)return 0;var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});var top=ks.filter(function(f){return f.d>=10;}).slice(0,2);if(top.length<2)return 0;var j=top.reduce(function(a,f){var hi=f.v>=50;var pct=bigPct(f.v);var tail=Math.max(1,hi?(100-pct):pct);return a*(tail/100);},1);return Math.max(8,Math.min(150,Math.round(1/j)));}
+function rarityN(){var b=S.result&&S.result.big;if(!b)return 0;var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});var top=ks.filter(function(f){return f.d>=10;}).slice(0,2);if(top.length<2)return 0;var j=top.reduce(function(a,f){var hi=f.v>=50;var pct=bigPct(f.v);var tail=Math.max(1,hi?(100-pct):pct);return a*(tail/100);},1);return rareSnap(1/j);}
 function rarityCard(){
  var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
  var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});
@@ -3910,7 +3911,7 @@ function rarityCard(){
  if(top.length<2)return '';
  var d2=top.map(function(f){var hi=f.v>=50;var pct=bigPct(f.v);var tail=hi?(100-pct):pct;return {hi:hi,pct:pct,tail:Math.max(1,tail),neut:(f.k==='A'),nm:FACTOR_INFO[f.k].t[en?'en':'ru']};});
  var joint=(d2[0].tail/100)*(d2[1].tail/100);
- var N=Math.max(8,Math.min(150,Math.round(1/joint)));
+ var N=rareSnap(1/joint);
  var combo=d2.map(function(d){return (en?(d.hi?'high ':'low '):(d.neut?(d.hi?'высокое ':'низкое '):(d.hi?'высокая ':'низкая ')))+'<b>'+d.nm+'</b>';}).join(' + ');
  var rows=d2.map(function(d){var hp=d.hi?d.pct:(100-d.pct);return '<div class="rare-row"><span>'+(en?(d.hi?'High ':'Low ')+d.nm:(d.hi?'Высок':'Низк')+(d.neut?'ое ':'ая ')+d.nm)+'</span><span class="rare-pct">'+(en?((d.hi?'above ':'below ')+hp+'%'):((d.hi?'выше ':'ниже ')+hp+'% людей'))+'</span></div>';}).join('');
  return '<div class="card-soft rare"><div class="ch" style="color:#8df0ff">📊 '+(en?'HOW RARE YOU ARE':'НАСКОЛЬКО ТЫ РЕДКИЙ')+'</div>'+
