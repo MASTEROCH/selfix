@@ -3900,6 +3900,12 @@ function zodiacNumLine(en){
  if(lp)parts.push(en?('life-path number <b>'+lp+'</b>'):('число судьбы — <b>'+lp+'</b>'));
  if(!parts.length)return '';
  return '<div class="cb" style="margin-top:12px">'+parts.join(' · ')+'</div>';}
+var ELEM_TWIST={
+ fire:['ты сгораешь быстро и ярко — а потом сам удивляешься, куда делись силы','you burn fast and bright — then wonder where your energy went'],
+ earth:['ты веришь только тому, что можно потрогать и проверить — мечта для тебя обязана стать планом','you trust only what you can touch and test — a dream has to become a plan for you'],
+ air:['ты живёшь в голове больше, чем в теле — и решаешь, прокрутив десяток сценариев наперёд','you live in your head more than your body — and you decide only after running ten scenarios ahead'],
+ water:['ты впитываешь чужие состояния как губка — и не всегда отличаешь их от своих','you absorb other people’s moods like a sponge — and don’t always tell them apart from your own']
+};
 var FACET_SCARY_DOM={
  love:{
   anxious:['Ты любишь так сильно, что начинаешь терять себя — и боишься этого больше, чем самого расставания.','You love so hard you start losing yourself — and you fear that more than the breakup itself.'],
@@ -3942,7 +3948,7 @@ function facetOpener(key,dom,en){
  var L=en?line[1]:line[0];
  var head=(S.name?'<b>'+escIns(S.name)+'</b> — ':'')+(en?'WHAT’S UNDERNEATH':'ЧТО ПРЯЧЕТСЯ ЗА ЭТИМ');
  var z=zodiacOf(S.day,S.month);
- var tie=z?('<div class="scary-line" style="animation-delay:.4s">'+(en?('Your '+z.signEn+' only sharpens it.'):('Твой '+z.sign+' это только усиливает.'))+'</div>'):'';
+ var tie=z?('<div class="scary-line" style="animation-delay:.4s">'+'<b style="color:#c9b3ff">'+z.emoji+' '+(en?z.signEn:z.sign)+'</b> — '+(en?ELEM_TWIST[z.element][1]:ELEM_TWIST[z.element][0])+'.'+'</div>'):'';
  return '<div class="card-soft scary" style="margin-bottom:14px"><div class="ch" style="color:#c9b3ff">👁 '+head+'</div><div class="scary-open">'+L+'</div>'+tie+'</div>';
 }
 function triangulation(){
@@ -3957,7 +3963,8 @@ function triangulation(){
  if(z)rows.push([z.emoji,(en?z.signEn:z.sign),zW]);
  rows.push(['🎴',(en?'Your answers':'Твои ответы'),tp]);
  var body=rows.map(function(rw){return '<div class="tri-row"><span class="tri-ic">'+rw[0]+'</span><span class="tri-l">'+rw[1]+'</span><span class="tri-v">'+rw[2]+'</span></div>';}).join('');
- var synth=en?'Four different languages — describing one and the same person. That’s not a coincidence. That’s you.':'Четыре разных языка — об одном и том же человеке. Это не совпадение. Это ты.';
+ var pair=zW?(en?('<b>'+sci+'</b> and <b>'+zW+'</b>'):('<b>'+sci+'</b> и <b>'+zW+'</b>')):('<b>'+sci+'</b>');
+ var synth=en?('Science, your number, the stars and your answers all point one way — '+pair+'. That’s not a coincidence. That’s you.'):('Наука, число, звёзды и твои ответы смотрят в одну сторону — '+pair+'. Это не совпадение. Это ты.');
  return '<div class="card-soft tri"><div class="ch" style="color:#ffd36b">🪞 '+(en?'FOUR MIRRORS, ONE REFLECTION':'ЧЕТЫРЕ ЗЕРКАЛА — ОДНО ОТРАЖЕНИЕ')+'</div><div class="tri-rows">'+body+'</div><div class="cb tri-synth">'+synth+'</div></div>';}
 function scaryReadout(){
   var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
