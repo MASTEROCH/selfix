@@ -28,11 +28,18 @@ a{color:inherit;text-decoration:none}
 /* aurora background */
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(150% 80% at 50% -10%,#0e0a24,#05060a 58%)}
 .orb{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;mix-blend-mode:screen}
-.o1{width:440px;height:440px;left:-140px;top:-70px;background:radial-gradient(circle,rgba(146,99,255,.92),transparent 70%);animation:f1 32s ease-in-out infinite alternate}
-.o2{width:480px;height:480px;right:-170px;top:14%;background:radial-gradient(circle,rgba(0,224,199,.72),transparent 70%);animation:f2 40s ease-in-out infinite alternate}
-.o3{width:400px;height:400px;left:8%;bottom:-90px;background:radial-gradient(circle,rgba(212,255,79,.5),transparent 70%);opacity:.3;animation:f1 46s ease-in-out infinite alternate-reverse}
+.o1{width:440px;height:440px;left:-140px;top:-70px;background:radial-gradient(circle,rgba(146,99,255,.92),transparent 70%);animation:f1 32s ease-in-out infinite alternate,breathe 9s ease-in-out infinite alternate}
+.o2{width:480px;height:480px;right:-170px;top:14%;background:radial-gradient(circle,rgba(0,224,199,.72),transparent 70%);animation:f2 40s ease-in-out infinite alternate,breathe 12s ease-in-out infinite alternate-reverse}
+.o3{width:400px;height:400px;left:8%;bottom:-90px;background:radial-gradient(circle,rgba(212,255,79,.5),transparent 70%);opacity:.3;animation:f1 46s ease-in-out infinite alternate-reverse,breathe 15s ease-in-out infinite alternate}
+.o4{width:320px;height:320px;right:14%;top:54%;background:radial-gradient(circle,rgba(255,93,143,.6),transparent 70%);opacity:.28;animation:f2 54s ease-in-out infinite alternate,breathe 17s ease-in-out infinite alternate-reverse}
 @keyframes f1{to{transform:translate(80px,90px) scale(1.16)}}
 @keyframes f2{to{transform:translate(-90px,70px) scale(1.12)}}
+@keyframes breathe{from{opacity:.3}to{opacity:.62}}
+.stars,.stars2{position:fixed;inset:0;z-index:1;pointer-events:none}
+.stars{background-image:radial-gradient(1.5px 1.5px at 20% 30%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 70% 20%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 40% 70%,rgba(200,220,255,.6),transparent),radial-gradient(1px 1px at 85% 58%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 55% 45%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 15% 82%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 90% 86%,rgba(200,220,255,.5),transparent),radial-gradient(1.5px 1.5px at 33% 12%,rgba(255,255,255,.55),transparent);animation:tw 6s ease-in-out infinite}
+.stars2{background-image:radial-gradient(1px 1px at 30% 52%,rgba(255,255,255,.4),transparent),radial-gradient(1.5px 1.5px at 65% 78%,rgba(180,210,255,.5),transparent),radial-gradient(1px 1px at 50% 16%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 80% 38%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 10% 60%,rgba(255,255,255,.35),transparent),radial-gradient(1px 1px at 45% 90%,rgba(255,255,255,.4),transparent);animation:tw 9s ease-in-out infinite reverse,sdrift 70s linear infinite}
+@keyframes tw{0%,100%{opacity:.4}50%{opacity:.95}}
+@keyframes sdrift{to{transform:translateY(-50px)}}
 .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 /* top bar */
 .top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 6px}
@@ -50,11 +57,22 @@ h1{font-size:clamp(33px,9.4vw,56px);line-height:1.03;font-weight:800;letter-spac
 .sub{color:var(--txt2);font-size:clamp(15.5px,4.4vw,19px);line-height:1.55;max-width:540px;margin:0 auto 28px}
 .sub b{color:var(--txt)}
 /* CTA */
-.cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:380px;padding:18px 24px;border-radius:18px;font-size:17px;font-weight:800;color:#0b0a16;cursor:pointer;position:relative;overflow:hidden;
-  background:linear-gradient(100deg,#a78bff,#7C3AFF 42%,#00E0C7);box-shadow:0 16px 40px rgba(124,58,255,.42),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .16s cubic-bezier(.34,1.56,.64,1),filter .15s}
-.cta:hover{filter:brightness(1.05)}.cta:active{transform:scale(.97)}
-.cta::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%);background-size:230% 100%;animation:sh 3.6s ease-in-out infinite}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+.cta{--a:0deg;display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:380px;padding:18px 24px;border-radius:18px;font-size:17px;font-weight:800;color:#0b0a16;cursor:pointer;position:relative;overflow:hidden;
+  background:linear-gradient(100deg,#a78bff,#7C3AFF 38%,#00E0C7 70%,#a78bff);background-size:220% 100%;
+  box-shadow:0 16px 40px rgba(124,58,255,.42),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .16s cubic-bezier(.34,1.56,.64,1),filter .15s;
+  animation:ctaflow 6s linear infinite,ctapulse 2.8s ease-in-out infinite}
+.cta:hover{filter:brightness(1.06)}.cta:active{transform:scale(.97)}
+.cta>span{position:relative;z-index:2}
+.cta::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%);background-size:230% 100%;animation:sh 3.6s ease-in-out infinite}
+.cta::before{content:'';position:absolute;inset:0;z-index:1;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--a),transparent 0deg,transparent 235deg,rgba(255,255,255,.95) 308deg,rgba(255,255,255,.25) 338deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+  animation:beam 3.4s linear infinite}
 @keyframes sh{0%{background-position:160% 0}60%,100%{background-position:-100% 0}}
+@keyframes ctaflow{to{background-position:220% 0}}
+@keyframes beam{to{--a:360deg}}
+@keyframes ctapulse{0%,100%{box-shadow:0 16px 40px rgba(124,58,255,.42),inset 0 1px 0 rgba(255,255,255,.5)}50%{box-shadow:0 20px 54px rgba(124,58,255,.6),0 0 28px rgba(0,224,199,.28),inset 0 1px 0 rgba(255,255,255,.55)}}
 .cta-note{font-size:13px;color:var(--txt3);margin-top:12px}
 /* ===== phone mockup (see exactly what you get) ===== */
 .device-wrap{display:flex;justify-content:center;margin:30px 0 6px;position:relative}
@@ -131,7 +149,8 @@ h1{font-size:clamp(33px,9.4vw,56px);line-height:1.03;font-weight:800;letter-spac
 </style>
 </head>
 <body>
-<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div></div>
+<div class="stars"></div><div class="stars2"></div>
 <div class="grain"></div>
 <div class="wrap">
 
