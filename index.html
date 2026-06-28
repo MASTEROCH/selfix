@@ -179,6 +179,12 @@
   .tri-l{font-size:12.5px;color:#b6b0d6;flex:1;min-width:0}
   .tri-v{font-size:14.5px;font-weight:800;color:#fff;text-align:right;max-width:54%}
   .tri-synth{margin-top:13px;font-style:italic;color:#ffe3a6;text-align:center;font-size:13.5px;line-height:1.5}
+  .rare{border:1px solid rgba(141,240,255,.34)!important;background:radial-gradient(circle at 50% 0,rgba(141,240,255,.13),transparent 66%),linear-gradient(165deg,rgba(30,38,56,.6),rgba(16,20,38,.5))!important;animation:scaryIn .55s var(--ease-out) both}
+  .rare-big{font-size:30px;font-weight:800;color:#8df0ff;text-align:center;margin:10px 0 2px;letter-spacing:-.02em;text-shadow:0 0 22px rgba(141,240,255,.4)}
+  .rare-rows{margin-top:11px}
+  .rare-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13.5px;color:#e8e3ff}
+  .rare-row:last-child{border-bottom:none}
+  .rare-pct{color:#8df0ff;font-weight:700;flex:none}
   /* facet links */
   /* master insight (5/5 crown) */
   .master-insight{border:1px solid rgba(212,255,79,.4)!important;background:radial-gradient(circle at 50% 0,rgba(212,255,79,.13),transparent 65%),linear-gradient(165deg,rgba(28,30,18,.72),rgba(15,15,11,.72))!important;box-shadow:0 0 28px rgba(212,255,79,.18),inset 0 1px 0 rgba(255,255,255,.12);animation:scaryIn .6s var(--ease-out) both}
@@ -2233,7 +2239,7 @@ function renderResult(){
         :('В твоём имени — <b>'+nt+'</b>. Рождённые '+seasonK+' несут <b>'+seasonLine+'</b>'+(dayWord?', а число дня говорит о такой черте как <b>'+dayWord+'</b>':'')+'. Это вплелось в твой портрет.'))+'</div>'+
     (r.energyInfo?'<div class="cb" style="margin-top:12px">'+r.energyInfo.glyph+' '+(en?'<b>Energy type — '+ei.name+'</b>: '+ei.line+'.':'<b>Тип энергии — '+ei.name+'</b>: '+ei.line+'.')+'</div>':'');
   pbody+=zodiacNumLine(en);
-  ph.innerHTML=scaryReadout()+triangulation()+fold('🔮 '+(en?'What your name, date & stars add':'Что добавили имя, дата и звёзды'),pbody);
+  ph.innerHTML=scaryReadout()+triangulation()+rarityCard()+fold('🔮 '+(en?'What your name, date & stars add':'Что добавили имя, дата и звёзды'),pbody);
   var sub=rareSubtype(r);var sh=document.getElementById('subtypeHost');
   if(sub){S._gotRare=true;}
   var subName=sub?(en?SUBTYPE_EN.name:sub.name):'',subDesc=sub?(en?SUBTYPE_EN.desc:sub.desc):'';
@@ -3892,6 +3898,24 @@ function paradoxOpener(ks,en){
 /* triangulation: four independent lenses that point at the same person */
 var TRI_FACTOR={O:{hi:['свобода','freedom'],lo:['надёжность','reliability']},C:{hi:['воля','willpower'],lo:['лёгкость','lightness']},E:{hi:['связь','connection'],lo:['глубина','depth']},A:{hi:['тепло','warmth'],lo:['прямота','candor']},N:{hi:['чувствительность','sensitivity'],lo:['устойчивость','steadiness']}};
 var TRI_ELEM={fire:['напор','drive'],earth:['опора','steadiness'],air:['ум','mind'],water:['чувство','feeling']};
+/* normative context: percentile vs population + rarity of the trait combination */
+function _erf(x){var sgn=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return sgn*y;}
+function bigPct(v){var z=(((v||50)-50))/18;var p=Math.round(50*(1+_erf(z/Math.SQRT2)));return Math.max(2,Math.min(98,p));}
+function rarityCard(){
+ var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
+ var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});
+ var top=ks.filter(function(f){return f.d>=10;}).slice(0,2);
+ if(top.length<2)return '';
+ var d2=top.map(function(f){var hi=f.v>=50;var pct=bigPct(f.v);var tail=hi?(100-pct):pct;return {hi:hi,pct:pct,tail:Math.max(1,tail),neut:(f.k==='A'),nm:FACTOR_INFO[f.k].t[en?'en':'ru']};});
+ var joint=(d2[0].tail/100)*(d2[1].tail/100);
+ var N=Math.max(8,Math.min(150,Math.round(1/joint)));
+ var combo=d2.map(function(d){return (en?(d.hi?'high ':'low '):(d.neut?(d.hi?'высокое ':'низкое '):(d.hi?'высокая ':'низкая ')))+'<b>'+d.nm+'</b>';}).join(' + ');
+ var rows=d2.map(function(d){var hp=d.hi?d.pct:(100-d.pct);return '<div class="rare-row"><span>'+(en?(d.hi?'High ':'Low ')+d.nm:(d.hi?'Высок':'Низк')+(d.neut?'ое ':'ая ')+d.nm)+'</span><span class="rare-pct">'+(en?((d.hi?'above ':'below ')+hp+'%'):((d.hi?'выше ':'ниже ')+hp+'% людей'))+'</span></div>';}).join('');
+ return '<div class="card-soft rare"><div class="ch" style="color:#8df0ff">📊 '+(en?'HOW RARE YOU ARE':'НАСКОЛЬКО ТЫ РЕДКИЙ')+'</div>'+
+   '<div class="rare-big">'+(en?'1 in '+N:'1 из '+N)+'</div>'+
+   '<div class="cb" style="text-align:center">'+combo+' — '+(en?('this combination is roughly that rare. Most people aren’t wired this way. You are.'):('примерно настолько редкое сочетание. Большинство устроены иначе. Ты — нет.'))+'</div>'+
+   '<div class="rare-rows">'+rows+'</div></div>';
+}
 function zodiacNumLine(en){
  if(!S.result)return '';
  var z=zodiacOf(S.day,S.month),wd=bornWeekday(S.day,S.month,S.year),lp=S.result.lifePath;var parts=[];
