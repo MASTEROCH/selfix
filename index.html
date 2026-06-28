@@ -3900,6 +3900,37 @@ function zodiacNumLine(en){
  if(lp)parts.push(en?('life-path number <b>'+lp+'</b>'):('число судьбы — <b>'+lp+'</b>'));
  if(!parts.length)return '';
  return '<div class="cb" style="margin-top:12px">'+parts.join(' · ')+'</div>';}
+var FACET_SCARY_DOM={
+ love:{
+  anxious:['Ты любишь так сильно, что начинаешь терять себя — и боишься этого больше, чем самого расставания.','You love so hard you start losing yourself — and you fear that more than the breakup itself.'],
+  secure:['Ты — та опора, на которую опираются все. Но кто держит тебя, когда падаешь ты?','You’re the steady one everyone leans on. But who holds you when you fall?'],
+  avoidant:['Ты держишь дистанцию не от холодности, а чтобы не отдать слишком много и не остаться ни с чем.','You keep your distance not from coldness, but so you don’t give too much and end up with nothing.'],
+  pursuer:['Тебе важна не победа, а доказательство, что выбрали именно тебя. Получив — ты часто теряешь интерес.','It’s not the win you want, it’s proof you were the one chosen. Once you have it, you often lose interest.'],
+  acts:['Ты показываешь любовь делами, а не словами — и тихо ранишься, когда твои жертвы принимают как должное.','You show love through actions, not words — and quietly hurt when your sacrifices are taken for granted.'],
+  default:['Ты всё ещё ищешь ту самую близость — и сам пока не до конца знаешь, какой она должна быть.','You’re still searching for that one closeness — and you don’t fully know yet what it should look like.']
+ },
+ work:{
+  leader:['Ты тянешь всё на себе, потому что не веришь, что сделают как надо — и выгораешь в одиночку.','You carry it all because you don’t trust it’ll be done right — and you burn out alone.'],
+  doer:['Ты делаешь молча и качественно — и злишься, когда громкие забирают твоё признание.','You do the work quietly and well — and seethe when the loud ones take your credit.'],
+  ideator:['Ты загораешься идеей мгновенно — и так же быстро остываешь, когда доходит до рутины.','You catch fire on an idea instantly — and cool just as fast when the routine begins.'],
+  connector:['Ты держишь людей вместе и гасишь конфликты — а свою цену в этом почти никогда не называешь.','You hold people together and defuse conflict — but you almost never name your own price in it.'],
+  default:['Ты можешь почти всё — и именно поэтому тебе трудно выбрать одно и идти до конца.','You can do almost anything — which is exactly why it’s hard to pick one thing and see it through.']
+ },
+ fears:{
+  alone:['Ты держишься за людей крепче, чем признаёшь — и иногда именно это их и отталкивает.','You cling to people tighter than you admit — and sometimes that’s exactly what pushes them away.'],
+  control:['Ты контролируешь всё вокруг, потому что внутри боишься: без этого всё развалится — включая тебя.','You control everything around you because inside you fear that without it everything — including you — falls apart.'],
+  failure:['Ты заранее обесцениваешь то, чего хочешь, чтобы не было больно, если не выйдет.','You pre-emptively devalue what you want, so it won’t hurt if it doesn’t work out.'],
+  identity:['Ты так боишься раствориться в других, что порой не подпускаешь даже тех, кто тебе нужен.','You’re so afraid of dissolving into others that sometimes you keep out even the ones you need.'],
+  default:['Свой главный страх ты ещё не назвал словами — но он давно решает за тебя в важные моменты.','You haven’t put your deepest fear into words yet — but it’s long been deciding for you at the key moments.']
+ },
+ shadow:{
+  vengeful:['Ты не забываешь обид — и носишь их дольше, чем готов признать даже себе.','You don’t forget a wrong — and you carry it longer than you’ll admit even to yourself.'],
+  manip:['Ты видишь рычаги людей насквозь — и соблазн дёрнуть за них сильнее, чем ты хочешь верить.','You see people’s levers clearly — and the urge to pull them is stronger than you’d like to believe.'],
+  escape:['Когда становится тяжело, ты исчезаешь — телом или мыслями — и называешь это «нужно побыть одному».','When it gets heavy you vanish — in body or in mind — and call it “needing space.”'],
+  cold:['Ты умеешь отключать чувства как рубильник — и это пугает тебя самого больше, чем окружающих.','You can switch your feelings off like a breaker — and that scares you more than it scares anyone else.'],
+  default:['В тебе есть часть, которую ты прячешь даже от себя. Но именно она включается, когда тебя загоняют в угол.','There’s a part of you you hide even from yourself — but it’s exactly what kicks in when you’re cornered.']
+ }
+};
 var FACET_SCARY={
  love:['В близости ты отдаёшь больше, чем показываешь, — и втайне ждёшь, что это заметят без просьб.','In closeness you give more than you show — and secretly wait for it to be noticed without being asked.'],
  work:['На работе ты держишь лицо, но половина сил уходит на то, чего никто не видит.','At work you hold your face together, but half your energy goes to what nobody sees.'],
@@ -3907,7 +3938,7 @@ var FACET_SCARY={
  shadow:['То, что ты прячешь от других, ты прячешь и от себя. Но именно оно тобой и движет.','What you hide from others, you hide from yourself too — yet it’s exactly what moves you.']
 };
 function facetOpener(key,dom,en){
- var line=FACET_SCARY[key];if(!line)return '';
+ var dm=FACET_SCARY_DOM[key]&&FACET_SCARY_DOM[key][dom];var line=dm||FACET_SCARY[key];if(!line)return '';
  var L=en?line[1]:line[0];
  var head=(S.name?'<b>'+escIns(S.name)+'</b> — ':'')+(en?'WHAT’S UNDERNEATH':'ЧТО ПРЯЧЕТСЯ ЗА ЭТИМ');
  var z=zodiacOf(S.day,S.month);
