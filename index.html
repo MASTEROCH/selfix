@@ -2497,6 +2497,7 @@ function saveShareImage(){var en=isEN();var t=TYPES[S.result.primary];var T=Tt(S
   x.fillStyle=t.color;x.font='800 132px sans-serif';x.fillText(T.name,W/2,780);
   x.font='700 44px sans-serif';x.fillText(T.tag,W/2,848);
   x.fillStyle='#e8e3ff';x.font='italic 600 46px sans-serif';wrap(x,Qt(r.primary),W/2,930,880,56);
+  (function(){var rn=rarityN();if(rn){x.fillStyle='#8df0ff';x.font='800 50px sans-serif';x.fillText((en?'Rare: 1 in '+rn:'Редкость: 1 из '+rn),W/2,1024);}})();
   (function(){var z=zodiacOf(S.day,S.month),lp=r.lifePath;var parts=[];if(z)parts.push(z.emoji+' '+(en?z.signEn:z.sign));if(lp)parts.push(en?('life-path '+lp):('число судьбы '+lp));if(parts.length){x.fillStyle='#b6b0d6';x.font='600 34px sans-serif';x.fillText(parts.join('   ·   '),W/2,1090);}})();
   // radar (Big Five) centered
   drawCanvasRadar(x,W/2,1400,250,r.big);
@@ -3901,6 +3902,7 @@ var TRI_ELEM={fire:['напор','drive'],earth:['опора','steadiness'],air:
 /* normative context: percentile vs population + rarity of the trait combination */
 function _erf(x){var sgn=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return sgn*y;}
 function bigPct(v){var z=(((v||50)-50))/18;var p=Math.round(50*(1+_erf(z/Math.SQRT2)));return Math.max(2,Math.min(98,p));}
+function rarityN(){var b=S.result&&S.result.big;if(!b)return 0;var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});var top=ks.filter(function(f){return f.d>=10;}).slice(0,2);if(top.length<2)return 0;var j=top.reduce(function(a,f){var hi=f.v>=50;var pct=bigPct(f.v);var tail=Math.max(1,hi?(100-pct):pct);return a*(tail/100);},1);return Math.max(8,Math.min(150,Math.round(1/j)));}
 function rarityCard(){
  var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
  var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(a,c){return c.d-a.d;});
