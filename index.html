@@ -167,6 +167,18 @@
   .scary-line{font-size:14.5px;line-height:1.5;color:#ece9f9;margin-top:9px;padding-left:15px;position:relative;opacity:0;animation:scaryLine .55s ease-out forwards}
   .scary-line::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#c9b3ff;box-shadow:0 0 8px #c9b3ff}
   @keyframes scaryLine{from{opacity:0;transform:translateX(-7px)}to{opacity:1;transform:none}}
+  .scary-open{font-size:16px;line-height:1.5;color:#fff;font-weight:700;margin-top:11px;letter-spacing:-.012em;opacity:0;animation:scaryLine .55s ease-out .08s forwards}
+  .scary-open b{color:#c9b3ff}
+  /* Four Mirrors — triangulation of science + numerology + zodiac + answers */
+  .tri{border:1px solid rgba(255,211,107,.34)!important;background:radial-gradient(circle at 50% 0,rgba(255,211,107,.13),transparent 66%),linear-gradient(165deg,rgba(40,34,58,.6),rgba(20,17,38,.5))!important;animation:scaryIn .55s var(--ease-out) both}
+  .tri-rows{margin:12px 0 2px}
+  .tri-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);opacity:0;animation:scaryLine .5s ease-out both}
+  .tri-row:nth-child(1){animation-delay:.05s}.tri-row:nth-child(2){animation-delay:.18s}.tri-row:nth-child(3){animation-delay:.31s}.tri-row:nth-child(4){animation-delay:.44s}
+  .tri-row:last-child{border-bottom:none}
+  .tri-ic{font-size:19px;width:26px;text-align:center;flex:none}
+  .tri-l{font-size:12.5px;color:#b6b0d6;flex:1;min-width:0}
+  .tri-v{font-size:14.5px;font-weight:800;color:#fff;text-align:right;max-width:54%}
+  .tri-synth{margin-top:13px;font-style:italic;color:#ffe3a6;text-align:center;font-size:13.5px;line-height:1.5}
   /* facet links */
   /* master insight (5/5 crown) */
   .master-insight{border:1px solid rgba(212,255,79,.4)!important;background:radial-gradient(circle at 50% 0,rgba(212,255,79,.13),transparent 65%),linear-gradient(165deg,rgba(28,30,18,.72),rgba(15,15,11,.72))!important;box-shadow:0 0 28px rgba(212,255,79,.18),inset 0 1px 0 rgba(255,255,255,.12);animation:scaryIn .6s var(--ease-out) both}
@@ -2218,7 +2230,8 @@ function renderResult(){
       (en?('Your name carries <b>'+nt+'</b>. Those born '+seasonK+' carry <b>'+seasonLine+'</b>'+(dayWord?', and your day number speaks of <b>'+dayWord+'</b>':'')+'. It’s woven into your portrait.')
         :('В твоём имени — <b>'+nt+'</b>. Рождённые '+seasonK+' несут <b>'+seasonLine+'</b>'+(dayWord?', а число дня говорит о такой черте как <b>'+dayWord+'</b>':'')+'. Это вплелось в твой портрет.'))+'</div>'+
     (r.energyInfo?'<div class="cb" style="margin-top:12px">'+r.energyInfo.glyph+' '+(en?'<b>Energy type — '+ei.name+'</b>: '+ei.line+'.':'<b>Тип энергии — '+ei.name+'</b>: '+ei.line+'.')+'</div>':'');
-  ph.innerHTML=scaryReadout()+fold('🔮 '+(en?'What your name & date add':'Что добавили имя и дата'),pbody);
+  pbody+=zodiacNumLine(en);
+  ph.innerHTML=scaryReadout()+triangulation()+fold('🔮 '+(en?'What your name, date & stars add':'Что добавили имя, дата и звёзды'),pbody);
   var sub=rareSubtype(r);var sh=document.getElementById('subtypeHost');
   if(sub){S._gotRare=true;}
   var subName=sub?(en?SUBTYPE_EN.name:sub.name):'',subDesc=sub?(en?SUBTYPE_EN.desc:sub.desc):'';
@@ -3832,6 +3845,71 @@ var SCARY={
  N:{hi:['Снаружи ты спокоен, но внутри проживаешь всё в разы сильнее, чем показываешь.','On the outside you’re calm, but inside you feel everything far more than you let on.'],
     lo:['Тебя трудно выбить из колеи — но иногда люди читают это как холодность.','You’re hard to rattle — but sometimes people read it as coldness.']}
 };
+/* ===== VALUE: astrology + numerology + cold-reading triangulation ===== */
+var ZODIAC={
+ aries:{sign:'Овен',signEn:'Aries',emoji:'♈',element:'fire',trait:'идёшь первым, даже когда страшно',traitEn:'you go first, even when it’s scary'},
+ taurus:{sign:'Телец',signEn:'Taurus',emoji:'♉',element:'earth',trait:'тебя не сдвинуть, когда ты решил',traitEn:'once you decide, you don’t budge'},
+ gemini:{sign:'Близнецы',signEn:'Gemini',emoji:'♊',element:'air',trait:'в тебе живут двое — и оба настоящие',traitEn:'two of you live inside — and both are real'},
+ cancer:{sign:'Рак',signEn:'Cancer',emoji:'♋',element:'water',trait:'панцирь снаружи, тепло внутри',traitEn:'a shell outside, warmth within'},
+ leo:{sign:'Лев',signEn:'Leo',emoji:'♌',element:'fire',trait:'тебе важно быть замеченным по-настоящему',traitEn:'you need to be truly seen'},
+ virgo:{sign:'Дева',signEn:'Virgo',emoji:'♍',element:'earth',trait:'видишь изъян там, где другие проходят мимо',traitEn:'you spot the flaw others walk past'},
+ libra:{sign:'Весы',signEn:'Libra',emoji:'♎',element:'air',trait:'ищешь равновесие и тяжело выбираешь',traitEn:'you seek balance and hate having to choose'},
+ scorpio:{sign:'Скорпион',signEn:'Scorpio',emoji:'♏',element:'water',trait:'чувствуешь до дна и не забываешь предательств',traitEn:'you feel to the bottom and never forget a betrayal'},
+ sagittarius:{sign:'Стрелец',signEn:'Sagittarius',emoji:'♐',element:'fire',trait:'тебе тесно на месте — тянет за горизонт',traitEn:'you chafe in one place — the horizon pulls you'},
+ capricorn:{sign:'Козерог',signEn:'Capricorn',emoji:'♑',element:'earth',trait:'идёшь к цели медленно и неумолимо',traitEn:'you move toward your goal, slow and unstoppable'},
+ aquarius:{sign:'Водолей',signEn:'Aquarius',emoji:'♒',element:'air',trait:'свой среди чужих и чужой среди своих',traitEn:'an outsider among insiders, and the reverse'},
+ pisces:{sign:'Рыбы',signEn:'Pisces',emoji:'♓',element:'water',trait:'улавливаешь то, что другие не замечают',traitEn:'you catch what others miss'}
+};
+function zodiacOf(d,m){if(!d||!m)return null;
+ var cut=[20,19,20,20,21,21,22,23,23,23,22,22];
+ var first=['capricorn','aquarius','pisces','aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius'];
+ var second=['aquarius','pisces','aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn'];
+ var key=(d<=cut[m-1])?first[m-1]:second[m-1];return ZODIAC[key]||null;}
+var WEEKDAY={ru:['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']};
+function bornWeekday(d,m,y){if(!d||!m||!y)return null;try{var dt=new Date(y,m-1,d);if(isNaN(dt.getTime()))return null;var g=dt.getDay();return {ru:WEEKDAY.ru[g],en:WEEKDAY.en[g]};}catch(e){return null;}}
+/* paradox opener — names a private surface-vs-depth contradiction (the strongest 'how does it know me' pattern) */
+var PARADOX={
+ O:{hi:['тебя считают практичным, но внутри живёт мечтатель, которому тесно в правилах','people take you for practical, but a dreamer lives inside who chafes at the rules'],
+    lo:['ты кажешься гибким, но новое впускаешь в жизнь медленно и с оглядкой','you seem easy-going, but you let new things in slowly and warily']},
+ C:{hi:['снаружи лёгкость, а внутри — вечный список «сделать как надо»','lightness on the outside, an endless “get it right” list on the inside'],
+    lo:['тебя видят свободным, но незакрытые дела давят сильнее, чем ты признаёшь','people see you as free, but loose ends weigh on you more than you admit']},
+ E:{hi:['ты душа компании, но мало кто знает, как пусто бывает наедине','you’re the life of the room, but few know how empty it gets when you’re alone'],
+    lo:['тебя считают тихим, хотя внутри идёт громкий, насыщенный разговор','people think you’re quiet, though a loud, vivid conversation runs inside']},
+ A:{hi:['ты выглядишь мягким, но внутри копится то, что ты не разрешаешь себе сказать','you look gentle, but you store up what you won’t let yourself say'],
+    lo:['тебя считают жёстким, хотя за прямотой — тот, кто просто устал притворяться','people call you tough, but behind the bluntness is someone tired of pretending']},
+ N:{hi:['снаружи спокойствие, а внутри ты проживаешь всё ярче, чем показываешь','calm on the outside, but inside you live everything brighter than you let show'],
+    lo:['тебя читают как невозмутимого — но это не холод, а броня, которую ты выбрал сам','people read you as unflappable — it’s not coldness, it’s armor you chose']}
+};
+function paradoxOpener(ks,en){
+ if(!ks||!ks.length)return '';var f=ks[0];if(f.d<10)return '';
+ var p=PARADOX[f.k]&&PARADOX[f.k][f.v>=50?'hi':'lo'];if(!p)return '';
+ var line=en?p[1]:p[0];
+ return (S.name?'<b>'+escIns(S.name)+'</b>, ':'')+line+'.';}
+/* triangulation: four independent lenses that point at the same person */
+var TRI_FACTOR={O:{hi:['свобода','freedom'],lo:['надёжность','reliability']},C:{hi:['воля','willpower'],lo:['лёгкость','lightness']},E:{hi:['связь','connection'],lo:['глубина','depth']},A:{hi:['тепло','warmth'],lo:['прямота','candor']},N:{hi:['чувствительность','sensitivity'],lo:['устойчивость','steadiness']}};
+var TRI_ELEM={fire:['напор','drive'],earth:['опора','steadiness'],air:['ум','mind'],water:['чувство','feeling']};
+function zodiacNumLine(en){
+ if(!S.result)return '';
+ var z=zodiacOf(S.day,S.month),wd=bornWeekday(S.day,S.month,S.year),lp=S.result.lifePath;var parts=[];
+ if(z)parts.push(z.emoji+' <b>'+(en?z.signEn:z.sign)+'</b> — '+(en?z.traitEn:z.trait));
+ if(wd)parts.push(en?('born on a <b>'+wd.en+'</b>'):('день прихода в мир — <b>'+wd.ru+'</b>'));
+ if(lp)parts.push(en?('life-path number <b>'+lp+'</b>'):('число судьбы — <b>'+lp+'</b>'));
+ if(!parts.length)return '';
+ return '<div class="cb" style="margin-top:12px">'+parts.join(' · ')+'</div>';}
+function triangulation(){
+ var r=S.result;if(!r||!r.big)return '';var en=isEN();var b=r.big;
+ var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(x,y){return y.d-x.d;});
+ var sf=ks[0];var sci=TRI_FACTOR[sf.k][sf.v>=50?'hi':'lo'][en?1:0];
+ var lp=r.lifePath,enr=(en?ENERGY_EN:ENERGY)[r.energy];var numW=enr?enr.name:'';
+ var z=zodiacOf(S.day,S.month);var zW=z?(en?TRI_ELEM[z.element][1]:TRI_ELEM[z.element][0]):'';
+ var tp=Tt(r.primary).name;
+ var rows=[['🧬',(en?'Science · Big Five':'Наука · Big Five'),sci]];
+ if(numW)rows.push(['🔢',(en?'Life-path '+lp:'Число судьбы '+lp),numW]);
+ if(z)rows.push([z.emoji,(en?z.signEn:z.sign),zW]);
+ rows.push(['🎴',(en?'Your answers':'Твои ответы'),tp]);
+ var body=rows.map(function(rw){return '<div class="tri-row"><span class="tri-ic">'+rw[0]+'</span><span class="tri-l">'+rw[1]+'</span><span class="tri-v">'+rw[2]+'</span></div>';}).join('');
+ var synth=en?'Four different languages — describing one and the same person. That’s not a coincidence. That’s you.':'Четыре разных языка — об одном и том же человеке. Это не совпадение. Это ты.';
+ return '<div class="card-soft tri"><div class="ch" style="color:#ffd36b">🪞 '+(en?'FOUR MIRRORS, ONE REFLECTION':'ЧЕТЫРЕ ЗЕРКАЛА — ОДНО ОТРАЖЕНИЕ')+'</div><div class="tri-rows">'+body+'</div><div class="cb tri-synth">'+synth+'</div></div>';}
 function scaryReadout(){
   var b=S.result&&S.result.big;if(!b)return '';var en=isEN();
   var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(x,y){return y.d-x.d;});
@@ -3841,6 +3919,7 @@ function scaryReadout(){
   if(!lines.length)return '';
   return '<div class="card-soft scary">'+
     '<div class="ch" style="color:#c9b3ff">👁 '+(en?'WHAT FEW PEOPLE NOTICE ABOUT YOU':'ЧТО ПРО ТЕБЯ МАЛО КТО ЗАМЕЧАЕТ')+'</div>'+
+    (function(){var op=paradoxOpener(ks,en);return op?'<div class="scary-open">'+op+'</div>':'';})()+
     lines.map(function(l,i){return '<div class="scary-line" style="animation-delay:'+(0.2+i*0.5)+'s">'+l+'</div>';}).join('')+
     '</div>';
 }
