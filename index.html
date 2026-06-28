@@ -777,6 +777,7 @@
   #reveal .rg{position:absolute;font-size:72px;opacity:0;animation:rgpop 1s .9s cubic-bezier(.2,1.4,.4,1) forwards;filter:drop-shadow(0 0 30px currentColor)}
   @keyframes rgpop{from{opacity:0;transform:scale(.2) rotate(-20deg)}to{opacity:1;transform:scale(1) rotate(0)}}
   #reveal .rname{position:absolute;bottom:-66px;font-size:34px;font-weight:800;letter-spacing:-.02em;opacity:0;white-space:nowrap;animation:rnamein .5s 1.5s forwards}
+  #reveal .rpara{position:absolute;bottom:-150px;left:50%;transform:translateX(-50%);width:312px;font-size:15.5px;line-height:1.46;font-weight:600;color:#d9d2f5;text-align:center;opacity:0;animation:rnamein .6s 1.7s forwards}
   @keyframes rnamein{to{opacity:1;transform:translateY(-10px)}}
 
   #boot{position:absolute;inset:0;z-index:80;overflow:hidden;background:radial-gradient(circle at 30% 24%,rgba(40,84,190,.28),transparent 52%),radial-gradient(circle at 76% 76%,rgba(24,104,160,.18),transparent 56%),radial-gradient(circle at 50% 50%,#0a1232,#060c24 56%,#03061a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;transition:opacity .6s ease}
@@ -1168,7 +1169,7 @@
   <div class="toast-dim" id="toastDim"></div>
   <div class="toast" id="toast"></div>
   <div class="savedot" id="savedot">✓ сохранено</div>
-  <div id="reveal"><div class="burst"><span class="seed"></span><span class="rg" id="revealGlyph">🔥</span><span class="rname" id="revealName">—</span></div></div>
+  <div id="reveal"><div class="burst"><span class="seed"></span><span class="rg" id="revealGlyph">🔥</span><span class="rname" id="revealName">—</span><span class="rpara" id="revealPara"></span></div></div>
   <div id="boot"><div class="boot-stars"></div><img id="bootVid" class="boot-vid" src="boot.gif?v=1" alt="" decoding="async"><div class="bt">SELF-FIX</div><div class="btsub" id="bootSub">почини себя</div><div class="boot-dust"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 </div>
 
@@ -2188,13 +2189,14 @@ function playReveal(r){var t=TYPES[r.primary];var rv=document.getElementById('re
   rv.querySelector('.burst').style.color=t.color;
   document.getElementById('revealGlyph').innerHTML=typeGlyph(r.primary,72);
   var nm=document.getElementById('revealName');nm.textContent=Tt(r.primary).name;nm.style.color=t.color;
+  (function(){var rp=document.getElementById('revealPara');if(!rp)return;var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:((r.big&&r.big[k])||50),d:Math.abs(((r.big&&r.big[k])||50)-50)};}).sort(function(a,b){return b.d-a.d;});rp.textContent=(paradoxOpener(ks,isEN())||'').replace(/<[^>]+>/g,'');})();
   rv.classList.add('show');
-  ['seed','rg','rname'].forEach(function(c){var el=rv.querySelector('.'+c);if(el){el.style.animation='none';void el.offsetWidth;el.style.animation='';}});
+  ['seed','rg','rname','rpara'].forEach(function(c){var el=rv.querySelector('.'+c);if(el){el.style.animation='none';void el.offsetWidth;el.style.animation='';}});
   hap('success');sfx('reveal');
   setTimeout(function(){rv.classList.remove('show');renderResult();go('result');
     if(S._pendingCmp){var fr=S._pendingCmp;setTimeout(function(){renderCompare(fr);},1000);}
     else{setTimeout(progressCheer,900);}
-  },2600);
+  },3300);
 }
 function goResult(){if(!S.result)return go('home');renderResult();go('result');}
 function maybePromptContact(){
@@ -2489,6 +2491,7 @@ function saveShareImage(){var en=isEN();var t=TYPES[S.result.primary];var T=Tt(S
   x.fillStyle=t.color;x.font='800 132px sans-serif';x.fillText(T.name,W/2,780);
   x.font='700 44px sans-serif';x.fillText(T.tag,W/2,848);
   x.fillStyle='#e8e3ff';x.font='italic 600 46px sans-serif';wrap(x,Qt(r.primary),W/2,930,880,56);
+  (function(){var z=zodiacOf(S.day,S.month),lp=r.lifePath;var parts=[];if(z)parts.push(z.emoji+' '+(en?z.signEn:z.sign));if(lp)parts.push(en?('life-path '+lp):('число судьбы '+lp));if(parts.length){x.fillStyle='#b6b0d6';x.font='600 34px sans-serif';x.fillText(parts.join('   ·   '),W/2,1090);}})();
   // radar (Big Five) centered
   drawCanvasRadar(x,W/2,1400,250,r.big);
   // hook
@@ -2509,6 +2512,7 @@ function sharePortrait(){var en=isEN();if(!S.result)return;var t=TYPES[S.result.
   x.fillStyle='#fff';x.font='800 60px sans-serif';x.fillText(S.name||(en?'You':'Ты'),W/2,600);
   x.fillStyle=t.color;x.font='800 88px sans-serif';x.fillText(T.name,W/2,696);
   x.font='700 40px sans-serif';x.fillText(T.tag,W/2,756);
+  (function(){var z=zodiacOf(S.day,S.month),lp=r.lifePath;var parts=[];if(z)parts.push(z.emoji+' '+(en?z.signEn:z.sign));if(lp)parts.push(en?('life-path '+lp):('число судьбы '+lp));if(parts.length){x.fillStyle='#b6b0d6';x.font='600 32px sans-serif';x.fillText(parts.join('   ·   '),W/2,808);}})();
   var Tn=S.tests||{};var rows=[['🌀',en?'Core':'Ядро',T.name]];
   if(Tn.love)rows.push(['❤️',en?'Love':'Любовь',testResName('love',Tn.love)]);
   if(Tn.work)rows.push(['💼',en?'Work':'Работа',testResName('work',Tn.work)]);
@@ -2850,7 +2854,7 @@ function showTestResult(key,fresh){
     // share + PvP actions for this test
     html+='<div class="action-stack"><button class="btn go" onclick="openShareHub()">'+(en?'Share':'Поделиться')+'</button></div>';
     html+=nextTestCTA();
-    ah.innerHTML=avatarCardHTML(fresh?(en?'+1 avatar feature!':'+1 черта аватара!'):'')+html;
+    ah.innerHTML=facetOpener(key,dom,en)+avatarCardHTML(fresh?(en?'+1 avatar feature!':'+1 черта аватара!'):'')+html;
   }
   if(fresh){try{if(navigator.vibrate)navigator.vibrate([0,30,50,30]);}catch(e){}setTimeout(progressCheer,650);var _nl=facetLinks().filter(function(L){return L.a===key||L.b===key;});if(_nl.length)setTimeout(function(){linkRevealCheer(_nl[0]);},2100);}
 }
@@ -3896,6 +3900,20 @@ function zodiacNumLine(en){
  if(lp)parts.push(en?('life-path number <b>'+lp+'</b>'):('число судьбы — <b>'+lp+'</b>'));
  if(!parts.length)return '';
  return '<div class="cb" style="margin-top:12px">'+parts.join(' · ')+'</div>';}
+var FACET_SCARY={
+ love:['В близости ты отдаёшь больше, чем показываешь, — и втайне ждёшь, что это заметят без просьб.','In closeness you give more than you show — and secretly wait for it to be noticed without being asked.'],
+ work:['На работе ты держишь лицо, но половина сил уходит на то, чего никто не видит.','At work you hold your face together, but half your energy goes to what nobody sees.'],
+ fears:['На людях ты это контролируешь — а в важный момент оно всё равно решает за тебя.','In public you keep it in check — but at the decisive moment it still decides for you.'],
+ shadow:['То, что ты прячешь от других, ты прячешь и от себя. Но именно оно тобой и движет.','What you hide from others, you hide from yourself too — yet it’s exactly what moves you.']
+};
+function facetOpener(key,dom,en){
+ var line=FACET_SCARY[key];if(!line)return '';
+ var L=en?line[1]:line[0];
+ var head=(S.name?'<b>'+escIns(S.name)+'</b> — ':'')+(en?'WHAT’S UNDERNEATH':'ЧТО ПРЯЧЕТСЯ ЗА ЭТИМ');
+ var z=zodiacOf(S.day,S.month);
+ var tie=z?('<div class="scary-line" style="animation-delay:.4s">'+(en?('Your '+z.signEn+' only sharpens it.'):('Твой '+z.sign+' это только усиливает.'))+'</div>'):'';
+ return '<div class="card-soft scary" style="margin-bottom:14px"><div class="ch" style="color:#c9b3ff">👁 '+head+'</div><div class="scary-open">'+L+'</div>'+tie+'</div>';
+}
 function triangulation(){
  var r=S.result;if(!r||!r.big)return '';var en=isEN();var b=r.big;
  var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(b[k]||50),d:Math.abs((b[k]||50)-50)};}).sort(function(x,y){return y.d-x.d;});
