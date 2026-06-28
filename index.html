@@ -457,7 +457,7 @@
   .sp-meters .mh{font-size:10.5px;font-weight:700;letter-spacing:.18em;color:#b7b0dd;text-transform:uppercase;margin-bottom:16px;line-height:1.5}
   .meter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
   .meter-row:last-child{margin-bottom:0}
-  .meter-row .nm{font-size:11px;font-weight:700;width:132px;flex-shrink:0;white-space:nowrap;letter-spacing:-.02em;overflow:visible;display:flex;align-items:center;gap:4px}
+  .meter-row .nm{font-size:11px;font-weight:700;width:clamp(92px,32vw,132px);flex-shrink:0;white-space:nowrap;letter-spacing:-.02em;overflow:hidden;display:flex;align-items:center;gap:4px}
   .meter-row .nm .fi{flex-shrink:0;font-size:12px;opacity:.5;cursor:pointer;font-weight:400}
   .meter-row .nm .fi:active{opacity:.9;transform:scale(.9)}
   .meter-row .track{flex:1;height:16px;border-radius:8px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.45)}
@@ -1000,7 +1000,7 @@
         </div>
         <input type="hidden" id="obDay"><input type="hidden" id="obMonth"><input type="hidden" id="obYear">
       </div>
-      <div class="ob-reassure" id="obReassure">🔒 Это останется только у тебя на устройстве</div>
+      <div class="ob-reassure" id="obReassure">🔒 Имя и дату используем только для точности — никому не показываем</div>
       <div class="ob-ctawrap"><button class="btn" onclick="submitOnboard()">Начать</button></div>
     </div>
 
@@ -1062,8 +1062,8 @@
       <div class="compat-hero" id="duelCompatHero"></div>
       <div class="card-soft" id="duelNote"></div>
       <div class="action-stack">
-        <button class="btn go" id="duelAgainBtn" onclick="startDuelFlow()">Ещё дуэль</button>
-        <button class="btn cold" id="dresInviteBtn" onclick="inviteCompare()">Вызвать друга</button>
+        <button class="btn cold" id="duelAgainBtn" onclick="startDuelFlow()">Ещё дуэль</button>
+        <button class="btn go" id="dresInviteBtn" onclick="inviteCompare()">Вызвать друга</button>
         <button class="btn ghost" id="dresShareBtn" onclick="openShareHub()">Похвастаться результатом</button>
       </div>
     </div>
@@ -1821,6 +1821,7 @@ function wheelInit(){
    entirely → no left-right drift in any WebView), with inertia, snap, haptic + muted tick. */
 function wheelCol(colId,inputId,items,defVal){
   var col=document.getElementById(colId);if(!col)return;
+  var _fresh=col.cloneNode(false);col.parentNode.replaceChild(_fresh,col);col=_fresh;
   var ITEM=44,BASE=66,N=items.length,MAX=(N-1)*ITEM;
   col.innerHTML='<div class="wheel-track">'+items.map(function(it){return '<div class="wi" data-v="'+it.v+'">'+it.l+'</div>';}).join('')+'</div>';
   var track=col.firstChild,els=track.children;
@@ -1931,7 +1932,7 @@ function renderScene(){
 }
 function choose(i){
   if(choose._lock)return;choose._lock=true;
-  var q=QUESTIONS[Q.i];var aval=q.o[i][2];Q.ans.push({f:q.f,d:q.d,v:aval});
+  var q=questionsBank()[Q.i];var aval=q.o[i][2];Q.ans.push({f:q.f,d:q.d,v:aval});
   var els=document.querySelectorAll('#opts .opt');for(var z=0;z<els.length;z++)els[z].style.pointerEvents='none';if(els[i])els[i].classList.add('sel');
   try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}sfx('select');
   var last=(Q.i>=QUESTIONS.length-1);
@@ -2197,6 +2198,7 @@ function maybePromptContact(){
 }
 function renderResult(){
   var r=S.result;var t=TYPES[r.primary];var te=Tt(r.primary);var en=isEN();
+  S._resultViews=(S._resultViews||0)+1;
   ['personalHost','subtypeHost','spMeters','cardLight','growthHost','rolesHost'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
   var ah=document.getElementById('avatarResultHost');if(ah){ah.style.display='';ah.innerHTML=avatarCardHTML('')+nextTestCTA()+cloneTasteCTA();}
   document.getElementById('glow').style.background='radial-gradient(50% 40% at 50% 10%,'+t.color+'33,transparent 60%)';
@@ -2240,11 +2242,24 @@ function renderResult(){
   var rl=Rt(r.primary);var rh=document.getElementById('rolesHost');var dl=document.getElementById('darkLock');
   if(S.fullOwned){dl.style.display='none';
     rh.innerHTML='<div class="card-soft"><div class="ch">🌑 '+(en?'Your dark side':'Тёмная сторона')+'</div><div class="cb">'+te.dark+'</div></div><div class="card-soft"><div class="ch">👁 '+(en?'How others see you':'Как тебя видят')+'</div><div class="cb">'+te.seen+'</div></div><div class="sp-meters"><div class="mh">'+(en?'You in four roles':'Ты в четырёх ролях')+'</div><div class="card-soft" style="margin-bottom:10px"><div class="ch">❤️ '+(en?'In love':'В любви')+'</div><div class="cb">'+rl.love+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">💼 '+(en?'At work':'В работе')+'</div><div class="cb">'+rl.work+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">⚔️ '+(en?'In conflict':'В конфликте')+'</div><div class="cb">'+rl.conflict+'</div></div><div class="card-soft" style="margin:0"><div class="ch">💰 '+(en?'With money':'С деньгами')+'</div><div class="cb">'+rl.money+'</div></div></div>';}
-  else{dl.style.display='';rh.innerHTML='';}
+  else{dl.style.display='';rh.innerHTML='';
+    // open-loop hook: name the trait, cut off before the payoff
+    var ls=document.getElementById('resDarkS');
+    if(ls&&r.big){
+      var ks=['O','C','E','A','N'].map(function(k){return {k:k,v:(r.big[k]||50),d:Math.abs((r.big[k]||50)-50)};}).sort(function(x,y){return y.d-x.d;});
+      var top=ks[0];
+      if(top&&top.d>=12&&typeof SCARY!=='undefined'&&SCARY[top.k]){
+        var sc=SCARY[top.k][top.v>=50?'hi':'lo'];var hookLine=en?sc[1]:sc[0];
+        // strip to a teaser: keep the setup, hide the resolution
+        var cut=hookLine.length>90?hookLine.slice(0,88).replace(/[\s,.;:—-]+\S*$/,'')+'…':hookLine;
+        ls.innerHTML='<span style="color:#e8d9ff">'+cut+'</span><br><span style="opacity:.7">'+(en?'The rest of this — and how to handle it — is in the full breakdown.':'Остальное про это — и что с этим делать — в полном разборе.')+'</span>';
+      }
+    }
+  }
   // gift-back loop + custdev feedback (single honest question)
   var fh=document.getElementById('resFeedback');
   if(fh){var fb='';fb+=returnGiftPrompt();
-    if(!S._fbSent)fb+='<div class="card-soft" style="border-left:3px solid #7C3AFF"><div class="ch" style="color:#c9b3ff">💬 '+(en?'One question':'Один вопрос')+'</div><div class="cb">'+(en?'What did you feel when you read your result?':'Что ты почувствовал, когда прочитал свой результат?')+'</div><textarea id="fbText" rows="2" maxlength="300" placeholder="'+(en?'a line is enough…':'хватит одной строки…')+'" style="width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14px;resize:none;outline:none"></textarea><button class="btn ghost" style="margin-top:10px" onclick="sendFeedback()">'+(en?'Send feedback':'Отправить отзыв')+'</button></div>';
+    if(!S._fbSent&&(S._resultViews||0)>=2)fb+='<div class="card-soft" style="border-left:3px solid #7C3AFF"><div class="ch" style="color:#c9b3ff">💬 '+(en?'One question':'Один вопрос')+'</div><div class="cb">'+(en?'What did you feel when you read your result?':'Что ты почувствовал, когда прочитал свой результат?')+'</div><textarea id="fbText" rows="2" maxlength="300" placeholder="'+(en?'a line is enough…':'хватит одной строки…')+'" style="width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(10,8,20,.6);border:1px solid rgba(255,255,255,.16);color:#fff;font:inherit;font-size:14px;resize:none;outline:none"></textarea><button class="btn ghost" style="margin-top:10px" onclick="sendFeedback()">'+(en?'Send feedback':'Отправить отзыв')+'</button></div>';
     fb+='<div class="disclaimer">'+(en?'SELF-FIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.':'SELF-FIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.')+' <span style="color:#7fe9ff;cursor:pointer" onclick="methodologyInfo()">'+(en?'how it works':'как это работает')+'</span> · <span style="color:#7fe9ff;cursor:pointer" onclick="privacyInfo()">'+(en?'privacy':'приватность')+'</span></div>';
     fh.innerHTML=fb;}
   maybePromptContact();
@@ -2266,7 +2281,37 @@ function spawnGlyphParticles(color){var g=document.getElementById('heroGlyph');i
 
 function buyFull(){
   var en=isEN();
-  modal(en?'Unlock the full breakdown?':'Открыть полный разбор?',en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 200 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 200 звёздами Telegram.',function(){closeModal();buyStars('full',(en?'Full breakdown':'Полный разбор'),200,function(){S.fullOwned=true;save();syncWallet();pop(en?'Full breakdown unlocked 🔓':'Полный разбор открыт 🔓');renderResult();});});}
+  var invited=S.invitedForUnlock||0;var need=2;
+  var freeRow='';
+  if(invited<need){
+    freeRow='<div class="card-soft" style="border-left:3px solid #52dd92;margin-top:14px;text-align:left">'+
+      '<div class="ch" style="color:#8ff0b4">'+(en?'…or open it free':'…или открой бесплатно')+'</div>'+
+      '<div class="cb">'+(en?('Share with <b>'+need+'</b> friends — and the full breakdown unlocks. '+invited+'/'+need+' so far.'):('Поделись с <b>'+need+'</b> друзьями — и полный разбор откроется. Пока '+invited+'/'+need+'.'))+'</div>'+
+      '<button class="btn go" style="margin-top:10px" onclick="closeModal();inviteForUnlock()">'+(en?'Invite a friend 🔗':'Позвать друга 🔗')+'</button>'+
+    '</div>';
+  }
+  modal(en?'Unlock the full breakdown?':'Открыть полный разбор?',
+    (en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 200 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 200 звёздами Telegram.')+freeRow,
+    function(){closeModal();buyStars('full',(en?'Full breakdown':'Полный разбор'),200,function(){S.fullOwned=true;save();syncWallet();pop(en?'Full breakdown unlocked 🔓':'Полный разбор открыт 🔓');renderResult();});});
+}
+function inviteForUnlock(){
+  // route through the gift flow; each *sent* gift counts toward the free unlock.
+  // (true "friend joined" verification is left to the Worker via the unlock_ deep-link below.)
+  S._unlockPending=true;save();
+  openGift();
+}
+function refreshUnlockFromGifts(){
+  // a sent gift is the qualifying action; server can later upgrade this to verified joins.
+  if(!S._unlockPending)return;
+  var sent=S.giftsSent||0;
+  S.invitedForUnlock=Math.min(2,sent);
+  if(S.invitedForUnlock>=2&&!S.fullOwned){
+    S.fullOwned=true;S._unlockPending=false;
+    pop(isEN()?'Full breakdown unlocked 🔓 — thanks for sharing!':'Полный разбор открыт 🔓 — спасибо, что поделился!');
+  }
+  save();
+  if(S.result&&document.getElementById('sResult'))renderResult();
+}
 
 /* ===== DUEL (PvP on rating, daily limit) ===== */
 var D=null;
@@ -2384,12 +2429,12 @@ function finishDuel(){
     +'<div class="verdict">'+verd+'</div>'
     +'<div class="rating-delta '+(delta>=0?'up':'down')+'">'+uic('trophy','#ffce6b',14)+(delta>=0?'+':'')+delta+' '+(en?'rating · now ':'рейтинга · теперь ')+S.rating+'</div>';
   animatePct('dpct',pct);
-  var leftTxt=freeDuelsLeft()>0?(en?('Free duels left today: '+freeDuelsLeft()):('Осталось бесплатных дуэлей сегодня: '+freeDuelsLeft())):(en?'No free duels left today':'Бесплатные дуэли на сегодня кончились');
+  var leftTxt=(en?'Duels are free and unlimited':'Дуэли — бесплатно и без лимита');
   var comboLine=(D.maxCombo>=2)?(' '+(en?('🔥 Best combo x'+D.maxCombo+'.'):('🔥 Лучшая серия x'+D.maxCombo+'.'))):'';
   document.getElementById('duelNote').innerHTML='<div class="ch">'+uic('swords','#7fe9ff',14)+' '+(en?'Duel':'Дуэль')+'</div><div class="cb">'+(en?('You got '+D.hits+' of '+D.qs.length+'. '):('Ты угадал '+D.hits+' из '+D.qs.length+'. '))+leftTxt+'.'+comboLine+'</div>';
   var ab=document.getElementById('duelAgainBtn');
   if(freeDuelsLeft()<=0){ab.textContent=en?'Buy +5 duels':'Купить +5 дуэлей';ab.onclick=function(){go('store');};}
-  else{ab.textContent=(en?'One more duel · ':'Ещё дуэль · ')+freeDuelsLeft();ab.onclick=startDuelFlow;}
+  else{ab.textContent=(en?'One more duel':'Ещё дуэль');ab.onclick=startDuelFlow;}
 }
 function animatePct(id,target){var el=document.getElementById(id);if(!el)return;var cur=0;clearInterval(animatePct._t);animatePct._t=setInterval(function(){cur+=Math.max(1,Math.round((target-cur)/6));if(cur>=target){cur=target;clearInterval(animatePct._t);}el.textContent=cur+'%';},30);}
 
@@ -2399,8 +2444,8 @@ function openShareHub(){var en=isEN();var L=I18N[S.lang||'ru'];
   var opts='<div class="action-stack" style="margin-top:6px;padding-top:0;border-top:none">'
     +'<button class="btn gold" onclick="closeModal();openGift()">'+L.res_gift+'</button>'
     +'<button class="btn go" onclick="closeModal();openShare()">'+L.res_share+'</button>'
-    +((avatarProgress()>=2)?('<button class="btn cold" onclick="closeModal();sharePortrait()">'+(en?'Share whole portrait 🖼':'Поделиться цельным портретом 🖼')+'</button>'):'')
-    +'<button class="btn cold" onclick="closeModal();inviteCompare()">'+(en?'Compare with a friend':'Сравниться с другом')+'</button>'
+    +((avatarProgress()>=2)?('<button class="btn go" onclick="closeModal();sharePortrait()">'+(en?'Share whole portrait 🖼':'Поделиться цельным портретом 🖼')+'</button>'):'')
+    +'<button class="btn go" onclick="closeModal();inviteCompare()">'+(en?'Compare with a friend':'Сравниться с другом')+'</button>'
     +'<button class="btn violet" onclick="closeModal();startDuelFlow()">'+L.res_duel+'</button>'
     +'<button class="btn ghost" onclick="closeModal()">'+(en?'Not now':'Не сейчас')+'</button>'
     +'</div>';
@@ -2436,7 +2481,7 @@ function saveShareImage(){var en=isEN();var t=TYPES[S.result.primary];var T=Tt(S
   // hook
   x.fillStyle='#fff';x.font='800 50px sans-serif';x.fillText(en?'And what are you?':'А ты какой?',W/2,1748);
   x.fillStyle=t.color;x.font='800 50px sans-serif';x.fillText(en?'Guess me 👇':'Угадай меня 👇',W/2,1810);
-  x.fillStyle='#a39ccb';x.font='600 36px sans-serif';x.fillText('SELF-FIX · @SelfixBot',W/2,1878);
+  x.fillStyle='#a39ccb';x.font='600 36px sans-serif';x.fillText('SELF-FIX · @'+BOT_USER,W/2,1878);
   try{var url=c.toDataURL('image/png');var a=document.createElement('a');a.href=url;a.download='selfix_'+r.primary+'.png';a.click();pop(en?'Image saved 🖼':'Картинка сохранена 🖼');}catch(e){pop(en?'Couldn’t save':'Не удалось сохранить');}}
 function hexA(hex,a){var n=parseInt(hex.slice(1),16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
 function rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
@@ -2651,10 +2696,12 @@ function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
   // already owned -> open directly
   if(productOwned(p)){openProduct(p);return;}
   modal(en?'Unlock?':'Открыть?','“<b>'+p.n+'</b>” '+(en?'for ⭐ '+p.p+'.<br><br>Paid with Telegram Stars.':'за ⭐ '+p.p+'.<br><br>Оплата звёздами Telegram.'),function(){
+    closeModal();buyStars((p.act==='full'?'full':'prod_'+p.key),p.n,p.p,function(){
     S.ownedProducts=S.ownedProducts||{};S.ownedProducts[p.key]=true;
     if(p.act==='full')S.fullOwned=true;
-    save();closeModal();pop(en?'Unlocked 🔓':'Открыто 🔓');renderStore();
+    save();syncWallet();pop(en?'Unlocked 🔓':'Открыто 🔓');renderStore();
     openProduct(p);
+    });
   });}
 function productOwned(p){if(p.act==='full')return !!S.fullOwned;return !!(S.ownedProducts&&S.ownedProducts[p.key]);}
 function openProduct(p){
@@ -2731,7 +2778,7 @@ function cloneHomeCard(){var en=isEN();if(!S.result)return '';
   return '<div class="next-hero" onclick="openTalkSelf()" style="--ac:#00E0C7;margin-bottom:14px"><div class="nh-eyebrow" style="color:#5ee6d3">'+(en?'YOUR AI DOUBLE':'ТВОЙ ИИ-ДВОЙНИК')+'</div><div class="nh-row"><div class="nh-ic">💬</div><div class="nh-tx"><div class="nh-t">'+(en?'Ask your double about real life':'Спроси двойника о реальной жизни')+'</div><div class="nh-s">'+(en?'love · work · a decision — it knows you like no one else':'любовь · работа · решение — он знает тебя как никто')+'</div></div></div><div class="nh-cta"><span>'+(en?'Talk to my double →':'Поговорить с двойником →')+'</span></div></div>';}
 // the "wow" before the paywall: let people feel the living clone for free, right after the core result
 function cloneTasteCTA(){var en=isEN();if(!S.result)return '';
-  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(0,224,199,.34);background:radial-gradient(circle at 50% 0,rgba(0,224,199,.13),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#5ee6d3;justify-content:center">💬 '+(en?'SAY HI TO YOUR CLONE':'ПОЗНАКОМЬСЯ С ДВОЙНИКОМ')+'</div><div class="cb">'+(en?'Curious? Your AI double thinks and talks like you — chat with it for a couple of minutes. A few free messages a day.':'Любопытно? Твой ИИ-двойник думает и говорит как ты — поболтай пару минут. Несколько бесплатных сообщений в день.')+'</div><button class="btn cold" style="margin-top:14px" onclick="openTalkSelf()">'+(en?'Talk to my clone →':'Поговорить с клоном →')+'</button></div>';}
+  return '<div class="card-soft" style="text-align:center;border:1px solid rgba(0,224,199,.34);background:radial-gradient(circle at 50% 0,rgba(0,224,199,.13),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#5ee6d3;justify-content:center">💬 '+(en?'SAY HI TO YOUR CLONE':'ПОЗНАКОМЬСЯ С ДВОЙНИКОМ')+'</div><div class="cb">'+(en?'Curious? Your AI double thinks and talks like you — chat with it for a couple of minutes. A few free messages a day.':'Любопытно? Твой ИИ-двойник думает и говорит как ты — поболтай пару минут. Несколько бесплатных сообщений в день.')+'</div><button class="btn ghost" style="margin-top:14px" onclick="openTalkSelf()">'+(en?'Talk to my clone →':'Поговорить с клоном →')+'</button></div>';}
 function nextTestCTA(){
   var nk=nextTest();
   if(!nk)return '';
@@ -2739,7 +2786,7 @@ function nextTestCTA(){
   var rem=remainingTests();
   var html='<div class="card-soft upsell">'+
     '<div class="ch" style="color:#ffcf5c;justify-content:center">🔓 '+(en?'NEXT FACET':'СЛЕДУЮЩАЯ ГРАНЬ')+'</div>'+
-    '<div class="cb" style="text-align:center">'+(en?('Each test reveals part of your avatar. Next — “'+testTitle(nk)+'” '+testGlyph(nk,16)):('Каждый тест раскрывает часть твоего аватара. Дальше — «'+testTitle(nk)+'» '+testGlyph(nk,16)))+'</div>'+
+    '<div class="cb" style="text-align:center">'+(en?('A full breakdown + a passport facet + an avatar trait — for the price of a coffee. Next: “'+testTitle(nk)+'” '+testGlyph(nk,16)):('Полный разбор + грань паспорта + черта аватара — за чашку кофе. Дальше: «'+testTitle(nk)+'» '+testGlyph(nk,16)))+'</div>'+
     '<button class="btn '+(owned?'':'gold')+'" style="margin-top:14px" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'">'+(owned?(en?('Take “'+testTitle(nk)+'”'):('Пройти «'+testTitle(nk)+'»')):(en?('Unlock for ⭐ '+testPriceOf(nk)):('Открыть за ⭐ '+testPriceOf(nk))))+'</button>';
   // one-time discounted bundle — compact link, not a second big button
   if(rem.length>=2 && !S._bundleDeclined && !S._bundleBought){
@@ -3148,7 +3195,7 @@ function openConversation(idx){
       foot+='<button class="btn ghost" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'Or chat with their clone first':'Или сперва поговорить с клоном')+'</button>';
     }else{
       // demo persona or contact closed -> the AI clone chat is the way to interact
-      foot+='<button class="btn go" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'💬 Chat with '+m.peer.name+'’s clone':'💬 Поговорить с клоном '+m.peer.name)+'</button>';
+      foot+='<button class="btn violet" onclick="openTalkPeer(S._lastMeet['+idx+'])">'+(en?'💬 Chat with '+m.peer.name+'’s clone':'💬 Поговорить с клоном '+m.peer.name)+'</button>';
     }
     foot+='<button class="btn ghost" onclick="go(\'avatar\')">← '+(en?'other connections':'к другим знакомствам')+'</button>';
     renderVerdict(m,sc,foot);
@@ -3295,8 +3342,8 @@ function buyStars(sku,title,amount,onGranted){
     fetch(PAY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku:sku,title:title,amount:amount,aid:anonId(),initData:Telegram.WebApp.initData||''})})
       .then(function(r){return r.json();}).then(function(d){
         if(d&&d.link){Telegram.WebApp.openInvoice(d.link,function(status){if(status==='paid'){track('purchase',{sku:sku,amount:amount});onGranted();}else if(status==='failed'||status==='cancelled'){pop(en?'Payment not completed':'Оплата не завершена');}});}
-        else{onGranted();}
-      }).catch(function(){onGranted();});
+        else{pop(en?'Payment unavailable — try again later':'Оплата недоступна — попробуй позже');}
+      }).catch(function(){pop(en?'Payment unavailable — try again later':'Оплата недоступна — попробуй позже');});
   }else{track('purchase',{sku:sku,amount:amount,demo:true});onGranted();}
 }
 /* ===== server-truth purchases: restore entitlements on launch (Telegram only) ===== */
@@ -3307,6 +3354,7 @@ function applyEntitlements(skus){
     else if(s==='bundle'){['love','work','fears','shadow'].forEach(function(k){S.ownedTests[k]=true;});}
     else if(s==='chat1h'){/* time-limited; handled by S._chatUnlockUntil, not a permanent entitlement */}
     else if(s.indexOf('test_')===0)S.ownedTests[s.slice(5)]=true;
+    else if(s.indexOf('prod_')===0){S.ownedProducts=S.ownedProducts||{};S.ownedProducts[s.slice(5)]=true;}
     else if(s.indexOf('cos_')===0){var rest=s.slice(4);var i=rest.indexOf('_');if(i>0)S.ownedCosmetics[rest.slice(0,i)+':'+rest.slice(i+1)]=1;}
   });
   save();
@@ -3395,7 +3443,7 @@ function offerChatUnlock(){var en=isEN();
 }
 function talkSend(){
   if(!TALK||TALK._busy)return;var en=isEN();var ta=document.getElementById('talkText');var txt=ta?ta.value.trim():'';if(!txt)return;
-  if(!chatUnlocked()){var left=chatLeftToday();if(left<=0){offerChatUnlock();return;}S._chatCount=(S._chatCount||0)+1;save();if(left<=4)pop((en?'Messages left today: ':'Осталось сообщений сегодня: ')+(left-1));}
+  if(!chatUnlocked()){var left=chatLeftToday();if(left<=0){offerChatUnlock();return;}S._chatCount=(S._chatCount||0)+1;save();if(left<=4){var ml=left-1;pop(en?('Messages left today: '+ml):('Осталось '+ml+' '+msgPlural(ml)+' на сегодня'));}}
   ta.value='';talkGrow(ta);TALK.history.push({role:'user',content:txt});TALK._busy=true;TALK._typing=true;renderTalk();hap('selection');track('clone_talk',{mode:TALK.mode});
   var me={name:S.name||'',type:S.result?S.result.primary:'',big:S.result?S.result.big:null};
   var payload={mode:TALK.mode,me:me,peer:TALK.peer?{name:TALK.peer.name,type:TALK.peer.type,big:peerBig(TALK.peer)}:null,history:TALK.history.slice(-12),lang:en?'en':'ru',initData:(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||''};
@@ -3442,7 +3490,7 @@ function openGift(){
   var tgl=giftLink();
   modal('🎁 '+(en?'Gift the test to a friend':'Подарить тест другу'),
     en?'Your friend opens it as a personal gift from you — and discovers who they really are.':'Друг откроет это как личный подарок от тебя — и узнает, кто он на самом деле.',
-    function(){if(navigator.clipboard)navigator.clipboard.writeText(tgl);S.giftsSent=(S.giftsSent||0)+1;S._shared=true;save();track('gift_sent',{n:S.giftsSent});closeModal();pop(en?'Gift link copied 🎁 — send it to a friend':'Ссылка-подарок скопирована 🎁 — отправь другу');},
+    function(){if(navigator.clipboard)navigator.clipboard.writeText(tgl);S.giftsSent=(S.giftsSent||0)+1;S._shared=true;save();track('gift_sent',{n:S.giftsSent});refreshUnlockFromGifts();closeModal();pop(en?'Gift link copied 🎁 — send it to a friend':'Ссылка-подарок скопирована 🎁 — отправь другу');},
     giftPreviewCardHTML()+'<div class="share-link">'+tgl+'</div>');
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=en?'Copy gift link 🎁':'Скопировать подарок 🎁';var n=document.getElementById('mNo');if(n)n.textContent=en?'Close':'Закрыть';},0);
 }
@@ -3487,10 +3535,10 @@ function renderAvatar(){
   var sharpen=(!done&&nk)?'<button class="btn cold" onclick="openTest(\''+nk+'\')">'+(en?'✨ Sharpen the match · «'+testTitle(nk)+'» ('+prog+'/5)':'✨ Точнее матч · «'+testTitle(nk)+'» ('+prog+'/5)')+'</button>':'';
   document.getElementById('avatarActions').innerHTML=
     '<div class="action-stack">'+
-    '<button class="btn go" onclick="openTalkSelf()">'+(en?'💬 Talk to your double':'💬 Поговори со своим двойником')+'</button>'+
+    '<button class="btn violet" onclick="openTalkSelf()">'+(en?'💬 Talk to your double':'💬 Поговори со своим двойником')+'</button>'+
     sharpen+
     (done?'<button class="btn cold" onclick="go(\'wardrobe\')">'+(en?'Avatar studio':'Студия аватара')+'</button>':'')+
-    '<button class="btn ghost" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
+    '<button class="btn go" onclick="shareAvatar()">'+(en?'Share avatar':'Поделиться аватаром')+'</button>'+
     '<button class="btn ghost" onclick="saveAvatarImage()">'+(en?'Save to stories':'Сохранить в сторис')+'</button>'+
     '</div>';
   // networking — the core magic, available right after the core test; completing 5/5 deepens it
@@ -3689,7 +3737,7 @@ function renderHome(){
       '<div class="card-soft steps-card">'+steps+'</div>'+
       '<div class="trust-badge" onclick="methodologyInfo()">🔬 '+(en?'Built on Big Five (OCEAN) — real personality science':'На основе Big Five (OCEAN) — настоящая наука о личности')+' <span style="color:#7fe9ff">ⓘ</span></div>';
   }else{
-    cta.innerHTML=depthMap()+nextStepHero()+dailyCard();maybeCoach();
+    cta.innerHTML=nextStepHero()+progressStrip()+dailyCard();maybeCoach();
   }
   var ih=document.getElementById('homeInsight');
   if(S.result){
@@ -3699,13 +3747,13 @@ function renderHome(){
     ih.innerHTML='<div class="section-h"><h2>'+(en?'Insight for you':'Инсайт для тебя')+'</h2></div><div class="card-soft" style="border-left:3px solid '+t.color+'"><div class="ch" style="color:'+t.color+'">✨ '+(S.name?S.name:(en?'your portrait':'твой портрет'))+'</div><div class="cb">'+ins[idx]+'</div>'+(ins.length>1?'<div style="font-size:12px;color:#7fe9ff;margin-top:10px;cursor:pointer" onclick="renderHome()">'+(en?'another insight →':'ещё инсайт →')+'</div>':'')+'</div>';
     ih.innerHTML+='<div class="card-soft" onclick="go(\'insights\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;margin-top:10px"><span style="font-size:22px">💡</span><div><div class="ch">'+(en?'My insights':'Мои инсайты')+((S.insights&&S.insights.length)?(' ('+S.insights.length+')'):'')+'</div><div class="cb">'+((S.insights&&S.insights.length)?(en?'Tap to view your saved thoughts':'Открыть сохранённые мысли'):(en?'Catch a thought during a test (💡)':'Лови мысли во время теста (💡)'))+'</div></div></div>';
     // early clone teaser — taste the "magic" before assembling the full avatar (5/5)
-    if(avatarProgress()<5){
+    if(false){  /* clone teaser moved off home — clone is a secondary bridge */
       ih.innerHTML+='<div class="card-soft" style="border:1px solid rgba(212,255,79,.35);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.10),transparent 70%),rgba(28,24,46,.5);margin-top:10px"><div class="ch" style="color:#D4FF4F">✨ '+(en?'Someone already resonates with you':'Кто-то уже резонирует с тобой')+'</div><div class="cb">'+(en?'Your clone made the first move. See how your clones talked — then open your avatar to send it meeting everyone, and complete more tests to sharpen the match.':'Твой клон сделал первый шаг. Посмотри, как поговорили ваши клоны — а потом открой аватар и отправь его знакомиться со всеми; проходи тесты, чтобы матч был точнее.')+'</div><button class="btn lime" style="margin-top:12px" onclick="openTeaserMeet()">'+(en?'Watch the clones talk →':'Смотреть диалог клонов →')+'</button></div>';
     }
   }else ih.innerHTML='';
   var nh=document.getElementById('homeNext');if(nh)nh.innerHTML='';  // next step now lives in the hero card above
   var hr=document.getElementById('homeResult');
-  if(S.result){
+  if(false){  /* tests list lives in the Passport now */
     var t=TYPES[S.result.primary];
     var rows='';
     // main type first
@@ -3763,6 +3811,7 @@ var PP_STEPS=[
   {key:'shadow',ic:'🌙',label:'Тень',sub:'тёмная сторона силы',label_en:'Shadow',sub_en:'the dark side of your power'}
 ];
 function ppStepDone(key){return key==='main'?!!S.result:!!(S.tests&&S.tests[key]);}
+function msgPlural(n){if(isEN())return n===1?'message':'messages';var a=n%10,b=n%100;return (a===1&&b!==11)?'сообщение':((a>=2&&a<=4&&(b<10||b>=20))?'сообщения':'сообщений');}
 function ppPlural(n){if(isEN())return n===1?'test':'tests';var a=n%10,b=n%100;return (a===1&&b!==11)?'тест':((a>=2&&a<=4&&(b<10||b>=20))?'теста':'тестов');}
 function ppOpenStep(key){
   if(key==='main'){if(S.result)goResult();else startQuiz();return;}
@@ -3968,7 +4017,7 @@ function renderPassport(){
     '<div class="pp-id"><div class="pp-name">'+(S.name||(en?'You':'Ты'))+'</div>'+
       '<div class="pp-type" style="color:'+t.color+'">'+typeGlyph(S.result.primary,16)+' '+te.name+' · '+te.tag+'</div>'+
       '<div class="pp-prog"><div class="cl-ring" style="--p:'+(prog/5*100)+';--rc:'+rc+';width:42px;height:42px"><b style="font-size:12px">'+prog+'/5</b></div>'+
-      '<span class="pp-progtx">'+(done?(en?'Passport fully assembled ✨':'Паспорт собран полностью ✨'):(en?'<b style="color:#7fdca6">Core ready.</b> '+(5-prog)+' more '+ppPlural(5-prog)+' add depth':'<b style="color:#7fdca6">Ядро готово.</b> Ещё '+(5-prog)+' '+ppPlural(5-prog)+' добавят глубины'))+'</span></div>'+
+      '<span class="pp-progtx">'+(done?(en?'Passport fully assembled ✨':'Паспорт собран полностью ✨'):(en?'<b style="color:#7fdca6">Core ready.</b> '+(5-prog)+' more '+ppPlural(5-prog)+(5-prog===1?' adds depth':' add depth'):'<b style="color:#7fdca6">Ядро готово.</b> Ещё '+(5-prog)+' '+ppPlural(5-prog)+' добавят глубины'))+'</span></div>'+
     '</div></div>';
   var steps='<div class="section-h"><h2>'+(en?'Steps of self-discovery':'Шаги познания')+'</h2></div><div class="pp-steps">'+PP_STEPS.map(function(s,i){
     var d=ppStepDone(s.key),resName=en?s.sub_en:s.sub;
@@ -4373,7 +4422,7 @@ var I18N={
   ru:{
     nav_home:'Главная',nav_type:'Паспорт',nav_deep:'Глубже',nav_board:'Рейтинг',nav_chats:'Чаты',
     ob_sub:'Сначала познакомимся — это сделает твой портрет точнее.',
-    ob_name:'Как тебя зовут',ob_gender:'Пол',ob_male:'Мужской',ob_female:'Женский',ob_reassure:'🔒 Это останется только у тебя на устройстве',
+    ob_name:'Как тебя зовут',ob_gender:'Пол',ob_male:'Мужской',ob_female:'Женский',ob_reassure:'🔒 Имя и дату используем только для точности — никому не показываем',
     ob_birth:'Дата рождения',ob_start:'Начать',
     home_q:'Что тобой <span class="grad">движет?</span>',
     deep_tests:'Тесты',deep_ach:'Достижения',deep_prem:'Полные разборы',
@@ -4386,13 +4435,13 @@ var I18N={
     chats_eye:'Чаты',chats_h1:'Твои <span class="grad">знакомства</span>.',
     res_dark_t:'🌑 Тёмная сторона + ты в 4 ролях',res_dark_s:'Тёмная сторона типа, как тебя видят, и поведение в любви, работе, конфликте и с деньгами.',res_dark_cta:'Открыть полный разбор · ⭐ 200',
     res_gift:'Подарить тест другу',res_share:'Поделиться своим типом',res_duel:'Вызвать друга на дуэль',res_menu:'В меню',res_sharehub:'Поделиться',
-    duel_eye:'Дуэль · угадай друга',dres_share:'Похвастаться результатом',dres_again:'Ещё дуэль',dres_invite:'Вызвать друга',
+    duel_eye:'Дуэль · угадай друга',dres_share:'Похвастаться результатом',dres_again:'Ещё дуэль',dres_invite:'А друг читает людей лучше тебя? 🔥',
     savedot:'✓ сохранено',boot_sub:'почини себя',reset_link:'Начать заново'
   },
   en:{
     nav_home:'Home',nav_type:'Passport',nav_deep:'More',nav_board:'Ranking',nav_chats:'Chats',
     ob_sub:"Let's get acquainted first — it makes your portrait sharper.",
-    ob_name:'What is your name',ob_gender:'Gender',ob_male:'Male',ob_female:'Female',ob_reassure:'🔒 This stays only on your device',
+    ob_name:'What is your name',ob_gender:'Gender',ob_male:'Male',ob_female:'Female',ob_reassure:'🔒 Used only to sharpen your portrait — never shown to anyone',
     ob_birth:'Date of birth',ob_start:'Start',
     home_q:'What <span class="grad">drives you?</span>',
     deep_tests:'Tests',deep_ach:'Achievements',deep_prem:'Full reports',
@@ -4405,7 +4454,7 @@ var I18N={
     chats_eye:'Chats',chats_h1:'Your <span class="grad">connections</span>.',
     res_dark_t:'🌑 Dark side + you in 4 roles',res_dark_s:'Your type’s dark side, how others see you, and your behavior in love, work, conflict and with money.',res_dark_cta:'Unlock the full breakdown · ⭐ 200',
     res_gift:'Gift the test to a friend',res_share:'Share your type',res_duel:'Challenge a friend to a duel',res_menu:'Menu',res_sharehub:'Share',
-    duel_eye:'Duel · guess your friend',dres_share:'Show off your result',dres_again:'One more duel',dres_invite:'Invite a friend',
+    duel_eye:'Duel · guess your friend',dres_share:'Show off your result',dres_again:'One more duel',dres_invite:'Does a friend read people better than you? 🔥',
     savedot:'✓ saved',boot_sub:'fix yourself',reset_link:'Start over'
   }
 };
