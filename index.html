@@ -383,6 +383,9 @@
   .scene.flip{animation:sflip .42s cubic-bezier(.2,.8,.2,1)}@keyframes sflip{0%{opacity:0;transform:translateX(34px) scale(.985)}100%{opacity:1;transform:none}}
   .opts{display:flex;flex-direction:column;gap:clamp(8px,2.4vw,11px)}
   .opt{position:relative;display:flex;align-items:center;gap:12px;text-align:left;color:#f2efff;padding:clamp(13px,3.6vw,17px);border-radius:16px;font-size:clamp(14.5px,4.2vw,16px);font-weight:600;cursor:pointer;transition:transform .14s cubic-bezier(.2,.8,.2,1),border-color .16s,background .16s;background:linear-gradient(160deg,rgba(46,42,70,.55),rgba(24,20,42,.45));border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.13);overflow:hidden;opacity:0;animation:optIn .4s cubic-bezier(.2,.8,.2,1) forwards}
+  .opt.dlm{justify-content:center;text-align:center;padding:clamp(20px,5.5vw,26px);font-size:clamp(15px,4.6vw,17px);font-weight:700;flex-direction:column;gap:8px}
+  .opt.dlm .oe{font-size:34px}
+  .dlm-or{text-align:center;color:var(--txt3,rgba(244,246,251,.5));font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;margin:3px 0}
   .opt:nth-child(1){animation-delay:.05s}.opt:nth-child(2){animation-delay:.11s}.opt:nth-child(3){animation-delay:.17s}.opt:nth-child(4){animation-delay:.23s}
   @keyframes optIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .opt::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#ffae42;transform:scaleY(0);transition:.18s;transform-origin:center}
@@ -1997,6 +2000,41 @@ function progressCheer(){var en=isEN();var p=avatarProgress();
 
 /* ===== personality dynamics: re-take the core test & see how you changed ===== */
 function coreHistory(){return (S.history||[]).filter(function(h){return h&&h.primary;});}
+var DILEMMAS=[
+ {f:'E',art:'🌙',q:'Идеальный вечер пятницы?',q_en:'Perfect Friday night?',a:['🎉','Туда, где люди и движ','Out where the people are',3],b:['🕯️','Дома, в тишине, для себя','Home, quiet, just me',0]},
+ {f:'E',art:'💬',q:'В новой компании ты?',q_en:'In a new group, you?',a:['🗣️','В центре разговора','At the center of it',3],b:['👂','Больше наблюдаю и слушаю','Mostly watch and listen',0]},
+ {f:'O',art:'🧭',q:'Что тянет сильнее?',q_en:'What pulls you more?',a:['🌀','Новое и непривычное','The new and strange',3],b:['🧱','Проверенное и надёжное','The proven and reliable',0]},
+ {f:'O',art:'🎨',q:'Тебе ближе мир?',q_en:'Your world is more?',a:['💭','Идей, образов, фантазий','Ideas, images, imagination',3],b:['🔧','Фактов и конкретики','Facts and concrete things',0]},
+ {f:'C',art:'⏳',q:'Дедлайн через неделю?',q_en:'Deadline in a week?',a:['✅','Сделаю заранее','Done well ahead',3],b:['🔥','В последнюю ночь','The very last night',0]},
+ {f:'C',art:'🗂️',q:'Твоё пространство?',q_en:'Your space?',a:['📐','Всё на своих местах','Everything in its place',3],b:['🌪️','Творческий беспорядок','Creative chaos',0]},
+ {f:'A',art:'⚖️',q:'В конфликте ты скорее?',q_en:'In conflict you tend to?',a:['🤝','Уступлю ради мира','Yield to keep the peace',3],b:['⚔️','Скажу как есть','Say it straight',0]},
+ {f:'A',art:'🫶',q:'Чужая просьба не вовремя?',q_en:'A favor at a bad time?',a:['💛','Помогу, даже в ущерб себе','Help, even at my cost',3],b:['🛡️','Сначала мои интересы','My needs first',0]},
+ {f:'N',art:'🌊',q:'После резкой критики?',q_en:'After harsh criticism?',a:['😣','Переживаю долго','It stays with me long',3],b:['🧊','Стряхнул и пошёл дальше','Shake it off, move on',0]},
+ {f:'N',art:'🎢',q:'Перед важным событием?',q_en:'Before something big?',a:['😰','Накручиваю сценарии','I spin worst-cases',3],b:['😌','В целом спокоен','Mostly calm',0]}
+];
+function startSwipe(){_quizKind='core';Q={i:0,ans:[]};chooseDilemma._lock=false;track('test_start',{kind:'swipe'});go('quiz');renderDilemma();}
+function renderDilemma(){
+  if(!Q||Q.i>=DILEMMAS.length)return;var en=isEN();var d=DILEMMAS[Q.i];
+  document.getElementById('qBar').style.width=(Q.i/DILEMMAS.length*100)+'%';
+  document.getElementById('qCount').textContent=(Q.i+1)+' / '+DILEMMAS.length;
+  document.getElementById('sceneArt').textContent=d.art;
+  document.getElementById('sceneQ').textContent=en?d.q_en:d.q;
+  var sc=document.getElementById('scene');sc.classList.remove('flip');void sc.offsetWidth;sc.classList.add('flip');
+  document.getElementById('opts').innerHTML=
+    '<div class="opt dlm" onclick="chooseDilemma(0)"><span class="oe">'+d.a[0]+'</span><span>'+(en?d.a[2]:d.a[1])+'</span></div>'+
+    '<div class="dlm-or">'+(en?'or':'или')+'</div>'+
+    '<div class="opt dlm" onclick="chooseDilemma(1)"><span class="oe">'+d.b[0]+'</span><span>'+(en?d.b[2]:d.b[1])+'</span></div>';
+}
+function chooseDilemma(idx){
+  if(chooseDilemma._lock)return;chooseDilemma._lock=true;
+  var d=DILEMMAS[Q.i];var opt=idx===0?d.a:d.b;
+  Q.ans.push({f:d.f,d:1,v:opt[3]});
+  var els=document.querySelectorAll('#opts .opt');for(var z=0;z<els.length;z++)els[z].style.pointerEvents='none';if(els[idx])els[idx].classList.add('sel');
+  try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}try{sfx('select');}catch(e){}
+  var last=(Q.i>=DILEMMAS.length-1);
+  setTimeout(function(){chooseDilemma._lock=false;if(last){finishQuiz();}else{Q.i++;renderDilemma();var sq=document.getElementById('sQuiz');if(sq)sq.scrollTo(0,0);}},300);
+}
+function retakeSwipe(){var en=isEN();modal(en?'Quick mode: This or That':'Быстрый режим: Это или то',en?'10 snap dilemmas — pick one of two, by gut. We re-read your core type, fast.':'10 дилемм на скорость — выбирай одно из двух, по ощущению. Быстро пересоберём твой тип.',function(){closeModal();startSwipe();});setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Let’s go':'Поехали');},0);}
 function retakeCore(){var en=isEN();modal(en?'Retake the core test?':'Перепройти ядро?',en?'Answer the 10 core questions again — we’ll show how your portrait shifted since last time. Your facets and avatar stay.':'Ответь снова на 10 вопросов ядра — покажем, как сместился портрет с прошлого раза. Грани и аватар останутся.',function(){closeModal();startQuiz();});setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Retake':'Перепройти');},0);}
 function changeCard(en){
   var h=coreHistory();if(h.length<2)return '';
@@ -4248,7 +4286,7 @@ function renderPassport(){
          :'<button class="btn" onclick="ppOpenStep(\''+(nk||'main')+'\')">'+(en?'Keep filling your passport':'Продолжить заполнять паспорт')+'</button>')+
     '<button class="btn cold" onclick="go(\'soul\')">'+(en?'Open Soul Sheet':'Открыть Лист Души')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button></div>';
-  var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
+  var retake='<div class="btn-row" style="margin-top:12px"><button class="btn ghost" onclick="retakeCore()">'+(en?'Retake core':'Перепройти ядро')+'</button><button class="btn cold" onclick="retakeSwipe()">⚡ '+(en?'This or That':'Это или то')+'</button></div>';
   host.innerHTML=hero+masterInsightCard()+changeCard(en)+bar+journeyCard()+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
