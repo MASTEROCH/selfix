@@ -3842,11 +3842,11 @@ function testResName(key,dom){var ru=(TEST_BANKS[key].result[dom]||TEST_BANKS[ke
 var TEST_TITLE_EN={love:'Love test',work:'Work profile',fears:'Deep fears',shadow:'Dark side'};
 function testTitle(key){return (isEN()&&TEST_TITLE_EN[key])?TEST_TITLE_EN[key]:TEST_BANKS[key].title;}
 var PP_STEPS=[
-  {key:'main',ic:'🌀',label:'Ядро личности',sub:'Big Five · базовый тип',label_en:'Personality core',sub_en:'Big Five · base type'},
-  {key:'love',ic:'❤️',label:'Любовь',sub:'каков ты в близости',label_en:'Love',sub_en:'how you are in closeness'},
-  {key:'work',ic:'💼',label:'Работа',sub:'каков ты в деле',label_en:'Work',sub_en:'how you are at work'},
-  {key:'fears',ic:'🧬',label:'Страхи',sub:'что движет изнутри',label_en:'Fears',sub_en:'what drives you within'},
-  {key:'shadow',ic:'🌙',label:'Тень',sub:'тёмная сторона силы',label_en:'Shadow',sub_en:'the dark side of your power'}
+  {key:'main',ic:'🌀',label:'Ядро личности',sub:'Big Five · базовый тип',pain:'почему ты реагируешь именно так',label_en:'Personality core',sub_en:'Big Five · base type',pain_en:'why you react the way you do'},
+  {key:'love',ic:'❤️',label:'Любовь',sub:'каков ты в близости',pain:'почему выбираешь не тех и отдаляешься',label_en:'Love',sub_en:'how you are in closeness',pain_en:'why you pick the wrong people and pull away'},
+  {key:'work',ic:'💼',label:'Работа',sub:'каков ты в деле',pain:'почему выгораешь и буксуешь не там',label_en:'Work',sub_en:'how you are at work',pain_en:'why you burn out and stall in the wrong place'},
+  {key:'fears',ic:'🧬',label:'Страхи',sub:'что движет изнутри',pain:'что тайно управляет твоими решениями',label_en:'Fears',sub_en:'what drives you within',pain_en:'what secretly runs your decisions'},
+  {key:'shadow',ic:'🌙',label:'Тень',sub:'тёмная сторона силы',pain:'что ты прячешь и что тебя срывает',label_en:'Shadow',sub_en:'the dark side of your power',pain_en:'what you hide and what makes you snap'}
 ];
 function ppStepDone(key){return key==='main'?!!S.result:!!(S.tests&&S.tests[key]);}
 function msgPlural(n){if(isEN())return n===1?'message':'messages';var a=n%10,b=n%100;return (a===1&&b!==11)?'сообщение':((a>=2&&a<=4&&(b<10||b>=20))?'сообщения':'сообщений');}
@@ -4177,11 +4177,18 @@ function bigRadar(big,color,size){
 }
 function radarLegend(){var en=isEN();var FB=[['O','#c9a7ff'],['C','#5d8cff'],['E','#ff5d6c'],['A','#52dd92'],['N','#ffae42']];
   return '<div class="radar-legend">'+FB.map(function(p){return '<span class="rl-chip" onclick="factorInfo(\''+p[0]+'\')"><i style="background:'+p[1]+'"></i>'+Bt(p[0]).name+' ⓘ</span>';}).join('')+'</div>';}
+function journeyCard(){var en=isEN();var prog=avatarProgress(),done=prog>=5;var nk=nextTest();
+  if(done)return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.4);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.12),transparent 70%),rgba(28,24,46,.55)"><div class="ch" style="color:#D4FF4F">🗺️ '+(en?'Your full self-map is ready':'Твоя полная карта себя собрана')+'</div><div class="cb" style="margin-top:6px">'+(en?'You now understand why you feel, love and fear the way you do — and what to do about it. People pay therapists for years for this.':'Теперь ты понимаешь, почему ты так чувствуешь, любишь и боишься — и что с этим делать. За этим годами ходят к психологу.')+'</div></div>';
+  var nextLbl='';for(var i=0;i<PP_STEPS.length;i++){if(PP_STEPS[i].key===(nk||'main')){nextLbl=en?PP_STEPS[i].label_en:PP_STEPS[i].label;break;}}
+  return '<div class="card-soft" style="border-left:3px solid #00E0C7"><div class="ch" style="color:#5ee6d3">🗺️ '+(en?'WHERE THIS LEADS':'КУДА ВЕДЁТ ЭТОТ ПУТЬ')+'</div>'+
+    '<div class="cb" style="margin-top:6px">'+(en?'At the end — a full map of yourself: <b>why</b> you feel, love and fear the way you do, and what to change. The clarity people chase for years in therapy, courses and tarot — here in a couple of evenings.':'В конце — полная карта себя: <b>почему</b> ты так чувствуешь, любишь и боишься, и что менять. Та самая ясность, за которой годами ходят к психологам, на курсы и к тарологам — здесь за пару вечеров.')+'</div>'+
+    '<div class="cb" style="margin-top:10px;color:#9a93c2"><b style="color:#7fdca6">'+(en?'You are here: ':'Ты здесь: ')+'</b>'+prog+'/5 · <b style="color:#7fe9ff">'+(en?'next: ':'дальше: ')+'</b>'+(nextLbl||(en?'core':'ядро'))+'</div></div>';
+}
 function renderPassport(){
   var host=document.getElementById('passportBody');if(!host)return;
   var en=isEN();var prog=avatarProgress(),done=prog>=5;
   if(!S.result){
-    host.innerHTML='<div class="card-soft" style="text-align:center;padding:28px 18px"><div style="font-size:44px">📋</div><div class="ch" style="justify-content:center;margin-top:8px">'+(en?'YOUR PASSPORT IS EMPTY':'ПАСПОРТ ЕЩЁ ПУСТ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Take the first test — and your passport starts filling in. Each step adds a facet: core, love, work, fears, shadow. In the end you assemble the full picture of yourself.':'Пройди первый тест — и паспорт начнёт заполняться. Каждый шаг добавляет грань: ядро, любовь, работа, страхи, тень. В конце ты соберёшь полную картину себя.')+'</div><button class="btn" style="margin-top:16px" onclick="startQuiz()">'+(en?'Begin knowing yourself →':'Начать познание себя →')+'</button></div>';
+    host.innerHTML='<div class="card-soft" style="text-align:center;padding:28px 18px"><div style="font-size:44px">📋</div><div class="ch" style="justify-content:center;margin-top:8px">'+(en?'YOUR PASSPORT IS EMPTY':'ПАСПОРТ ЕЩЁ ПУСТ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Understand why you keep repeating the same mistakes — in love, work, decisions. Take the first test and build your self-map facet by facet. The clarity people chase for years in therapy — in a couple of evenings.':'Понять, почему ты раз за разом наступаешь на одни грабли — в любви, работе, решениях. Пройди первый тест и собирай карту себя грань за гранью. То, за чем годами ходят к психологу, — здесь за пару вечеров.')+'</div><button class="btn" style="margin-top:16px" onclick="startQuiz()">'+(en?'Begin knowing yourself →':'Начать познание себя →')+'</button></div>';
     return;
   }
   var t=TYPES[S.result.primary],te=Tt(S.result.primary),tr=avatarTraits();
@@ -4196,7 +4203,7 @@ function renderPassport(){
       '<span class="pp-progtx">'+(done?(en?'Passport fully assembled ✨':'Паспорт собран полностью ✨'):(en?'<b style="color:#7fdca6">Core ready.</b> '+(5-prog)+' more '+ppPlural(5-prog)+(5-prog===1?' adds depth':' add depth'):'<b style="color:#7fdca6">Ядро готово.</b> Ещё '+(5-prog)+' '+ppPlural(5-prog)+' добавят глубины'))+'</span></div>'+
     '</div></div>';
   var steps='<div class="section-h"><h2>'+(en?'Steps of self-discovery':'Шаги познания')+'</h2></div><div class="pp-steps">'+PP_STEPS.map(function(s,i){
-    var d=ppStepDone(s.key),resName=en?s.sub_en:s.sub;
+    var d=ppStepDone(s.key),resName=en?(s.pain_en||s.sub_en):(s.pain||s.sub);
     if(d){resName=(s.key==='main')?te.name:testResName(s.key,S.tests[s.key]);}
     return '<div class="pp-step '+(d?'done':'todo')+'" style="animation-delay:'+(i*60)+'ms" onclick="ppOpenStep(\''+s.key+'\')">'+
       '<div class="pp-step-n">'+(d?'✓':(i+1))+'</div><div class="pp-step-ic">'+testGlyph(s.key,19)+'</div>'+
@@ -4222,7 +4229,7 @@ function renderPassport(){
     '<button class="btn cold" onclick="go(\'soul\')">'+(en?'Open Soul Sheet':'Открыть Лист Души')+'</button>'+
     '<button class="btn ghost" onclick="go(\'avatar\')">'+(en?'Open avatar':'Открыть аватар')+'</button></div>';
   var retake='<button class="btn ghost" style="margin-top:12px" onclick="retakeCore()">'+(en?'Retake the core test':'Перепройти основной тест')+'</button>';
-  host.innerHTML=hero+masterInsightCard()+changeCard(en)+bar+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
+  host.innerHTML=hero+masterInsightCard()+changeCard(en)+bar+journeyCard()+passportPremiumCard()+steps+summary+facetLinksCard()+big+retake+actions;
   setTimeout(function(){var i=host.querySelector('.pp-fill-track i');if(i)i.style.width=i.getAttribute('data-w')+'%';},80);
 }
 /* ===== SOUL SHEET — game layer: Big Five → RPG character + growth quests =====
@@ -4730,7 +4737,7 @@ function renderIntro(){
   host.innerHTML='<div class="intro-wrap">'+
     avatarHeroIntro()+
     '<h1 class="intro-hook">'+(en?'Who are you, <span class="grad">really?</span>':'Кто ты <span class="grad">на самом деле?</span>')+'</h1>'+
-    '<div class="intro-sub">'+(en?'Take science-based tests and assemble your full portrait — facet by facet, all the way down.':'Пройди научные тесты и собери полный портрет себя — грань за гранью, до самого дна.')+'</div>'+
+    '<div class="intro-sub">'+(en?'Understand why you feel, love and fear the way you do — and what to change. A full map of yourself, on real science — instead of years of therapy.':'Пойми, почему ты так чувствуешь, любишь и боишься — и что менять. Полная карта себя на научной основе — вместо лет терапии.')+'</div>'+
     '<div class="intro-list">'+feats.map(function(f){return '<div class="intro-feat"><span class="ic">'+f.ic+'</span><span class="tx">'+f.tx+'</span></div>';}).join('')+'</div>'+
     '</div>'+
     '<div class="intro-cta"><button class="btn go" onclick="go(\'onboard\')">'+(en?'Discover myself \u2192':'Узнать себя \u2192')+'</button><div class="intro-tiny">'+(en?'Free \u00b7 2 minutes \u00b7 no signup':'Бесплатно \u00b7 2 минуты \u00b7 без регистрации')+'</div></div>';
