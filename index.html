@@ -2714,7 +2714,7 @@ function openTest(key){
   if(testOwned(key)){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   var pr=testPriceOf(key);
-  modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
+  modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><b style="color:#ffce6b">'+(en?'Answers: ':'Отвечает на: ')+painOf(key,en)+'</b><br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
     closeModal();buyStars('test_'+key,testTitle(key),pr,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
@@ -2811,7 +2811,7 @@ function nextTestCTA(){
   var rem=remainingTests();
   var html='<div class="card-soft upsell">'+
     '<div class="ch" style="color:#ffcf5c;justify-content:center">🔓 '+(en?'NEXT FACET':'СЛЕДУЮЩАЯ ГРАНЬ')+'</div>'+
-    '<div class="cb" style="text-align:center">'+(en?('A full breakdown + a passport facet + an avatar trait — for the price of a coffee. Next: “'+testTitle(nk)+'” '+testGlyph(nk,16)):('Полный разбор + грань паспорта + черта аватара — за чашку кофе. Дальше: «'+testTitle(nk)+'» '+testGlyph(nk,16)))+'</div>'+
+    '<div class="cb" style="text-align:center">'+(en?('“'+testTitle(nk)+'” '+testGlyph(nk,16)+' answers: <b>'+painOf(nk,true)+'</b>. A full breakdown + a passport facet — for the price of a coffee.'):('«'+testTitle(nk)+'» '+testGlyph(nk,16)+' отвечает на: <b>'+painOf(nk,false)+'</b>. Полный разбор + грань паспорта — за чашку кофе.'))+'</div>'+
     '<button class="btn '+(owned?'':'gold')+'" style="margin-top:14px" onclick="'+(owned?'runTest(\''+nk+'\')':'openTest(\''+nk+'\')')+'">'+(owned?(en?('Take “'+testTitle(nk)+'”'):('Пройти «'+testTitle(nk)+'»')):(en?('Unlock for ⭐ '+testPriceOf(nk)):('Открыть за ⭐ '+testPriceOf(nk))))+'</button>';
   // one-time discounted bundle — compact link, not a second big button
   if(rem.length>=2 && !S._bundleDeclined && !S._bundleBought){
@@ -3699,12 +3699,32 @@ function touchDaily(){var d=dayNum(),g=dailyState();var nd=false;if(g.lastOpen!=
 function dailyStreak(){var g=dailyState(),d=dayNum();return (g.lastOpen===d||g.lastOpen===d-1)?(g.streak||0):0;}
 function dayPlural(n){if(isEN())return n===1?'day':'days';var a=n%10,b=n%100;return (a===1&&b!==11)?'день':((a>=2&&a<=4&&(b<10||b>=20))?'дня':'дней');}
 function portraitOfDay(){var pool=bigInsights().concat(homeInsights());if(!pool.length)return '';return pool[dayNum()%pool.length];}
+var MIRROR_DAY=[
+ ['Сегодня заметь, где ты говоришь «да», а внутри — твёрдое «нет». Так ты избегаешь конфликта — и копишь усталость.','Notice today where you say “yes” while inside it’s a firm “no.” That’s how you dodge conflict — and quietly drain yourself.'],
+ ['Ты откладываешь не из лени, а из страха сделать неидеально. Сегодня сделай одно дело на 80% — и отпусти.','You procrastinate not from laziness but from fear of doing it imperfectly. Today do one thing at 80% — and let go.'],
+ ['Ты держишь людей на расстоянии «чтобы не ранили». Заметь: кого ты не подпускаешь, хотя хочешь ближе.','You keep people at arm’s length “so they can’t hurt you.” Notice who you push away though you want them closer.'],
+ ['Ты заботишься о других вперёд себя — и тихо обижаешься, что не ценят. Сегодня попроси о чём-то прямо.','You put others first — then quietly resent being unappreciated. Today ask for something directly.'],
+ ['Ты контролируешь всё, потому что не доверяешь. Сегодня отпусти один контроль и посмотри, что будет.','You control everything because you don’t trust. Today release one bit of control and watch.'],
+ ['Тебе кажется, надо больше стараться. Чаще правда в том, что надо меньше доказывать.','You think you must try harder. More often the truth is: prove less.'],
+ ['Ты заглушаешь тишину делами. Побудь 5 минут без телефона — там твои настоящие мысли.','You drown silence in busyness. Spend 5 minutes without your phone — your real thoughts live there.'],
+ ['Ты выбираешь знакомую боль вместо незнакомого покоя. Заметь, где тянет к привычному, что вредит.','You choose familiar pain over unfamiliar peace. Notice where you’re drawn to a habit that harms you.'],
+ ['Ты злишься не на людей — на то, что снова не услышал себя. Сегодня спроси: чего хочу Я?','You’re angry not at people but at not hearing yourself again. Today ask: what do I want?'],
+ ['Ты зовёшь силой — никогда не просить помощи. Это не сила, это страх быть должным.','You call it strength — never asking for help. It’s not strength, it’s fear of owing.'],
+ ['Ты заранее обесцениваешь то, что хочешь: «да мне и не надо». Сегодня признайся себе, что надо.','You pre-dismiss what you want: “I don’t even need it.” Today admit you do.'],
+ ['Ты живёшь в голове, прокручивая сценарии. Реальность почти всегда мягче репетиции.','You live in your head rehearsing scenarios. Reality is almost always softer than the rehearsal.'],
+ ['Ты путаешь усталость с ленью и винишь себя. Иногда тело просто просит паузу.','You confuse tiredness with laziness and blame yourself. Sometimes the body just asks for a pause.'],
+ ['Ты ждёшь, что поймут без слов, и ранишься, когда не угадали. Сказать прямо — не слабость.','You expect to be understood without words, and hurt when you’re not. Saying it plainly isn’t weakness.'],
+ ['Ты держишь старую обиду, думая, что наказываешь другого. Платишь только ты.','You hold an old grudge thinking it punishes them. You’re the only one paying.'],
+ ['Ты откладываешь жизнь до «когда буду готов». Готов не будешь. Начни сегодня с малого.','You postpone life until “when I’m ready.” You won’t be. Start small today.']
+];
+function mirrorOfDay(){var a=MIRROR_DAY;var i=Math.abs(dayNum())%a.length;return isEN()?a[i][1]:a[i][0];}
+function painOf(key,en){for(var i=0;i<PP_STEPS.length;i++){if(PP_STEPS[i].key===key)return en?PP_STEPS[i].pain_en:PP_STEPS[i].pain;}return '';}
 function dailyCard(){
   var en=isEN();var g=dailyState();var d=dayNum();var streak=dailyStreak();
   var duelDone=g.duelDay===d;var qLeft=questQuotaLeft();var portrait=portraitOfDay();
   return '<div class="card-soft daily-card">'+
     '<div class="daily-head"><span class="daily-title">'+uic('calendar','#eef3d8',17)+' '+(en?'Today':'Сегодня')+'</span><span class="daily-streak">'+uic('flame','#ffce6b',16)+' '+streak+' '+dayPlural(streak)+'</span></div>'+
-    (portrait?'<div class="daily-portrait"><b style="color:#c9b3ff">'+uic('spark','#c9b3ff',16)+' '+(en?'Portrait of the day':'Портрет дня')+'</b><br>'+portrait+'</div>':'')+
+    '<div class="daily-portrait"><b style="color:#c9b3ff">🪞 '+(en?'Mirror of the day':'Зеркало дня')+'</b><br>'+mirrorOfDay()+'<div style="margin-top:8px"><span style="font-size:12px;color:#7fe9ff;cursor:pointer" onclick="go(\'passport\')">'+(en?'go deeper into your patterns →':'копнуть свои паттерны глубже →')+'</span></div></div>'+
     '<div class="daily-actions">'+
       '<button class="daily-chip'+(qLeft<=0?' done':'')+'" onclick="go(\'soul\')">'+(qLeft<=0?'✓ ':uic('target','#ffce6b',17)+' ')+(en?'Daily quests':'Квесты дня')+'</button>'+
       '<button class="daily-chip'+(duelDone?' done':'')+'" onclick="startDuelFlow()">'+(duelDone?'✓ ':uic('swords','#7fe9ff',17)+' ')+(en?'Daily duel':'Дуэль дня')+'</button>'+
