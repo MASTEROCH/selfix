@@ -1092,6 +1092,7 @@
       <div class="eyebrow" id="stEye">Глубже</div>
       <h1 id="stH1">Загляни <span class="grad">глубже</span>.</h1>
       <div class="lede" id="stLede">Новые тесты, достижения и полные разборы. Чем больше открываешь — тем точнее ты знаешь себя.</div>
+      <div id="subCardHost"></div>
       <div class="section-h"><h2 id="hTests">Тесты</h2></div>
       <div id="testsList"></div>
       <div class="section-h"><h2 id="hPrem">Полные разборы</h2></div>
@@ -2261,7 +2262,7 @@ function renderResult(){
     fold('🚀 '+(en?'How to use your strength':'Как применить свою силу'),'<div class="cb"><b>'+gr.use[0]+'</b><br>'+gr.use[1]+'</div>')+
     fold('🛠 '+(en?'What to work on':'Над чем поработать'),'<div class="cb">'+gr.work[0]+'<br><br>'+gr.work[1]+'</div>');}
   var rl=Rt(r.primary);var rh=document.getElementById('rolesHost');var dl=document.getElementById('darkLock');
-  if(S.fullOwned){dl.style.display='none';
+  if(subActive()||S.fullOwned){dl.style.display='none';
     rh.innerHTML='<div class="card-soft"><div class="ch">🌑 '+(en?'Your dark side':'Тёмная сторона')+'</div><div class="cb">'+te.dark+'</div></div><div class="card-soft"><div class="ch">👁 '+(en?'How others see you':'Как тебя видят')+'</div><div class="cb">'+te.seen+'</div></div><div class="sp-meters"><div class="mh">'+(en?'You in four roles':'Ты в четырёх ролях')+'</div><div class="card-soft" style="margin-bottom:10px"><div class="ch">❤️ '+(en?'In love':'В любви')+'</div><div class="cb">'+rl.love+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">💼 '+(en?'At work':'В работе')+'</div><div class="cb">'+rl.work+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">⚔️ '+(en?'In conflict':'В конфликте')+'</div><div class="cb">'+rl.conflict+'</div></div><div class="card-soft" style="margin:0"><div class="ch">💰 '+(en?'With money':'С деньгами')+'</div><div class="cb">'+rl.money+'</div></div></div>';}
   else{dl.style.display='';rh.innerHTML='';
     // open-loop hook: name the trait, cut off before the payoff
@@ -2645,7 +2646,7 @@ function renderStore(){
   var en=isEN();
   var testsHtml=(en?TESTS_EN:TESTS).map(function(t){
     var done=(t.key==='main')?!!S.result:!!(S.tests&&S.tests[t.key]);
-    var owned=(t.key==='main')||!!(S.ownedTests&&S.ownedTests[t.key]);
+    var owned=(t.key==='main')||testOwned(t.key);
     if(done)return '<div class="product" onclick="'+(t.key==='main'?'goResult()':'showTestResult(\''+t.key+'\')')+'"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s" style="color:#52e6a4">✓ '+(en?'done':'пройден')+'</div></div><div class="price" style="color:#52e6a4">'+(en?'open →':'открыть →')+'</div></div>';
     if(t.key==='main')return '<div class="product" onclick="startQuiz()"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s">'+t.d+'</div></div><div class="price" style="color:#ffae42">'+(en?'take →':'пройти →')+'</div></div>';
     if(owned)return '<div class="product" onclick="runTest(\''+t.key+'\')"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s" style="color:#52e6a4">✓ '+(en?'owned':'куплен')+'</div></div><div class="price" style="color:#52e6a4">'+(en?'take →':'пройти →')+'</div></div>';
@@ -2656,7 +2657,7 @@ function renderStore(){
   if(rem.length>=2){var bp=bundlePrice();var full=rem.length*125;
     testsHtml+='<div class="product feat" onclick="buyBundle()" style="border-color:rgba(127,233,255,.4)"><span class="tagbest" style="background:linear-gradient(135deg,#8df0ff,#39b6d8);color:#04222b">−30%</span><div class="pic">🎁</div><div class="meta"><div class="nm">'+(en?'All remaining tests ('+rem.length+')':'Все оставшиеся тесты ('+rem.length+')')+'</div><div class="s">'+(en?'Build the whole avatar — 30% cheaper':'Собери аватар целиком — выгоднее на 30%')+'</div></div><div class="price" style="color:#7fe9ff"><span style="text-decoration:line-through;color:#9a93c2;font-size:11px">⭐'+full+'</span> ⭐'+bp+'</div></div>';
   }
-  document.getElementById('testsList').innerHTML=testsHtml;
+  document.getElementById('testsList').innerHTML=testsHtml;var _sch=document.getElementById('subCardHost');if(_sch)_sch.innerHTML=subCard();
   var got=0;ACHIEVEMENTS.forEach(function(a){if(a.has())got++;});
   document.getElementById('achCount').textContent=got+' / '+ACHIEVEMENTS.length;
   document.getElementById('achList').innerHTML='<div class="ach-grid">'+ACHIEVEMENTS.map(function(a){
@@ -2710,7 +2711,7 @@ function testTeaser(key){var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[k
   return '<div class="res-spectrum" style="margin:14px 0 8px">'+names.map(function(n){return '<span class="rs-chip">'+n+'</span>';}).join('')+'</div>'+
     '<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);padding:13px;background:rgba(10,8,20,.5);margin-top:6px"><div style="filter:blur(4.5px);user-select:none;font-size:13px;line-height:1.55;color:#cfc8ee;text-align:left">'+(en?'Your style is ███████ — you ██████████ when ██████. Your core fear: ████████. What to do: ███████████, and avoid ██████████.':'Твой стиль — ███████ — ты ██████████, когда ██████. Главный страх: ████████. Что делать: ███████████, и избегать ██████████.')+'</div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#ffce6b;font-size:13px">🔒 '+(en?'unlock to reveal what’s yours':'открой, чтобы узнать своё')+'</div></div>';}
 function openTest(key){
-  if(S.ownedTests&&S.ownedTests[key]){runTest(key);return;}
+  if(testOwned(key)){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   var pr=testPriceOf(key);
   modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
@@ -2727,7 +2728,7 @@ function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
     openProduct(p);
     });
   });}
-function productOwned(p){if(p.act==='full')return !!S.fullOwned;return !!(S.ownedProducts&&S.ownedProducts[p.key]);}
+function productOwned(p){if(subActive())return true;if(p.act==='full')return !!S.fullOwned;return !!(S.ownedProducts&&S.ownedProducts[p.key]);}
 function openProduct(p){
   if(p.act==='full'){if(S.result){goResult();setTimeout(function(){var dl=document.getElementById('darkLock');if(dl)dl.scrollIntoView({behavior:'smooth',block:'center'});},300);}return;}
   showReport(p.key);
@@ -2794,7 +2795,7 @@ function finishMT(){
     save();showTestResult(MT.key,true);
   },1400);
 }
-function remainingTests(){var order=['love','work','fears','shadow'],r=[];for(var i=0;i<order.length;i++){var k=order[i];if(!(S.ownedTests&&S.ownedTests[k]))r.push(k);}return r;}
+function remainingTests(){var order=['love','work','fears','shadow'],r=[];for(var i=0;i<order.length;i++){var k=order[i];if(!testOwned(k))r.push(k);}return r;}
 function testPriceOf(k){for(var i=0;i<TESTS.length;i++)if(TESTS[i].key===k)return TESTS[i].price;return 125;}
 function bundlePrice(){var rem=remainingTests().length;var full=rem*125;return Math.round(full*0.7/10)*10;} // 30% off
 // home hero: the clone is the product — ask it about real life (love/work/decisions)
@@ -2806,7 +2807,7 @@ function cloneTasteCTA(){var en=isEN();if(!S.result)return '';
 function nextTestCTA(){
   var nk=nextTest();
   if(!nk)return '';
-  var en=isEN();var tb=en?TEST_BANKS_EN[nk]:TEST_BANKS[nk];var owned=S.ownedTests&&S.ownedTests[nk];
+  var en=isEN();var tb=en?TEST_BANKS_EN[nk]:TEST_BANKS[nk];var owned=testOwned(nk);
   var rem=remainingTests();
   var html='<div class="card-soft upsell">'+
     '<div class="ch" style="color:#ffcf5c;justify-content:center">🔓 '+(en?'NEXT FACET':'СЛЕДУЮЩАЯ ГРАНЬ')+'</div>'+
@@ -3379,13 +3380,14 @@ function applyEntitlements(skus){
     else if(s==='chat1h'){/* time-limited; handled by S._chatUnlockUntil, not a permanent entitlement */}
     else if(s.indexOf('test_')===0)S.ownedTests[s.slice(5)]=true;
     else if(s.indexOf('prod_')===0){S.ownedProducts=S.ownedProducts||{};S.ownedProducts[s.slice(5)]=true;}
+    else if(s==='plus'&&!subActive())S.sub={until:Date.now()+31*864e5};
     else if(s.indexOf('cos_')===0){var rest=s.slice(4);var i=rest.indexOf('_');if(i>0)S.ownedCosmetics[rest.slice(0,i)+':'+rest.slice(i+1)]=1;}
   });
   save();
 }
 function fetchEntitlements(){
   if(!ENT_URL||!inTelegram())return;var initData=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)||'';if(!initData)return;
-  fetch(ENT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){if(d&&d.skus)applyEntitlements(d.skus);}).catch(function(){});
+  fetch(ENT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:initData}),credentials:'omit'}).then(function(r){return r.json();}).then(function(d){if(d&&d.skus)applyEntitlements(d.skus);if(d&&d.sub){S.sub={until:d.sub};save();}}).catch(function(){});
 }
 /* ===== real matching: real users first, fallback to the offline pool ===== */
 function fetchMatchPeers(cb){
@@ -3457,7 +3459,19 @@ function renderTalk(){
 }
 /* clone chat is the most token-hungry feature -> free daily cap, lift for 1h with Stars */
 var CHAT_FREE_PER_DAY=5, CHAT_UNLOCK_PRICE=30;
-function chatUnlocked(){return !!(S._chatUnlockUntil&&Date.now()<S._chatUnlockUntil);}
+var PLUS_PRICE=199;
+function subActive(){return !!(S.sub&&S.sub.until&&Date.now()<S.sub.until);}
+function testOwned(k){return subActive()||!!(S.ownedTests&&S.ownedTests[k]);}
+function subscribePlus(){var en=isEN();
+  var body=(en?'<b>SELF-FIX+</b> unlocks everything: full breakdown, all facet tests, compatibility and unlimited clone chat. Auto-renews monthly, cancel anytime.':'<b>SELF-FIX+</b> открывает всё: полный разбор, все грани, тест на совместимость и безлимит чата с двойником. Продлевается раз в месяц, отмена в любой момент.')+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+PLUS_PRICE+' / month · Telegram Stars':'⭐ '+PLUS_PRICE+' / мес · звёздами Telegram')+'</div>';
+  modal(en?'Subscribe to SELF-FIX+':'Подписка SELF-FIX+',body,function(){closeModal();buyStars('plus',(en?'SELF-FIX+ (monthly)':'SELF-FIX+ (месяц)'),PLUS_PRICE,function(){S.sub={until:Date.now()+31*864e5};save();try{syncWallet();}catch(e){}pop(en?'SELF-FIX+ active ✨':'SELF-FIX+ активна ✨');try{renderStore();}catch(e){}try{if(S.result)renderResult();}catch(e){}});});
+  setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Subscribe':'Подписаться');},0);
+}
+function subCard(){var en=isEN();
+  if(subActive())return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.4);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.12),transparent 70%),rgba(28,24,46,.55);text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ '+(en?'SELF-FIX+ active':'SELF-FIX+ активна')+'</div><div class="cb">'+(en?'Everything is unlocked. Renews monthly — manage in Telegram.':'Всё открыто. Продлевается ежемесячно — управление в Telegram.')+'</div></div>';
+  return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.45);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.16),transparent 68%),linear-gradient(165deg,rgba(40,40,22,.6),rgba(20,17,38,.5));text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ SELF-FIX+</div><div class="cb" style="margin-top:4px">'+(en?'Unlock <b>everything</b> — full breakdown, all facets, compatibility, unlimited clone chat.':'Открой <b>всё</b> — полный разбор, все грани, совместимость, безлимит чата.')+'</div><button class="btn gold" style="margin-top:12px" onclick="subscribePlus()">'+(en?'Subscribe · ⭐ '+PLUS_PRICE+'/mo':'Подписаться · ⭐ '+PLUS_PRICE+'/мес')+'</button></div>';
+}
+function chatUnlocked(){return subActive()||!!(S._chatUnlockUntil&&Date.now()<S._chatUnlockUntil);}
 function chatLeftToday(){var d=dayNum();if(S._chatDay!==d){S._chatDay=d;S._chatCount=0;}return Math.max(0,CHAT_FREE_PER_DAY-(S._chatCount||0));}
 function offerChatUnlock(){var en=isEN();
   modal(en?'Daily chat limit reached':'Лимит чата на сегодня',
@@ -3706,7 +3720,7 @@ function nextStepBest(){
   var nk=nextTest();
   var paidDone=!!(S.tests&&(S.tests.love||S.tests.work||S.tests.fears||S.tests.shadow));
   // 2. ALWAYS push the next test first \u2014 capture the hot moment, drive the first payment, keep them in the loop.
-  if(nk){var owned=S.ownedTests&&S.ownedTests[nk];var firstPaid=(nk==='love'&&!paidDone);
+  if(nk){var owned=testOwned(nk);var firstPaid=(nk==='love'&&!paidDone);
     return {ic:testIcon(nk),
       title:en?('Open \u201c'+testTitle(nk)+'\u201d'):('\u041e\u0442\u043a\u0440\u043e\u0439 \u00ab'+testTitle(nk)+'\u00bb'),
       sub:firstPaid?(en?'Your core is set \u2014 open the first facet of you (1 of 5)':'\u042f\u0434\u0440\u043e \u0433\u043e\u0442\u043e\u0432\u043e \u2014 \u043e\u0442\u043a\u0440\u043e\u0439 \u043f\u0435\u0440\u0432\u0443\u044e \u0433\u0440\u0430\u043d\u044c \u0441\u0435\u0431\u044f (1 \u0438\u0437 5)'):(en?'Another facet of you — closer to the full portrait':'\u0415\u0449\u0451 \u0433\u0440\u0430\u043d\u044c \u0442\u0435\u0431\u044f \u2014 \u0431\u043b\u0438\u0436\u0435 \u043a \u043f\u043e\u043b\u043d\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0440\u0435\u0442\u0443'),
@@ -3714,7 +3728,7 @@ function nextStepBest(){
       act:(function(k,o){return function(){o?runTest(k):openTest(k);};})(nk,owned)};}
   // 3. all tests taken \u2014 now the clone-meeting wow is earned
   if(!meets.length)return {ic:'\uD83C\uDF00',title:en?'Send your clone to meet people':'\u041f\u043e\u0437\u043d\u0430\u043a\u043e\u043c\u044c \u0434\u0432\u043e\u0439\u043d\u0438\u043a\u0430 \u0441 \u043b\u044e\u0434\u044c\u043c\u0438',sub:en?'It talks to others\u2019 clones and finds your people':'\u041e\u043d \u043f\u043e\u0433\u043e\u0432\u043e\u0440\u0438\u0442 \u0441 \u043a\u043b\u043e\u043d\u0430\u043c\u0438 \u0434\u0440\u0443\u0433\u0438\u0445 \u0438 \u043d\u0430\u0439\u0434\u0451\u0442 \u0442\u0432\u043e\u0438\u0445',cta:en?'Send clone \u2192':'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043a\u043b\u043e\u043d\u0430 \u2192',act:function(){go('avatar');setTimeout(function(){try{sendAvatarOut();}catch(e){}},220);}};
-  if(!S.fullOwned)return {ic:'\uD83C\uDF11',title:en?'Unlock the full breakdown':'\u041e\u0442\u043a\u0440\u043e\u0439 \u043f\u043e\u043b\u043d\u044b\u0439 \u0440\u0430\u0437\u0431\u043e\u0440',sub:en?'Your dark side + you in 4 roles':'\u0422\u0451\u043c\u043d\u0430\u044f \u0441\u0442\u043e\u0440\u043e\u043d\u0430 + \u0442\u044b \u0432 4 \u0440\u043e\u043b\u044f\u0445',cta:'\u2b50 200',act:function(){buyFull();}};
+  if(!subActive()&&!S.fullOwned)return {ic:'\uD83C\uDF11',title:en?'Unlock the full breakdown':'\u041e\u0442\u043a\u0440\u043e\u0439 \u043f\u043e\u043b\u043d\u044b\u0439 \u0440\u0430\u0437\u0431\u043e\u0440',sub:en?'Your dark side + you in 4 roles':'\u0422\u0451\u043c\u043d\u0430\u044f \u0441\u0442\u043e\u0440\u043e\u043d\u0430 + \u0442\u044b \u0432 4 \u0440\u043e\u043b\u044f\u0445',cta:'\u2b50 200',act:function(){buyFull();}};
   return {ic:'\uD83E\uDD1D',title:en?'Invite a friend':'\u041f\u043e\u0437\u043e\u0432\u0438 \u0434\u0440\u0443\u0433\u0430',sub:en?'Compare who reads people better':'\u0421\u0440\u0430\u0432\u043d\u0438\u0442\u0435, \u043a\u0442\u043e \u043b\u0443\u0447\u0448\u0435 \u0447\u0438\u0442\u0430\u0435\u0442 \u043b\u044e\u0434\u0435\u0439',cta:en?'Invite \u2192':'\u041f\u043e\u0437\u0432\u0430\u0442\u044c \u2192',act:function(){inviteFriend();}};
 }
 function nextStepHero(){var n=nextStepBest();_nextAct=n.act;var t=TYPES[S.result.primary];var en=isEN();
@@ -3840,7 +3854,7 @@ function ppPlural(n){if(isEN())return n===1?'test':'tests';var a=n%10,b=n%100;re
 function ppOpenStep(key){
   if(key==='main'){if(S.result)goResult();else startQuiz();return;}
   if(S.tests&&S.tests[key]){showTestResult(key);return;}
-  if(S.ownedTests&&S.ownedTests[key])runTest(key);else openTest(key);
+  if(testOwned(key))runTest(key);else openTest(key);
 }
 /* deeper layer: insights from COMBINATIONS of Big Five factors, not single traits */
 /* ===== VALUE: scary-accurate readout + depth map ===== */
@@ -4126,7 +4140,7 @@ function wholePortrait(){
 // the peak-of-funnel moment: portrait is whole → crown it with the deep report, or share it
 function passportPremiumCard(){
   if(!S.result)return '';var en=isEN();var done=avatarProgress()>=5;if(!done)return '';
-  if(!S.fullOwned){
+  if(!subActive()&&!S.fullOwned){
     return '<div class="card-soft upsell" style="text-align:center"><div class="ch" style="color:#ffcf5c;justify-content:center">🏆 '+(en?'YOUR PORTRAIT IS COMPLETE':'ПОРТРЕТ СОБРАН ПОЛНОСТЬЮ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Crown it with the deep report: your dark side, how others truly see you, and you across 4 roles — love · work · conflict · money.':'Увенчай его глубоким разбором: твоя тёмная сторона, как тебя видят на самом деле, и ты в 4 ролях — любовь · работа · конфликт · деньги.')+'</div><button class="btn gold" style="margin-top:14px" onclick="buyFull()">'+(en?'Unlock deep report · ⭐ 200':'Открыть глубокий разбор · ⭐ 200')+'</button></div>';
   }
   return '<div class="card-soft" style="text-align:center;border:1px solid rgba(212,255,79,.3)"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ '+(en?'FULL COLLECTION OF YOU':'ПОЛНАЯ КОЛЛЕКЦИЯ СЕБЯ')+'</div><div class="cb" style="margin-top:6px">'+(en?'Every facet assembled and the deep report unlocked. Share your whole portrait — let others discover theirs.':'Все грани собраны и глубокий разбор открыт. Поделись цельным портретом — пусть другие откроют свой.')+'</div><button class="btn go" style="margin-top:14px" onclick="sharePortrait()">'+(en?'Share my portrait':'Поделиться портретом')+'</button></div>';
