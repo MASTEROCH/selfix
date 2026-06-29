@@ -1061,6 +1061,7 @@
           <div class="lt" id="resDarkT">🌑 Тёмная сторона + ты в 4 ролях</div>
           <div class="ls" id="resDarkS">Тёмная сторона типа, как тебя видят, и поведение в любви, работе, конфликте и с деньгами.</div>
           <button class="btn gold" id="resDarkCta" style="max-width:270px" onclick="buyFull()">Открыть полный разбор · ⭐ 200</button>
+          <div id="resDarkSub" style="margin-top:10px"></div>
         </div>
       </div>
       <div class="action-stack">
@@ -2341,7 +2342,7 @@ function renderResult(){
   var rl=Rt(r.primary);var rh=document.getElementById('rolesHost');var dl=document.getElementById('darkLock');
   if(subActive()||S.fullOwned){dl.style.display='none';
     rh.innerHTML='<div class="card-soft"><div class="ch">🌑 '+(en?'Your dark side':'Тёмная сторона')+'</div><div class="cb">'+te.dark+'</div></div><div class="card-soft"><div class="ch">👁 '+(en?'How others see you':'Как тебя видят')+'</div><div class="cb">'+te.seen+'</div></div><div class="sp-meters"><div class="mh">'+(en?'You in four roles':'Ты в четырёх ролях')+'</div><div class="card-soft" style="margin-bottom:10px"><div class="ch">❤️ '+(en?'In love':'В любви')+'</div><div class="cb">'+rl.love+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">💼 '+(en?'At work':'В работе')+'</div><div class="cb">'+rl.work+'</div></div><div class="card-soft" style="margin-bottom:10px"><div class="ch">⚔️ '+(en?'In conflict':'В конфликте')+'</div><div class="cb">'+rl.conflict+'</div></div><div class="card-soft" style="margin:0"><div class="ch">💰 '+(en?'With money':'С деньгами')+'</div><div class="cb">'+rl.money+'</div></div></div>';}
-  else{dl.style.display='';rh.innerHTML='';
+  else{dl.style.display='';rh.innerHTML='';var rds=document.getElementById('resDarkSub');if(rds)rds.innerHTML=subActive()?'':('<span style="font-size:12.5px;color:#D4FF4F;cursor:pointer" onclick="subscribePlus()">'+(en?'…or unlock everything with SELF-FIX+ →':'…или открой всё по подписке SELF-FIX+ →')+'</span>');
     // open-loop hook: name the trait, cut off before the payoff
     var ls=document.getElementById('resDarkS');
     if(ls&&r.big){
@@ -2390,7 +2391,7 @@ function buyFull(){
     '</div>';
   }
   modal(en?'Unlock the full breakdown?':'Открыть полный разбор?',
-    (en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 200 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 200 звёздами Telegram.')+freeRow,
+    (en?'Your type’s dark side, how others see you, and you in 4 roles.<br><br>Paid with ⭐ 200 Telegram Stars.':'Тёмная сторона типа, как тебя видят, и ты в 4 ролях.<br><br>Оплата ⭐ 200 звёздами Telegram.')+freeRow+subUpsellRow(en),
     function(){closeModal();buyStars('full',(en?'Full breakdown':'Полный разбор'),200,function(){S.fullOwned=true;save();syncWallet();pop(en?'Full breakdown unlocked 🔓':'Полный разбор открыт 🔓');renderResult();});});
 }
 function inviteForUnlock(){
@@ -2791,7 +2792,7 @@ function openTest(key){
   if(testOwned(key)){runTest(key);return;}
   var en=isEN();var tb=en?TEST_BANKS_EN[key]:TEST_BANKS[key];
   var pr=testPriceOf(key);
-  modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><b style="color:#ffce6b">'+(en?'Answers: ':'Отвечает на: ')+painOf(key,en)+'</b><br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>',function(){
+  modal(en?'Open a facet of you?':'Открыть грань себя?','“<b>'+testTitle(key)+'</b>” '+testGlyph(key,16)+'<br><b style="color:#ffce6b">'+(en?'Answers: ':'Отвечает на: ')+painOf(key,en)+'</b><br>'+(en?'A new facet of your portrait + an avatar feature, with a personal breakdown and a weekly practice. One step closer to your full passport.':'Новая грань твоего портрета + черта аватара, с личным разбором и практикой недели. На шаг ближе к полному паспорту.')+testTeaser(key)+'<div style="font-size:12px;color:#9a93c2;margin-top:10px">'+(en?'⭐ '+pr+' · Telegram Stars':'⭐ '+pr+' · звёздами Telegram')+'</div>'+subUpsellRow(en),function(){
     closeModal();buyStars('test_'+key,testTitle(key),pr,function(){S.ownedTests=S.ownedTests||{};S.ownedTests[key]=true;save();syncWallet();runTest(key);});});
 }
 function buy(i){var en=isEN();var p=(en?PRODUCTS_EN:PRODUCTS)[i];
@@ -3544,6 +3545,7 @@ function subscribePlus(){var en=isEN();
   modal(en?'Subscribe to SELF-FIX+':'Подписка SELF-FIX+',body,function(){closeModal();buyStars('plus',(en?'SELF-FIX+ (monthly)':'SELF-FIX+ (месяц)'),PLUS_PRICE,function(){S.sub={until:Date.now()+31*864e5};save();try{syncWallet();}catch(e){}pop(en?'SELF-FIX+ active ✨':'SELF-FIX+ активна ✨');try{renderStore();}catch(e){}try{if(S.result)renderResult();}catch(e){}});});
   setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Subscribe':'Подписаться');},0);
 }
+function subUpsellRow(en){if(subActive())return '';return '<div class="card-soft" style="border-left:3px solid #D4FF4F;margin-top:14px;text-align:left"><div class="ch" style="color:#D4FF4F">✨ '+(en?'…or unlock EVERYTHING':'…или открой ВСЁ')+'</div><div class="cb">'+(en?'For about the price of this one report — <b>SELF-FIX+</b> opens the full breakdown, every facet, compatibility and unlimited chat. ⭐199/mo.':'За ту же цену, что один разбор — <b>SELF-FIX+</b> открывает полный разбор, все грани, совместимость и безлимит чата. ⭐199/мес.')+'</div><button class="btn gold" style="margin-top:10px" onclick="closeModal();subscribePlus()">'+(en?'Subscribe to SELF-FIX+ →':'Подписка SELF-FIX+ →')+'</button></div>';}
 function subCard(){var en=isEN();
   if(subActive())return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.4);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.12),transparent 70%),rgba(28,24,46,.55);text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ '+(en?'SELF-FIX+ active':'SELF-FIX+ активна')+'</div><div class="cb">'+(en?'Everything is unlocked. Renews monthly — manage in Telegram.':'Всё открыто. Продлевается ежемесячно — управление в Telegram.')+'</div></div>';
   return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.45);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.16),transparent 68%),linear-gradient(165deg,rgba(40,40,22,.6),rgba(20,17,38,.5));text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ SELF-FIX+</div><div class="cb" style="margin-top:4px">'+(en?'Unlock <b>everything</b> — full breakdown, all facets, compatibility, unlimited clone chat.':'Открой <b>всё</b> — полный разбор, все грани, совместимость, безлимит чата.')+'</div><button class="btn gold" style="margin-top:12px" onclick="subscribePlus()">'+(en?'Subscribe · ⭐ '+PLUS_PRICE+'/mo':'Подписаться · ⭐ '+PLUS_PRICE+'/мес')+'</button></div>';
