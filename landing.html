@@ -67,6 +67,9 @@ h1{font-size:clamp(36px,10.5vw,62px);line-height:1.02;font-weight:800;letter-spa
 @keyframes ctaflow{to{background-position:220% 0}}
 @keyframes ctapulse{0%,100%{box-shadow:0 16px 42px rgba(124,58,255,.45),inset 0 1px 0 rgba(255,255,255,.5)}50%{box-shadow:0 22px 56px rgba(124,58,255,.62),0 0 30px rgba(0,224,199,.3),inset 0 1px 0 rgba(255,255,255,.55)}}
 .cta-note{font-size:13px;color:var(--txt3);margin-top:12px}
+.hero-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:18px}
+.hchip{font-size:13px;font-weight:700;color:var(--txt2);background:rgba(255,255,255,.06);border:1px solid var(--stroke);padding:9px 14px;border-radius:99px;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.hchip.hot{color:#0b0a16;background:linear-gradient(135deg,#8df0ff,#00E0C7);border-color:transparent;box-shadow:0 0 18px rgba(141,240,255,.4)}
 /* marquee */
 .marq{margin:26px 0 0;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 .marq-t{display:inline-flex;gap:14px;white-space:nowrap;animation:marq 26s linear infinite}
@@ -175,12 +178,12 @@ h1{font-size:clamp(36px,10.5vw,62px);line-height:1.02;font-weight:800;letter-spa
 
   <!-- HERO -->
   <section class="hero">
-    <span class="eyebrow" data-i="eyebrow">ЧЕСТНОЕ ЗЕРКАЛО · НА ОСНОВЕ BIG FIVE</span>
-    <h1 data-i="h1">Узнай, кто ты — <span class="grad">без масок.</span></h1>
-    <p class="sub" data-i="sub">За 2 минуты SELF-FIX назовёт то, что ты о себе <b>не говоришь вслух</b> — и покажет, насколько ты на самом деле редкий. Не гороскоп. Наука.</p>
+    <span class="eyebrow" data-i="eyebrow">ТЕСТ-ЗЕРКАЛО ЛИЧНОСТИ · BIG FIVE</span>
+    <h1 data-i="h1">Кто ты <span class="grad">на самом деле?</span></h1>
+    <p class="sub" data-i="sub">10 вопросов за 2 минуты — и честный портрет: кто ты, что прячешь даже от себя, и насколько ты редкий. <b>Не гороскоп — наука.</b></p>
     <a class="cta" href="https://t.me/selffix_bot"><span>🚀</span><span data-i="cta">Узнать себя — бесплатно</span></a>
     <div class="cta-note" data-i="ctanote">2 минуты · в Telegram · без регистрации</div>
-    <div class="marq"><div class="marq-t" id="marq"></div></div>
+    <div class="hero-chips"><span class="hchip" data-i="hc1">🧬 твой тип</span><span class="hchip" data-i="hc2">👁 скрытая черта</span><span class="hchip hot" data-i="hc3">📊 1 из 100</span></div>
   </section>
 
   <!-- PHONE -->
@@ -300,9 +303,9 @@ h1{font-size:clamp(36px,10.5vw,62px);line-height:1.02;font-weight:800;letter-spa
 var MARQ={ru:['Пламя','смелость','Опора','порядок','Стрела','цель','Тепло','забота','Поток','глубина','<b>1 из 100</b>','без масок','твоё противоречие','4 зеркала'],
  en:['Flame','courage','Anchor','order','Arrow','focus','Warmth','care','Flow','depth','<b>1 in 100</b>','no masks','your contradiction','4 mirrors']};
 var I={
- ru:{eyebrow:'ЧЕСТНОЕ ЗЕРКАЛО · НА ОСНОВЕ BIG FIVE',h1:'Узнай, кто ты — <span class="grad">без масок.</span>',
-  sub:'За 2 минуты SELF-FIX назовёт то, что ты о себе <b>не говоришь вслух</b> — и покажет, насколько ты на самом деле редкий. Не гороскоп. Наука.',
-  cta:'Узнать себя — бесплатно',ctanote:'2 минуты · в Telegram · без регистрации',
+ ru:{eyebrow:'ТЕСТ-ЗЕРКАЛО ЛИЧНОСТИ · BIG FIVE',h1:'Кто ты <span class="grad">на самом деле?</span>',
+  sub:'10 вопросов за 2 минуты — и честный портрет: кто ты, что прячешь даже от себя, и насколько ты редкий. <b>Не гороскоп — наука.</b>',
+  cta:'Узнать себя — бесплатно',ctanote:'2 минуты · в Telegram · без регистрации',hc1:'🧬 твой тип',hc2:'👁 скрытая черта',hc3:'📊 1 из 100',
   m_chip:'твой результат',m_tl:'ТВОЙ ТИП',m_tn:'Стрела',m_tag:'Успех · Расчёт',
   m_sh:'👁 Что мало кто замечает',m_sl:'«Тебя считают жёстким, хотя за прямотой — тот, кто просто устал притворяться.»',
   m_rh:'📊 Насколько ты редкий',m_rpre:'1 из ',m_rc:'большинство устроены иначе',
@@ -333,9 +336,9 @@ var I={
   fh:'Готов познакомиться с собой?',fp:'2 минуты, которые ты запомнишь.',cta_b:'Пройти тест в Telegram',
   p1:'⏱ 2 минуты',p2:'🎁 бесплатно',p3:'🔬 Big Five (OCEAN)',
   foot:'SELF-FIX — просветительско-развлекательный продукт на основе Big Five (OCEAN). Это не клиническая диагностика.'},
- en:{eyebrow:'AN HONEST MIRROR · BASED ON BIG FIVE',h1:'Find out who you are — <span class="grad">without the masks.</span>',
-  sub:'In 2 minutes SELF-FIX names what you <b>don’t say out loud</b> about yourself — and shows how rare you really are. Not a horoscope. Science.',
-  cta:'Discover yourself — free',ctanote:'2 minutes · in Telegram · no signup',
+ en:{eyebrow:'PERSONALITY MIRROR · BIG FIVE',h1:'Who are you, <span class="grad">really?</span>',
+  sub:'10 questions, 2 minutes — an honest portrait: who you are, what you hide even from yourself, and how rare you are. <b>Not a horoscope — science.</b>',
+  cta:'Discover yourself — free',ctanote:'2 minutes · in Telegram · no signup',hc1:'🧬 your type',hc2:'👁 hidden trait',hc3:'📊 1 in 100',
   m_chip:'your result',m_tl:'YOUR TYPE',m_tn:'Arrow',m_tag:'Drive · Focus',
   m_sh:'👁 What few people notice',m_sl:'“People call you tough, but behind the bluntness is someone tired of pretending.”',
   m_rh:'📊 How rare you are',m_rpre:'1 in ',m_rc:'most people aren’t wired this way',
@@ -367,7 +370,7 @@ var I={
   p1:'⏱ 2 minutes',p2:'🎁 free',p3:'🔬 Big Five (OCEAN)',
   foot:'SELF-FIX is an educational & entertainment product based on Big Five (OCEAN). It is not a clinical diagnosis.'}
 };
-function buildMarq(l){var arr=MARQ[l],html=arr.map(function(w){return '<span>'+w+'</span><span>·</span>';}).join('');document.getElementById('marq').innerHTML=html+html;}
+function buildMarq(l){var arr=MARQ[l],html=arr.map(function(w){return '<span>'+w+'</span><span>·</span>';}).join('');var _m=document.getElementById('marq');if(_m)_m.innerHTML=html+html;}
 function setLang(l){var d=I[l];for(var k in d){var els=document.querySelectorAll('[data-i="'+k+'"]');for(var z=0;z<els.length;z++)els[z].innerHTML=d[k];}
   document.getElementById('lru').classList.toggle('on',l==='ru');document.getElementById('len').classList.toggle('on',l==='en');
   document.documentElement.lang=l;buildMarq(l);try{localStorage.setItem('sf_land_lang',l);}catch(e){}}
