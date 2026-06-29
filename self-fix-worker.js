@@ -200,7 +200,8 @@ async function onEntitlements(env, body) {
   const u = await validateInit(body.initData || '', env.BOT_TOKEN);
   if (!u || !u.id) return { skus: [] };
   let list = []; try { list = JSON.parse(await env.USERS.get('ent:' + u.id)) || []; } catch (e) {}
-  return { skus: list };
+  let sub = 0; try { sub = parseInt(await env.USERS.get('sub:' + u.id), 10) || 0; } catch (e) {}
+  return { skus: list, sub: (sub && sub > Date.now()) ? sub : 0 };
 }
 
 /* ---------- real matching: return other real users with profiles ---------- */
@@ -229,13 +230,16 @@ async function onMatch(env, body) {
 async function onInvoice(env, body) {
   if (!env.BOT_TOKEN) return { ok: false, link: null };
   const amount = Math.max(1, parseInt(body.amount, 10) || 1);
-  const r = await tg(env, 'createInvoiceLink', {
+  const sku = body.sku || 'sku';
+  const params = {
     title: (body.title || 'SELF-FIX').slice(0, 32),
     description: (body.desc || body.title || 'SELF-FIX unlock').slice(0, 255),
-    payload: (body.sku || 'sku') + ':' + (body.aid || ''),
+    payload: sku + ':' + (body.aid || ''),
     currency: 'XTR',
     prices: [{ label: (body.title || 'Unlock').slice(0, 32), amount: amount }],
-  });
+  };
+  if (sku.indexOf('plus') === 0) params.subscription_period = 2592000; // monthly Stars subscription
+  const r = await tg(env, 'createInvoiceLink', params);
   const j = await r.json();
   return { ok: !!j.ok, link: j.result || null };
 }
@@ -254,9 +258,14 @@ async function onWebhook(env, update) {
       try {
         if (env.USERS && m.from && m.from.id) {
           const sku = String(sp.invoice_payload || '').split(':')[0];
-          const ek = 'ent:' + m.from.id;
-          let list = []; try { list = JSON.parse(await env.USERS.get(ek)) || []; } catch (e) {}
-          if (sku && list.indexOf(sku) < 0) { list.push(sku); await env.USERS.put(ek, JSON.stringify(list)); }
+          if (sku.indexOf('plus') === 0) {
+            const until = sp.subscription_expiration_date ? sp.subscription_expiration_date * 1000 : (Date.now() + 2678400000);
+            await env.USERS.put('sub:' + m.from.id, String(until));
+          } else {
+            const ek = 'ent:' + m.from.id;
+            let list = []; try { list = JSON.parse(await env.USERS.get(ek)) || []; } catch (e) {}
+            if (sku && list.indexOf(sku) < 0) { list.push(sku); await env.USERS.put(ek, JSON.stringify(list)); }
+          }
         }
       } catch (e) {}
       if (env.OWNER_CHAT_ID) await tg(env, 'sendMessage', { chat_id: env.OWNER_CHAT_ID, text: `⭐ Payment: ${sp.total_amount} XTR · ${sp.invoice_payload}` });
