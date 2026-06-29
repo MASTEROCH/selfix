@@ -2035,6 +2035,45 @@ function chooseDilemma(idx){
   setTimeout(function(){chooseDilemma._lock=false;if(last){finishQuiz();}else{Q.i++;renderDilemma();var sq=document.getElementById('sQuiz');if(sq)sq.scrollTo(0,0);}},300);
 }
 function retakeSwipe(){var en=isEN();modal(en?'Quick mode: This or That':'Быстрый режим: Это или то',en?'10 snap dilemmas — pick one of two, by gut. We re-read your core type, fast.':'10 дилемм на скорость — выбирай одно из двух, по ощущению. Быстро пересоберём твой тип.',function(){closeModal();startSwipe();});setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Let’s go':'Поехали');},0);}
+var PERC_SCENES=[
+ {art:'🏙️',q:'Ты выходишь на шумную площадь. Что замечаешь первым?',q_en:'You step onto a busy square. What do you notice first?',o:[['👥','Лица людей','People’s faces','people'],['🚪','Где выходы','Where the exits are','threat'],['☕','Уютное кафе','A cozy café','beauty'],['🎯','Где тут возможности','Opportunities here','opportunity'],['🔤','Детали вывесок','Sign details','detail']]},
+ {art:'🌲',q:'Лес на рассвете. Что цепляет первым?',q_en:'A forest at dawn. What grabs you first?',o:[['🦌','Движение в кустах','Movement in the bushes','threat'],['🌅','Красота света','The beauty of the light','beauty'],['🛤️','Куда ведёт тропа','Where the trail leads','opportunity'],['🐦','Звуки и детали','Sounds and details','detail'],['🧍','Есть ли кто рядом','Whether someone is near','people']]},
+ {art:'🎉',q:'Вечеринка в разгаре. Куда смотришь?',q_en:'A party in full swing. Where do you look?',o:[['🫂','Кто с кем общается','Who is talking to whom','people'],['🚪','Где выход, если что','The exit, just in case','threat'],['💃','Кто красиво двигается','Who moves beautifully','beauty'],['🤝','С кем полезно познакомиться','Who is worth meeting','opportunity'],['🍽️','Детали на столе','Details on the table','detail']]},
+ {art:'🖼️',q:'Картина на стене. Что видишь первым?',q_en:'A painting on the wall. What do you see first?',o:[['👤','Лицо или фигуру','A face or a figure','people'],['🎨','Цвета и красоту','Colors and beauty','beauty'],['🔍','Скрытые детали','Hidden details','detail'],['💭','Что хотел сказать автор','What the artist meant','opportunity'],['🌑','Что-то тревожное','Something unsettling','threat']]},
+ {art:'🌃',q:'Ночной город из окна. Первое?',q_en:'The night city from a window. First thing?',o:[['💡','Огни — красота','The lights — beauty','beauty'],['🚕','Движение, жизнь','Movement, life','opportunity'],['🪟','Окна, люди за ними','Windows, people behind them','people'],['🌑','Тёмные переулки','Dark alleys','threat'],['🗺️','Структуру улиц','The street layout','detail']]}
+];
+var PERC_LENS={
+ people:{ic:'🫂',word:'ЛЮДЕЙ',word_en:'PEOPLE',ru:'Ты видишь мир через <b>людей</b>. Первым делом считываешь, кто что чувствует — прирождённый эмпат и дипломат. Сила: тебе доверяют. Тень: легко раствориться в чужих состояниях и забыть себя.',en:'You see the world through <b>people</b>. You instantly read who feels what — a natural empath and diplomat. Strength: people trust you. Shadow: you dissolve into others’ states and forget yourself.'},
+ threat:{ic:'🛡️',word:'БЕЗОПАСНОСТЬ',word_en:'SAFETY',ru:'Ты видишь мир через <b>безопасность</b>. Замечаешь риски раньше всех — стратег и защитник. Сила: тебя сложно застать врасплох. Тень: иногда тревога находит угрозу там, где её нет.',en:'You see the world through <b>safety</b>. You spot risks before anyone — a strategist and protector. Strength: hard to catch off guard. Shadow: anxiety sometimes invents threats.'},
+ opportunity:{ic:'🚀',word:'ВОЗМОЖНОСТИ',word_en:'OPPORTUNITY',ru:'Ты видишь мир через <b>возможности</b>. Там, где другие видят рутину, ты видишь шанс — двигатель и инициатор. Сила: ты создаёшь движение. Тень: распыляешься и не доводишь до конца.',en:'You see the world through <b>opportunity</b>. Where others see routine, you see a chance — an initiator. Strength: you create momentum. Shadow: you scatter and leave things unfinished.'},
+ beauty:{ic:'🎨',word:'КРАСОТУ',word_en:'BEAUTY',ru:'Ты видишь мир через <b>красоту</b>. Ловишь эстетику и смысл в мелочах — душа художника. Сила: ты чувствуешь то, что другие пробегают мимо. Тень: реальность бывает слишком грубой для тебя.',en:'You see the world through <b>beauty</b>. You catch aesthetics and meaning in small things — an artist’s soul. Strength: you feel what others miss. Shadow: reality can feel too rough.'},
+ detail:{ic:'🔍',word:'ДЕТАЛИ',word_en:'DETAILS',ru:'Ты видишь мир через <b>детали</b>. От тебя ничего не ускользает — ум аналитика. Сила: точность и глубина. Тень: за деревьями иногда теряешь лес.',en:'You see the world through <b>details</b>. Nothing escapes you — an analyst’s mind. Strength: precision and depth. Shadow: you can miss the forest for the trees.'}
+};
+var PQ=null;
+function startPerception(){PQ={i:0,tally:{}};percChoose._lock=false;track('test_start',{kind:'perc'});go('quiz');renderPerc();}
+function renderPerc(){
+  if(!PQ||PQ.i>=PERC_SCENES.length)return;var en=isEN();var sc=PERC_SCENES[PQ.i];
+  document.getElementById('qBar').style.width=(PQ.i/PERC_SCENES.length*100)+'%';
+  document.getElementById('qCount').textContent=(PQ.i+1)+' / '+PERC_SCENES.length;
+  document.getElementById('sceneArt').textContent=sc.art;
+  document.getElementById('sceneQ').textContent=en?sc.q_en:sc.q;
+  var el=document.getElementById('scene');el.classList.remove('flip');void el.offsetWidth;el.classList.add('flip');
+  document.getElementById('opts').innerHTML=sc.o.map(function(o){return '<div class="opt" onclick="percChoose(\''+o[3]+'\')"><span class="oe">'+o[0]+'</span><span>'+(en?o[2]:o[1])+'</span></div>';}).join('');
+}
+function percChoose(lens){
+  if(percChoose._lock)return;percChoose._lock=true;PQ.tally[lens]=(PQ.tally[lens]||0)+1;
+  try{if(navigator.vibrate)navigator.vibrate(10);}catch(e){}try{sfx('select');}catch(e){}
+  var last=(PQ.i>=PERC_SCENES.length-1);
+  setTimeout(function(){percChoose._lock=false;if(last){percResult();}else{PQ.i++;renderPerc();var q=document.getElementById('sQuiz');if(q)q.scrollTo(0,0);}},260);
+}
+function percResult(){var en=isEN();var best='detail',bestN=-1;for(var k in PQ.tally){if(PQ.tally[k]>bestN){bestN=PQ.tally[k];best=k;}}
+  var L=PERC_LENS[best];
+  var body='<div style="text-align:center"><div style="font-size:56px">'+L.ic+'</div><div class="cb" style="margin-top:8px;font-size:15px;line-height:1.55;text-align:left">'+(en?L.en:L.ru)+'</div><div style="font-size:11.5px;color:#9a93c2;margin-top:12px">🎲 '+(en?'A light test for fun — not your scientific portrait.':'Лёгкий тест для разнообразия — не научный портрет.')+'</div></div>';
+  go('home');
+  modal(en?'What you notice first':'Что ты замечаешь первым',body,function(){percShare(best);},'');
+  setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Share 🔗':'Поделиться 🔗');var n=document.getElementById('mNo');if(n)n.textContent=(en?'Got it':'Понятно');},0);
+}
+function percShare(lens){var en=isEN();var L=PERC_LENS[lens];var txt=(en?'I see the world through ':'Я вижу мир через ')+(en?L.word_en:L.word).toLowerCase()+'. '+(en?'And you?':'А ты?')+' https://t.me/selffix_bot';try{if(navigator.clipboard)navigator.clipboard.writeText(txt);}catch(e){}closeModal();pop(en?'Copied — share it 🔗':'Скопировано — кидай друзьям 🔗');}
 function retakeCore(){var en=isEN();modal(en?'Retake the core test?':'Перепройти ядро?',en?'Answer the 10 core questions again — we’ll show how your portrait shifted since last time. Your facets and avatar stay.':'Ответь снова на 10 вопросов ядра — покажем, как сместился портрет с прошлого раза. Грани и аватар останутся.',function(){closeModal();startQuiz();});setTimeout(function(){var y=document.getElementById('mYes');if(y)y.textContent=(en?'Retake':'Перепройти');},0);}
 function changeCard(en){
   var h=coreHistory();if(h.length<2)return '';
@@ -3765,7 +3804,7 @@ function dailyCard(){
     '<div class="daily-portrait"><b style="color:#c9b3ff">🪞 '+(en?'Mirror of the day':'Зеркало дня')+'</b><br>'+mirrorOfDay()+'<div style="margin-top:8px"><span style="font-size:12px;color:#7fe9ff;cursor:pointer" onclick="go(\'passport\')">'+(en?'go deeper into your patterns →':'копнуть свои паттерны глубже →')+'</span></div></div>'+
     '<div class="daily-actions">'+
       '<button class="daily-chip'+(qLeft<=0?' done':'')+'" onclick="go(\'soul\')">'+(qLeft<=0?'✓ ':uic('target','#ffce6b',17)+' ')+(en?'Daily quests':'Квесты дня')+'</button>'+
-      '<button class="daily-chip'+(duelDone?' done':'')+'" onclick="startDuelFlow()">'+(duelDone?'✓ ':uic('swords','#7fe9ff',17)+' ')+(en?'Daily duel':'Дуэль дня')+'</button>'+
+      '<button class="daily-chip'+(duelDone?' done':'')+'" onclick="startDuelFlow()">'+(duelDone?'✓ ':uic('swords','#7fe9ff',17)+' ')+(en?'Daily duel':'Дуэль дня')+'</button>'+'<button class="daily-chip" onclick="startPerception()">🎲 '+(en?'What you see':'Что ты видишь')+'</button>'+
     '</div></div>';
 }
 function testIcon(k){for(var i=0;i<TESTS.length;i++)if(TESTS[i].key===k)return TESTS[i].ic;return '\uD83E\uDDE9';}
