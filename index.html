@@ -127,7 +127,7 @@
   .btn.ghost::after,.btn.block::after{opacity:.45}
   .btn.gold::after{background:conic-gradient(from var(--bd-angle),transparent 0deg,transparent 230deg,rgba(255,240,200,.95) 300deg,rgba(255,220,140,.25) 335deg,transparent 360deg)}
   .btn:disabled::after{display:none}
-  @media (prefers-reduced-motion:reduce){.btn::after,.nh-cta::after{animation:none;opacity:.3}}
+  @media (prefers-reduced-motion:reduce){.btn::after,.nh-cta::after,.nh-cta.go::before{animation:none;opacity:.3}}
   /* PRIMARY aliases (.violet, .lime kept for existing markup) */
   .btn.violet,.btn.lime{color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(0,0,0,.26),0 8px 20px rgba(124,58,255,.28),inset 0 1px 0 rgba(255,255,255,.4)}
   /* SHARE / INVITE = green */
@@ -159,6 +159,10 @@
   .nh-cta>*{position:relative;z-index:2}
   .nh-cta::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.6) 50%,transparent 62%);background-size:230% 100%;animation:nhShine 3.4s ease-in-out infinite}
   @keyframes nhShine{0%{background-position:160% 0}58%,100%{background-position:-100% 0}}
+  /* next-step CTA: green (canonical action) + rotating conic border-beam like .btn */
+  .nh-cta.go{--bd-angle:0deg;background:linear-gradient(180deg,#4be38f,#1fb866);color:#04210f;box-shadow:0 6px 18px rgba(0,0,0,.24),0 8px 20px rgba(31,184,102,.22),inset 0 1px 0 rgba(255,255,255,.5)}
+  .nh-cta.go::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.6px;pointer-events:none;z-index:3;background:conic-gradient(from var(--bd-angle),transparent 0deg,transparent 230deg,rgba(255,255,255,.92) 300deg,rgba(255,255,255,.22) 335deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:bdSpin 3.6s linear infinite;opacity:.9}
+
 
   /* progress-path strip + first-run coachmark */
   /* scary-accurate readout */
@@ -553,6 +557,28 @@
   .product .price{font-weight:800;font-size:14px;flex-shrink:0;color:#ffcf5c}
   .product .tagbest{position:absolute;top:0;right:0;font-size:9px;font-weight:800;letter-spacing:.06em;background:#ffcf5c;color:#241a06;padding:3px 9px;border-radius:0 0 0 9px}
 
+    /* ===== Collection Vault — the 5 facets as a SET you assemble (retention core) ===== */
+  .vault{position:relative;overflow:hidden;border-radius:22px;padding:17px 17px 16px;margin-bottom:16px;background:linear-gradient(165deg,rgba(60,52,104,.5),rgba(20,17,38,.5));border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 14px 40px rgba(0,0,0,.4)}
+  .vault::after{content:'';position:absolute;top:-52%;right:-30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,255,.32),transparent 70%);opacity:.42;pointer-events:none}
+  .vault-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;position:relative}
+  .vault-eye{font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#cbb8ff}
+  .vault-count{font-size:12.5px;font-weight:800;color:#fff}.vault-count b{color:#D4FF4F;font-size:14px}
+  .vault-track{display:flex;align-items:center;margin:16px 3px 14px;position:relative}
+  .vault-node{position:relative;width:44px;height:44px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;cursor:pointer;background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(0,0,0,.22));border:1px solid rgba(255,255,255,.1);filter:grayscale(.55) brightness(.8);transition:transform .16s var(--ease-spring)}
+  .vault-node:active{transform:scale(.9)}
+  .vault-node.on{filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28);animation:vaultFloat 4.2s ease-in-out infinite}
+  .vault-node.next{border-style:dashed;border-color:rgba(255,207,92,.65);filter:none;animation:vaultPulse 1.9s ease-in-out infinite}
+  .vault-node.next .vlock{color:#ffcf5c}
+  .vault-node .vlock{position:absolute;bottom:-4px;right:-4px;font-size:12px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+  @keyframes vaultFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  @keyframes vaultPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,207,92,.55)}50%{box-shadow:0 0 0 7px rgba(255,207,92,0)}}
+  .vault-link{flex:1;height:2px;min-width:5px;background:rgba(255,255,255,.1)}
+  .vault-link.on{background:linear-gradient(90deg,#7C3AFF,#00E0C7)}
+  .vault-line{font-size:13px;line-height:1.5;color:#d6d0f0;position:relative}.vault-line b{color:#fff}
+  .vault-next{margin-top:13px;display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:14px;background:linear-gradient(160deg,rgba(255,207,92,.15),rgba(28,24,46,.42));border:1px solid rgba(255,207,92,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);cursor:pointer;transition:transform .15s var(--ease-spring),border-color .2s}
+  .vault-next:active{transform:scale(.98)}
+  .vault-crown{margin-top:13px;text-align:center;font-size:12.5px;font-weight:800;letter-spacing:.02em;color:#e9ffb0;padding:10px;border-radius:13px;background:radial-gradient(circle at 50% 0,rgba(212,255,79,.16),transparent 70%),rgba(28,30,18,.5);border:1px solid rgba(212,255,79,.3)}
+    .rd{filter:blur(4px);opacity:.7;letter-spacing:1px;color:#cfc8ee;user-select:none;-webkit-user-select:none;font-weight:700}
   .section-h{display:flex;align-items:center;justify-content:space-between;margin:24px 2px 13px}
   .lb-tabs{display:flex;gap:8px;margin-bottom:10px}
   .lb-tab{flex:1;padding:9px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(160deg,rgba(40,36,62,.5),rgba(20,17,38,.4));color:#c6c0e4;font-size:13px;font-weight:700;cursor:pointer}
@@ -1096,6 +1122,7 @@
       <div class="eyebrow" id="stEye">Глубже</div>
       <h1 id="stH1">Загляни <span class="grad">глубже</span>.</h1>
       <div class="lede" id="stLede">Новые тесты, достижения и полные разборы. Чем больше открываешь — тем точнее ты знаешь себя.</div>
+      <div id="vaultHost"></div>
       <div id="subCardHost"></div>
       <div class="section-h"><h2 id="hTests">Тесты</h2></div>
       <div id="testsList"></div>
@@ -2720,6 +2747,54 @@ function renderPrivRow(){var en=isEN();var t=document.getElementById('privToggle
   var hp=document.getElementById('hPriv');if(hp)hp.textContent=en?'Privacy':'Приватность';
   var pl=document.getElementById('privLink');if(pl)pl.textContent=en?'How we store data':'Как мы храним данные';
   t.innerHTML='<span style="display:inline-block;width:46px;height:27px;border-radius:20px;background:'+(on?'linear-gradient(135deg,#52e6a4,#00E0C7)':'rgba(255,255,255,.14)')+';position:relative;transition:background .2s;vertical-align:middle"><span style="position:absolute;top:3px;left:'+(on?'22px':'3px')+';width:21px;height:21px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span></span>';}
+function collectionVault(){
+  var en=isEN();
+  if(!S.result)return '';
+  var t=TYPES[S.result.primary];
+  var order=[
+    {k:'main',ic:'🌀',c:(t&&t.color)||'#7C3AFF',done:true},
+    {k:'love',ic:'❤️',c:'#ff5d8f',done:!!(S.tests&&S.tests.love)},
+    {k:'work',ic:'💼',c:'#5d8cff',done:!!(S.tests&&S.tests.work)},
+    {k:'fears',ic:'🧬',c:'#52dd92',done:!!(S.tests&&S.tests.fears)},
+    {k:'shadow',ic:'🌙',c:'#a78bff',done:!!(S.tests&&S.tests.shadow)}
+  ];
+  var n=order.filter(function(f){return f.done;}).length;
+  var nextK=null;for(var i=1;i<order.length;i++){if(!order[i].done){nextK=order[i].k;break;}}
+  var nodes='';
+  order.forEach(function(f,i){
+    if(i>0)nodes+='<div class="vault-link'+((order[i-1].done&&f.done)?' on':'')+'"></div>';
+    if(f.done){
+      var act=(f.k==='main')?'goResult()':("showTestResult('"+f.k+"')");
+      nodes+='<div class="vault-node on" style="border-color:'+f.c+';background:radial-gradient(circle at 40% 30%,'+f.c+'59,rgba(20,17,38,.55));box-shadow:0 0 18px '+f.c+'70,inset 0 1px 0 rgba(255,255,255,.28)" onclick="'+act+'">'+f.ic+'</div>';
+    }else{
+      var isNext=(f.k===nextK);
+      nodes+='<div class="vault-node'+(isNext?' next':'')+'" onclick="openTest(\''+f.k+'\')">'+f.ic+'<span class="vlock">🔒</span></div>';
+    }
+  });
+  var eye=en?'YOUR FULL PORTRAIT':'ТВОЙ ПОЛНЫЙ ПОРТРЕТ';
+  var line,crown='';
+  if(n>=5){
+    line=en?'<b>Full portrait assembled.</b> You now see yourself deeper than most people ever do.':'<b>Полный портрет собран.</b> Теперь ты видишь себя глубже, чем большинство доходит за всю жизнь.';
+    crown='<div class="vault-crown">✦ '+(en?'All 5 facets — the whole pattern of you':'Все 5 граней — цельный узор тебя')+' ✦</div>';
+  }else if(n===1){
+    line=en?'You opened your <b>core</b>. Four facets stay sealed — and that\u2019s exactly where what you don\u2019t yet know about yourself lives.':'Ты открыл <b>ядро</b>. Ещё 4 грани запечатаны — а именно в них живёт то, чего ты о себе пока не знаешь.';
+  }else{
+    var left=5-n;
+    line=en?('<b>'+n+' of 5</b> collected. '+left+' more to the whole picture — each facet changes how you see yourself.'):('Собрано <b>'+n+' из 5</b>. Ещё '+left+' до цельной картины — каждая грань меняет то, как ты видишь себя.');
+  }
+  var nextCard='';
+  if(nextK){
+    var ics={love:'❤️',work:'💼',fears:'🧬',shadow:'🌙'};
+    var pr=testPriceOf(nextK);
+    nextCard='<div class="vault-next" onclick="openTest(\''+nextK+'\')"><div style="font-size:20px;flex:none">'+ics[nextK]+'</div><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13.5px;color:#fff">'+(en?'Next facet: ':'Следующая грань: ')+'\u00ab'+testTitle(nextK)+'\u00bb</div><div style="font-size:11.5px;color:#c6bff0;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+painOf(nextK,en)+'</div></div><div style="font-weight:800;color:#ffcf5c;flex:none;font-size:13px">\u2b50 '+pr+'</div></div>';
+  }
+  return '<div class="vault"><div class="vault-top"><span class="vault-eye">'+eye+'</span><span class="vault-count"><b>'+n+'</b> / 5</span></div><div class="vault-track">'+nodes+'</div><div class="vault-line">'+line+'</div>'+nextCard+crown+'</div>';
+}
+function storePeek(key,en){
+  var lead={love:['Твоя формула близости','Your intimacy pattern'],work:['Где ты сильнее всех','Where you\u2019re strongest'],fears:['Что тайно тобой движет','What secretly drives you'],shadow:['Что ты прячешь от всех','What you hide from everyone']}[key];
+  if(!lead)return '';
+  return (en?lead[1]:lead[0])+': <span class="rd">\u2593\u2593\u2593\u2593\u2593\u2593\u2593</span>';
+}
 function renderStore(){
   var en=isEN();
   var testsHtml=(en?TESTS_EN:TESTS).map(function(t){
@@ -2728,14 +2803,14 @@ function renderStore(){
     if(done)return '<div class="product" onclick="'+(t.key==='main'?'goResult()':'showTestResult(\''+t.key+'\')')+'"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s" style="color:#52e6a4">✓ '+(en?'done':'пройден')+'</div></div><div class="price" style="color:#52e6a4">'+(en?'open →':'открыть →')+'</div></div>';
     if(t.key==='main')return '<div class="product" onclick="startQuiz()"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s">'+t.d+'</div></div><div class="price" style="color:#ffae42">'+(en?'take →':'пройти →')+'</div></div>';
     if(owned)return '<div class="product" onclick="runTest(\''+t.key+'\')"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s" style="color:#52e6a4">✓ '+(en?'owned':'куплен')+'</div></div><div class="price" style="color:#52e6a4">'+(en?'take →':'пройти →')+'</div></div>';
-    return '<div class="product" onclick="openTest(\''+t.key+'\')"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s">'+t.d+'</div></div><div class="price">⭐ '+t.price+'</div></div>';
+    return '<div class="product" onclick="openTest(\''+t.key+'\')"><div class="pic">'+testGlyph(t.key,24)+'</div><div class="meta"><div class="nm">'+t.n+'</div><div class="s">'+(storePeek(t.key,en)||t.d)+'</div></div><div class="price">⭐ '+t.price+'</div></div>';
   }).join('');
   // bundle card: buy all remaining tests at a discount (only if 2+ remain)
   var rem=remainingTests();
   if(rem.length>=2){var bp=bundlePrice();var full=rem.length*125;
     testsHtml+='<div class="product feat" onclick="buyBundle()" style="border-color:rgba(127,233,255,.4)"><span class="tagbest" style="background:linear-gradient(135deg,#8df0ff,#39b6d8);color:#04222b">−30%</span><div class="pic">🎁</div><div class="meta"><div class="nm">'+(en?'All remaining tests ('+rem.length+')':'Все оставшиеся тесты ('+rem.length+')')+'</div><div class="s">'+(en?'Build the whole avatar — 30% cheaper':'Собери аватар целиком — выгоднее на 30%')+'</div></div><div class="price" style="color:#7fe9ff"><span style="text-decoration:line-through;color:#9a93c2;font-size:11px">⭐'+full+'</span> ⭐'+bp+'</div></div>';
   }
-  document.getElementById('testsList').innerHTML=testsHtml;var _sch=document.getElementById('subCardHost');if(_sch)_sch.innerHTML=subCard();
+  document.getElementById('testsList').innerHTML=testsHtml;var _vh=document.getElementById('vaultHost');if(_vh)_vh.innerHTML=collectionVault();var _sch=document.getElementById('subCardHost');if(_sch)_sch.innerHTML=subCard();
   var got=0;ACHIEVEMENTS.forEach(function(a){if(a.has())got++;});
   document.getElementById('achCount').textContent=got+' / '+ACHIEVEMENTS.length;
   document.getElementById('achList').innerHTML='<div class="ach-grid">'+ACHIEVEMENTS.map(function(a){
@@ -3548,7 +3623,7 @@ function subscribePlus(){var en=isEN();
 function subUpsellRow(en){if(subActive())return '';return '<div class="card-soft" style="border-left:3px solid #D4FF4F;margin-top:14px;text-align:left"><div class="ch" style="color:#D4FF4F">✨ '+(en?'…or unlock EVERYTHING':'…или открой ВСЁ')+'</div><div class="cb">'+(en?'For about the price of this one report — <b>SELF-FIX+</b> opens the full breakdown, every facet, compatibility and unlimited chat. ⭐199/mo.':'За ту же цену, что один разбор — <b>SELF-FIX+</b> открывает полный разбор, все грани, совместимость и безлимит чата. ⭐199/мес.')+'</div><button class="btn gold" style="margin-top:10px" onclick="closeModal();subscribePlus()">'+(en?'Subscribe to SELF-FIX+ →':'Подписка SELF-FIX+ →')+'</button></div>';}
 function subCard(){var en=isEN();
   if(subActive())return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.4);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.12),transparent 70%),rgba(28,24,46,.55);text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ '+(en?'SELF-FIX+ active':'SELF-FIX+ активна')+'</div><div class="cb">'+(en?'Everything is unlocked. Renews monthly — manage in Telegram.':'Всё открыто. Продлевается ежемесячно — управление в Telegram.')+'</div></div>';
-  return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.45);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.16),transparent 68%),linear-gradient(165deg,rgba(40,40,22,.6),rgba(20,17,38,.5));text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ SELF-FIX+</div><div class="cb" style="margin-top:4px">'+(en?'Unlock <b>everything</b> — full breakdown, all facets, compatibility, unlimited clone chat.':'Открой <b>всё</b> — полный разбор, все грани, совместимость, безлимит чата.')+'</div><button class="btn gold" style="margin-top:12px" onclick="subscribePlus()">'+(en?'Subscribe · ⭐ '+PLUS_PRICE+'/mo':'Подписаться · ⭐ '+PLUS_PRICE+'/мес')+'</button></div>';
+  return '<div class="card-soft" style="border:1px solid rgba(212,255,79,.45);background:radial-gradient(circle at 50% 0,rgba(212,255,79,.16),transparent 68%),linear-gradient(165deg,rgba(40,40,22,.6),rgba(20,17,38,.5));text-align:center;margin-bottom:16px"><div class="ch" style="color:#D4FF4F;justify-content:center">✨ SELF-FIX+</div><div class="cb" style="margin-top:4px">'+(en?'Unlock <b>everything</b> — full breakdown, all facets, compatibility, unlimited clone chat.':'Открой <b>всё</b> — полный разбор, все грани, совместимость, безлимит чата.')+'</div>'+'<div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin:13px 0 2px;font-size:12.5px;color:#c6c0e4">'+(en?'4 tests à la carte ':'4 теста поштучно ')+'<s style="color:#8e87b5">\u2b50500</s> <span style="color:#D4FF4F;font-weight:800">\u2192</span> <b style="color:#fff">'+(en?'all for \u2b50'+PLUS_PRICE+'/mo':'всё за \u2b50'+PLUS_PRICE+'/мес')+'</b> <span class="badge-save">-60%</span></div>'+'<button class="btn gold" style="margin-top:12px" onclick="subscribePlus()">'+(en?'Subscribe · ⭐ '+PLUS_PRICE+'/mo':'Подписаться · ⭐ '+PLUS_PRICE+'/мес')+'</button></div>';
 }
 function chatUnlocked(){return subActive()||!!(S._chatUnlockUntil&&Date.now()<S._chatUnlockUntil);}
 function chatLeftToday(){var d=dayNum();if(S._chatDay!==d){S._chatDay=d;S._chatCount=0;}return Math.max(0,CHAT_FREE_PER_DAY-(S._chatCount||0));}
@@ -3829,7 +3904,7 @@ function nextStepBest(){
   return {ic:'🗺️',title:en?'See how you’ve changed':'Посмотри, как ты изменился',sub:en?'Retake yourself in This-or-That mode':'Перепройди себя в режиме «Это или то»',cta:en?'This or That →':'Это или то →',act:function(){retakeSwipe();}};
 }
 function nextStepHero(){var n=nextStepBest();_nextAct=n.act;var t=TYPES[S.result.primary];var en=isEN();
-  return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta"><span>'+n.cta+'</span></div></div>';
+  return '<div class="next-hero" onclick="runNextStep()" style="--ac:'+t.color+'"><div class="nh-eyebrow">'+(en?'YOUR NEXT STEP':'\u0422\u0412\u041e\u0419 \u0421\u041b\u0415\u0414\u0423\u042e\u0429\u0418\u0419 \u0428\u0410\u0413')+'</div><div class="nh-row"><div class="nh-ic">'+n.ic+'</div><div class="nh-tx"><div class="nh-t">'+n.title+'</div><div class="nh-s">'+n.sub+'</div></div></div><div class="nh-cta go"><span>'+n.cta+'</span></div></div>';
 }
 function progressStrip(){var en=isEN();var pr=avatarProgress();var left=5-pr;var segs='';for(var i=0;i<5;i++)segs+='<i class="'+(i<pr?'on':'')+'"></i>';
   var label=pr>=5?(en?'Full picture complete \u2728':'\u041f\u043e\u043b\u043d\u0430\u044f \u043a\u0430\u0440\u0442\u0438\u043d\u0430 \u0441\u043e\u0431\u0440\u0430\u043d\u0430 \u2728'):(en?(left+' to your full picture'):('\u0435\u0449\u0451 '+left+' '+ppPlural(left)+' \u0434\u043e \u043f\u043e\u043b\u043d\u043e\u0439 \u043a\u0430\u0440\u0442\u0438\u043d\u044b'));
